@@ -18,7 +18,7 @@
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
 	android:orientation="horizontal">
 
-	<com.csipsimple.widgets.DontPressWithParentLayout
+	<com.csipsimple.phone.widgets.DontPressWithParentLayout
 		style="@style/list_left_column" android:id="@+id/indicator"
 		android:gravity="center" android:orientation="vertical"
 		android:background="@drawable/account_selector">
@@ -31,7 +31,7 @@
 		<ImageView android:id="@+id/bar_onoff" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:layout_gravity="center"
 			android:paddingTop="4dip" android:src="@drawable/ic_indicator_off" />
-	</com.csipsimple.widgets.DontPressWithParentLayout>
+	</com.csipsimple.phone.widgets.DontPressWithParentLayout>
 
 	<ImageView android:src="@drawable/divider_vertical_dark"
 		android:background="?android:attr/windowBackground"

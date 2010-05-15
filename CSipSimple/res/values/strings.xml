@@ -19,7 +19,7 @@
 
 <resources>
 
-	<string name="app_name">CSipSimple</string>
+	<string name="app_name">CSipSimple core</string>
 	<string name="unable_to_download_file">Unable to download file</string>
 	<string name="connection_not_valid">Your connection is not valid for SIP (activate WIFI or change preferences to use 3G)</string>
 	<string name="accounts">Accounts</string>
