@@ -385,60 +385,6 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 
 	}
 
-	private void sendSMS(String message) {
-		if (service == null) {
-			return;
-		}
-		String toCall = "";
-		Integer accountToUse = USE_GSM;
-
-		if (isDigit) {
-			toCall = PhoneNumberUtils.stripSeparators(digits.getText().toString());
-			Account acc = accountChooserButton.getSelectedAccount();
-			if (acc != null) {
-				accountToUse = acc.id;
-			}
-		} else {
-			String userName = dialUser.getText().toString();
-			if (TextUtils.isEmpty(userName)) {
-				return;
-			}
-			userName = userName.replaceAll("[ \t]", "");
-			Account acc = accountChooserButton.getSelectedAccount();
-			if (acc != null) {
-				accountToUse = acc.id;
-				if(Pattern.matches(".*@.*", userName)) {
-					toCall = "sip:" + userName ;
-				}else {
-					toCall = "sip:" + userName + "@"+acc.getDefaultDomain();
-				}
-			}else {
-				toCall = userName;
-			}
-		}
-		if (TextUtils.isEmpty(toCall)) {
-			return;
-		}
-
-		// Well we have now the fields, clear theses fields
-		digits.getText().clear();
-		dialUser.getText().clear();
-		// dialDomain.getText().clear();
-		if (accountToUse != USE_GSM) {
-			try {
-				service.sendSMS(message, toCall, accountToUse);
-			} catch (RemoteException e) {
-				Log.e(THIS_FILE, "Service can't be called to make the call");
-			}
-		} else {
-			OutgoingCall.ignoreNext = toCall;
-			Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+toCall));
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startActivity(intent);
-		}
-
-	}
-
 	public void onClick(View view) {
 		// ImageButton b = null;
 		int view_id = view.getId();
@@ -484,9 +430,39 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 		}
 		case R.id.smsButton:
 		case R.id.smsTextButton: {
+			// get the nubmer/user
+			String toCall = "";
+			Integer accountToUse = USE_GSM;
+			if (isDigit) {
+				toCall = PhoneNumberUtils.stripSeparators(digits.getText().toString());
+				Account acc = accountChooserButton.getSelectedAccount();
+				if (acc != null) {
+					accountToUse = acc.id;
+				}
+			} else {
+				String userName = dialUser.getText().toString();
+				if (TextUtils.isEmpty(userName)) {
+					return;
+				}
+				userName = userName.replaceAll("[ \t]", "");
+				Account acc = accountChooserButton.getSelectedAccount();
+				if (acc != null) {
+					accountToUse = acc.id;
+					if(Pattern.matches(".*@.*", userName)) {
+						toCall = "sip:" + userName ;
+					}else {
+						toCall = "sip:" + userName + "@"+acc.getDefaultDomain();
+					}
+				}else {
+					toCall = userName;
+				}
+			}
+
 			// show the SMSComposer window
-			//sendSMS();
-			startActivityForResult(new Intent(this, SMSComposer.class), SMS_MESSAGE_ACTIVITY);
+			Intent composer = new Intent(this, SMSComposer.class);
+			composer.putExtra("com.ui.SMSComposer.number", toCall);
+			composer.putExtra("com.ui.SMSComposer.accid", accountToUse);
+			startActivity(composer);
 			break;
 		}
 		case R.id.domainButton: {
@@ -506,12 +482,6 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 			}
 			break;
 		}
-		}
-	}
-	
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == SMS_MESSAGE_ACTIVITY && resultCode == -1) {
-			sendSMS(data.getStringExtra("message").toString());
 		}
 	}
 	
