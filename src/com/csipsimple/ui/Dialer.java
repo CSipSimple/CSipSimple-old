@@ -89,7 +89,7 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 
 	private DialingFeedback dialFeedback;
 
-	private int[] buttonsToAttach = new int[] { R.id.button0, R.id.dialButton, R.id.deleteButton, R.id.domainButton, R.id.smsButton,
+	private int[] buttonsToAttach = new int[] { R.id.button0, R.id.dialButton, R.id.deleteButton, R.id.domainButton, R.id.smsButton, R.id.smsTextButton,
 	// Text dialer
 			R.id.dialTextButton, R.id.deleteTextButton, R.id.domainTextButton };
 
@@ -482,7 +482,8 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 			placeCall();
 			break;
 		}
-		case R.id.smsButton: {
+		case R.id.smsButton:
+		case R.id.smsTextButton: {
 			// show the SMSComposer window
 			//sendSMS();
 			startActivityForResult(new Intent(this, SMSComposer.class), SMS_MESSAGE_ACTIVITY);
