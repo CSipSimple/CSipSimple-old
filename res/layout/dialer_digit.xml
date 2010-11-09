@@ -56,7 +56,13 @@
 		<ImageButton android:id="@+id/domainButton" android:layout_width="87dip"
 			android:layout_height="fill_parent" android:layout_gravity="center" android:state_enabled="false"
 			android:background="@drawable/btn_dial_domain" android:src="@drawable/ic_tab_selected_dialer" />
-
+		
+		<ImageButton android:layout_height="fill_parent" android:layout_gravity="center"
+			android:contentDescription="@string/description_sms_button"
+			android:layout_weight="1" android:state_enabled="false" android:background="@drawable/btn_dial_action"
+			android:src="@drawable/sms" android:layout_width="fill_parent" android:scaleType="center"
+			android:id="@+id/smsButton" />
+		
 		<ImageButton android:layout_height="fill_parent" android:layout_gravity="center"
 			android:contentDescription="@string/description_dial_button"
 			android:layout_weight="1" android:state_enabled="false" android:background="@drawable/btn_dial_action"

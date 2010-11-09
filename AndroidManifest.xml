@@ -42,6 +42,7 @@
 		<activity android:name=".ui.Dialer"></activity>
 		<activity android:name=".ui.CallLogsList"></activity>
 		<activity android:name=".ui.CallLog" android:theme="@android:style/Theme.NoTitleBar"></activity>
+		<activity android:name=".ui.SMSComposer" android:theme="@android:style/Theme.Dialog"></activity>
 		
 		<!-- First setup -->
 		<activity android:name=".ui.WelcomeScreen" android:screenOrientation="nosensor"

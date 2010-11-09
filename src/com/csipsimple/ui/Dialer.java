@@ -70,14 +70,16 @@ import com.csipsimple.widgets.AccountChooserButton;
 import com.csipsimple.widgets.Dialpad;
 import com.csipsimple.widgets.AccountChooserButton.OnAccountChangeListener;
 import com.csipsimple.widgets.Dialpad.OnDialKeyListener;
+import com.csipsimple.ui.SMSComposer;
 
 public class Dialer extends Activity implements OnClickListener, OnLongClickListener, OnDialKeyListener, TextWatcher {
 
 	private static final String THIS_FILE = "Dialer";
-
+	private static final Integer SMS_MESSAGE_ACTIVITY = 1;
+	
 	private Drawable digitsBackground, digitsEmptyBackground;
 	private EditText digits;
-	private ImageButton dialButton, deleteButton;
+	private ImageButton dialButton, deleteButton, smsButton;
 
 	private View digitDialer, textDialer, rootView;
 
@@ -87,7 +89,7 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 
 	private DialingFeedback dialFeedback;
 
-	private int[] buttonsToAttach = new int[] { R.id.button0, R.id.dialButton, R.id.deleteButton, R.id.domainButton,
+	private int[] buttonsToAttach = new int[] { R.id.button0, R.id.dialButton, R.id.deleteButton, R.id.domainButton, R.id.smsButton,
 	// Text dialer
 			R.id.dialTextButton, R.id.deleteTextButton, R.id.domainTextButton };
 
@@ -144,6 +146,7 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 
 		// Store some object that could be useful later
 		dialButton = (ImageButton) findViewById(R.id.dialButton);
+		smsButton = (ImageButton) findViewById(R.id.smsButton);
 		deleteButton = (ImageButton) findViewById(R.id.deleteButton);
 		digits = (EditText) findViewById(R.id.digitsText);
 		digitsWrapper = (LinearLayout) findViewById(R.id.topField);
@@ -382,6 +385,60 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 
 	}
 
+	private void sendSMS(String message) {
+		if (service == null) {
+			return;
+		}
+		String toCall = "";
+		Integer accountToUse = USE_GSM;
+
+		if (isDigit) {
+			toCall = PhoneNumberUtils.stripSeparators(digits.getText().toString());
+			Account acc = accountChooserButton.getSelectedAccount();
+			if (acc != null) {
+				accountToUse = acc.id;
+			}
+		} else {
+			String userName = dialUser.getText().toString();
+			if (TextUtils.isEmpty(userName)) {
+				return;
+			}
+			userName = userName.replaceAll("[ \t]", "");
+			Account acc = accountChooserButton.getSelectedAccount();
+			if (acc != null) {
+				accountToUse = acc.id;
+				if(Pattern.matches(".*@.*", userName)) {
+					toCall = "sip:" + userName ;
+				}else {
+					toCall = "sip:" + userName + "@"+acc.getDefaultDomain();
+				}
+			}else {
+				toCall = userName;
+			}
+		}
+		if (TextUtils.isEmpty(toCall)) {
+			return;
+		}
+
+		// Well we have now the fields, clear theses fields
+		digits.getText().clear();
+		dialUser.getText().clear();
+		// dialDomain.getText().clear();
+		if (accountToUse != USE_GSM) {
+			try {
+				service.sendSMS(message, toCall, accountToUse);
+			} catch (RemoteException e) {
+				Log.e(THIS_FILE, "Service can't be called to make the call");
+			}
+		} else {
+			OutgoingCall.ignoreNext = toCall;
+			Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+toCall));
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);
+		}
+
+	}
+
 	public void onClick(View view) {
 		// ImageButton b = null;
 		int view_id = view.getId();
@@ -425,6 +482,12 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 			placeCall();
 			break;
 		}
+		case R.id.smsButton: {
+			// show the SMSComposer window
+			//sendSMS();
+			startActivityForResult(new Intent(this, SMSComposer.class), SMS_MESSAGE_ACTIVITY);
+			break;
+		}
 		case R.id.domainButton: {
 			// b.playSoundEffect(SoundEffectConstants.CLICK);
 			flipView(true);
@@ -444,7 +507,13 @@ public class Dialer extends Activity implements OnClickListener, OnLongClickList
 		}
 		}
 	}
-
+	
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == SMS_MESSAGE_ACTIVITY && resultCode == -1) {
+			sendSMS(data.getStringExtra("message").toString());
+		}
+	}
+	
 	public boolean onLongClick(View view) {
 		// ImageButton b = (ImageButton)view;
 		switch (view.getId()) {

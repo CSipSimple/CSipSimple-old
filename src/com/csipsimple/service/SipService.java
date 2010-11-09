@@ -139,6 +139,14 @@ public class SipService extends Service {
 		}
 
 		/**
+		 * Send SMS using Vtel server
+		 */
+		@Override
+		public void sendSMS(String msg,String to,int accountId)throws RemoteException { 
+			SipService.this.sendSMS(msg, to, accountId);
+		}
+	
+		/**
 		 * Force the stop of the service
 		 */
 		@Override
@@ -286,6 +294,12 @@ public class SipService extends Service {
 				}
 			}
 			return null;
+		}
+
+		@Override
+		public void onPager(String callInfo, String text) throws RemoteException
+		{
+			Log.e(THIS_FILE, "Pager:" + callInfo + " " + text);
 		}
 
 		@Override
@@ -1697,6 +1711,101 @@ public class SipService extends Service {
 			mediaManager.unsetAudioInCall();
 		}
 	}
+	
+	/**
+	 * Send sms using SIP server
+	 */
+	public int sendSMS(String message, String callee, int accountId) {
+		if (!created) {
+			return -1;
+		}
+		//We have to ensure service is properly started and not just binded
+		startService(new Intent(this, SipService.class));
+		
+		int pjsipAccountId = -1;
+
+		// If this is an invalid account id
+		if (accountId == -1 || !activeAccounts.containsKey(accountId)) {
+			int defaultPjsipAccount = pjsua.acc_get_default();
+
+			// If default account is not active
+			if (!activeAccounts.containsValue(defaultPjsipAccount)) {
+				for (Integer accId : activeAccounts.keySet()) {
+					// Use the first account as valid account
+					if (accId != null) {
+						accountId = accId;
+						pjsipAccountId = activeAccounts.get(accId);
+						break;
+					}
+				}
+			} else {
+				// Use the default account
+				for (Integer accId : activeAccounts.keySet()) {
+					if (activeAccounts.get(accId) == defaultPjsipAccount) {
+						accountId = accId;
+						pjsipAccountId = defaultPjsipAccount;
+						break;
+					}
+				}
+			}
+		} else {
+			pjsipAccountId = activeAccounts.get(accountId);
+		}
+
+		if (pjsipAccountId == -1 || accountId == -1) {
+			Log.e(THIS_FILE, "Unable to find a valid account for this sms");
+			return -1;
+		}
+
+		// Check integrity of callee field
+		if (!Pattern.matches("^.*(<)?sip(s)?:[^@]*@[^@]*(>)?", callee)) {
+			// Assume this is a direct call using digit dialer
+			Log.d(THIS_FILE, "default acc : " + accountId);
+			Account account;
+			synchronized (db) {
+				db.open();
+				account = db.getAccount(accountId);
+				db.close();
+			}
+			String defaultDomain = account.getDefaultDomain();
+
+			Log.d(THIS_FILE, "default domain : " + defaultDomain);
+			if (Pattern.matches("^sip(s)?:[^@]*$", callee)) {
+				callee = callee + "@" + defaultDomain;
+			} else {
+				callee = "sip:" + callee + "@" + defaultDomain;
+			}
+		}
+
+		Log.d(THIS_FILE, "will sms " + callee);
+		if (pjsua.verify_sip_url(callee) == 0) {
+			pj_str_t uri = pjsua.pj_str_copy(callee);
+			pj_str_t text = pjsua.pj_str_copy(message);
+			Log.d(THIS_FILE, "get for outgoing");
+			if (accountId == -1) {
+				accountId = pjsua.acc_find_for_outgoing(uri);
+			}
+
+			// Nothing to do with this values
+			byte[] userData = new byte[1];
+			int[] callId = new int[1];
+			
+			Log.e("Sent", callee + " " + message + " " + pjsipAccountId);
+			//return pjsua.call_make_call(pjsipAccountId, uri, 0, userData, null, callId);
+			return pjsua.im_send(pjsipAccountId, uri, null, text, (org.pjsip.pjsua.SWIGTYPE_p_pjsua_msg_data)null, userData);
+		} else {
+			Log.e(THIS_FILE, "Asked for a bad uri " + callee);
+			ToastHandler.sendMessage(ToastHandler.obtainMessage(0, R.string.invalid_sip_uri, 0));
+		}
+		return -1;
+	}
+	
+	 public void  showMessage(String msg)
+	 {
+		 Toast tag = Toast.makeText(SipService.this,msg, 100);
+		 tag.setDuration(100);
+		 tag.show();
+	 }
 
 	public static UAStateReceiver getUAStateReceiver() {
 		return userAgentReceiver;

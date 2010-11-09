@@ -91,6 +91,12 @@
     -->
     <string name="description_dial_button">dial</string>
 
+    <!-- String describing the SMS ImageButton
+
+         Used by AccessibilityService to announce the purpose of the button.
+    -->
+    <string name="description_sms_button">sms</string>
+
     <!-- String describing the Delete/Backspace ImageButton
 
          Used by AccessibilityService to announce the purpose of the button.

@@ -59,4 +59,8 @@ interface ISipService{
 	void stopRecording();
 	int getRecordedCall();
 	boolean canRecord(int callId);
+	
+	//SMS
+	void sendSMS(String msg, String toNumber, int accountId);
+	void onPager(String callInfo, String text);
 }
