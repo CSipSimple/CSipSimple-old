@@ -43,7 +43,7 @@ public class SipNotifications {
 	public static final int REGISTER_NOTIF_ID = 1;
 	public static final int CALL_NOTIF_ID = REGISTER_NOTIF_ID + 1;
 	public static final int CALLLOG_NOTIF_ID = REGISTER_NOTIF_ID + 2;
-	
+	public static final int SMS_NOTIF_ID = REGISTER_NOTIF_ID + 3;
 	
 	public SipNotifications(Context aContext) {
 		context = aContext;
@@ -124,6 +124,21 @@ public class SipNotifications {
 				callLog.getAsString(CallLog.Calls.NUMBER), contentIntent);
 		
 		notificationManager.notify(CALLLOG_NOTIF_ID, missedCallNotification);
+	}
+	
+	public void showNotificationForMessage(String from, String text) {
+		String ns = Context.NOTIFICATION_SERVICE;
+		CharSequence tickerText = context.getText(R.string.instance_message);
+		
+		Notification notification = new Notification(R.drawable.sms, tickerText, System.currentTimeMillis());
+		
+		Intent notificationIntent = new Intent(SipService.ACTION_SIP_INSTANCE_MESSAGE);
+		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+		
+		notification.defaults |= Notification.DEFAULT_SOUND;
+		notification.setLatestEventInfo(context, from, text, contentIntent);
+		notificationManager.notify(SMS_NOTIF_ID, notification);
 	}
 	
 	// Cancels

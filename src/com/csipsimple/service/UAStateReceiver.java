@@ -127,11 +127,11 @@ public class UAStateReceiver extends Callback {
 				+ from.getPtr() + " "
 				+ "TEXT: " + body.getPtr();
 		//msgHandler.sendMessage(msgHandler.obtainMessage(ON_PAGER, msg));
-		//service.showNotificationForMessage(StringUtilits.parseSMSNumber(from.getPtr()),body.getPtr());
+		notificationManager.showNotificationForMessage(from.getPtr(), body.getPtr());
 		Log.e(THIS_FILE, msg);
 	}
 
-	@Override
+	/*@Override
 	public void on_pager2(int call_id, pj_str_t from, pj_str_t to, pj_str_t contact, pj_str_t mime_type, pj_str_t body, SWIGTYPE_p_pjsip_rx_data rdata)
 	{
 		String msg = "on_pager2 NEW MESSAGE FROM: "
@@ -140,19 +140,30 @@ public class UAStateReceiver extends Callback {
 		Log.e(THIS_FILE, msg);
 		//String msg = "new message";
 		//msgHandler.sendMessage(msgHandler.obtainMessage(ON_PAGER2, msg));
-	}
+	}*/
 
 	@Override
 	public void on_pager_status(int call_id, pj_str_t to, pj_str_t body, pjsip_status_code status, pj_str_t reason)
 	{
+		/* 
+			Notification about the delivery status of previously sent
+			instant message.
+			
+			Keyword arguments:
+			to_uri  -- the destination URI of the message
+			body    -- the message body
+			im_id   -- message ID
+			code    -- SIP status code
+			reason  -- SIP reason phrase
+		*/
 		Log.e(THIS_FILE, "Message in on pager status");
 	}
 	
-	@Override
+	/*@Override
 	public void on_pager_status2(int call_id, pj_str_t to, pj_str_t body, pjsip_status_code status, pj_str_t reason, SWIGTYPE_p_pjsip_tx_data tdata, SWIGTYPE_p_pjsip_rx_data rdata)
 	{
 		Log.e(THIS_FILE, "Message in on pager status2");
-	}
+	}*/
 
 	@Override
 	public void on_reg_state(int accountId) {
