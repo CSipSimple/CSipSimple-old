@@ -131,8 +131,11 @@ public class SipNotifications {
 		CharSequence tickerText = context.getText(R.string.instance_message);
 		
 		Notification notification = new Notification(R.drawable.sms, tickerText, System.currentTimeMillis());
+		notification.flags = Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
 		
-		Intent notificationIntent = new Intent(SipService.ACTION_SIP_INSTANCE_MESSAGE);
+		Intent notificationIntent = new Intent(SipService.ACTION_SIP_SMS);
+		notificationIntent.putExtra("com.ui.SMSReader.number", from);
+		notificationIntent.putExtra("com.ui.SMSReader.message", text);
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 		

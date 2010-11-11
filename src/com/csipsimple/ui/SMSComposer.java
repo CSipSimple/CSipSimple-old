@@ -23,7 +23,6 @@ import com.csipsimple.utils.Log;
 import com.csipsimple.R;
 
 public class SMSComposer extends Activity implements OnClickListener
-//		OnLongClickListener, OnDialKeyListener, TextWatcher
 {
 	private static final String THIS_FILE = "SMSComposer";
 	

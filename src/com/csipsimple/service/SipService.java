@@ -69,9 +69,6 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.KeyCharacterMap;
 import android.widget.Toast;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 
 import com.csipsimple.R;
 import com.csipsimple.db.DBAdapter;
@@ -104,13 +101,12 @@ public class SipService extends Service {
 	public static final String ACTION_SIP_DIALER = "com.csipsimple.phone.action.DIALER";
 	public static final String ACTION_SIP_CALLLOG = "com.csipsimple.phone.action.CALLLOG";
 	public static final String ACTION_SIP_ACCOUNT_ACTIVE_CHANGED = "com.csipsimple.service.ACCOUNT_ACTIVE_CHANGED";
-	public static final String ACTION_SIP_INSTANCE_MESSAGE = "android.provider.Telephony.SIP_INSTANCE_MESSAGE";
+	public static final String ACTION_SIP_SMS = "com.csipsimple.phone.action.SMS_RECEIVED";
+	
 	// EXTRAS
 	public static final String EXTRA_CALL_INFO = "call_info";
 	public static final String EXTRA_ACCOUNT_ID = "acc_id";
 	public static final String EXTRA_ACTIVATE = "activate";
-	public static final String EXTRA_SMS = "sms";
-	
 
 	public static final String STACK_FILE_NAME = "libpjsipjni.so";
 

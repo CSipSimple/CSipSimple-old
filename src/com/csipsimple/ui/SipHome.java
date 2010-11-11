@@ -232,12 +232,17 @@ public class SipHome extends TabActivity {
 			String callAction = intent.getAction();
 			if(SipService.ACTION_SIP_CALLLOG.equalsIgnoreCase(callAction)) {
 				getTabHost().setCurrentTab(1);
-			}else if(SipService.ACTION_SIP_DIALER.equalsIgnoreCase(callAction)) {
+			} else if(SipService.ACTION_SIP_DIALER.equalsIgnoreCase(callAction)) {
 				getTabHost().setCurrentTab(0);
+			} else if (SipService.ACTION_SIP_SMS.equalsIgnoreCase(callAction)) {
+				// show the SMSReader window
+				Intent smsreader = new Intent(this, SMSReader.class);
+				smsreader.putExtra("com.ui.SMSReader.number", intent.getStringExtra("com.ui.SMSReader.number"));
+				smsreader.putExtra("com.ui.SMSReader.message", intent.getStringExtra("com.ui.SMSReader.message"));
+				startActivity(smsreader);
 			}
 		}
 	}
-
 
 	@Override
 	protected void onDestroy() {
