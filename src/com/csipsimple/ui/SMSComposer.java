@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.text.Editable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,9 +30,11 @@ import com.csipsimple.utils.Log;
 public class SMSComposer extends Activity implements OnClickListener
 {
 	private static final String THIS_FILE = "SMSComposer";
+	private static final String MSG_CHAR_COUNT = "Character count: ";
 	
 //	private View smsView;
 	private EditText message;
+	private TextView msgCount;
 	private Button sendButton, cancelButton;
 	private Integer accid;
 	private String number;
@@ -85,7 +90,22 @@ public class SMSComposer extends Activity implements OnClickListener
 		setContentView(R.layout.sms_composer);
 	//	smsView = (View) findViewById(R.id.sms_composer);
 		
+		msgCount = (TextView) findViewById(R.id.txtmsgcount);
 		message = (EditText) findViewById(R.id.message);
+		
+		message.addTextChangedListener(new TextWatcher()
+		{
+			public void onTextChanged(CharSequence s, int start, int before, int count)
+			{
+				int len = message.getText().length();
+				int smsCount = (len % 60 > 0) ? (len / 160) + 1 : (len / 160);
+				msgCount.setText(MSG_CHAR_COUNT + len + "/" + smsCount);
+			}
+			
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+			
+			public void afterTextChanged(Editable s) { }
+		});
 		
 		sendButton = (Button) findViewById(R.id.send_sms);
 		sendButton.setOnClickListener(this);
