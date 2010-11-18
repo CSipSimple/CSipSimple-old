@@ -28,6 +28,7 @@ import org.pjsip.pjsua.pjsua;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.text.TextUtils;
 
 import com.csipsimple.R;
 import com.csipsimple.models.Account;
@@ -46,14 +47,15 @@ public class Expert extends BaseImplementation {
 	private ListPreference accountDataType;
 	private EditTextPreference accountRealm;
 	private ListPreference accountScheme;
-	private CheckBoxPreference accountUseTcp;
+	private ListPreference accountTransport;
 	private CheckBoxPreference accountPublishEnabled;
 	private EditTextPreference accountRegTimeout;
 	private EditTextPreference accountKaInterval;
 	private EditTextPreference accountForceContact;
+	private CheckBoxPreference accountAllowContactRewrite;
+	private ListPreference accountContactRewriteMethod;
 	private EditTextPreference accountProxy;
 	private ListPreference accountUseSrtp;
-	private CheckBoxPreference accountPreventTcp;
 	
 	private void bindFields() {
 		accountDisplayName = (EditTextPreference) parent.findPreference("display_name");
@@ -64,13 +66,14 @@ public class Expert extends BaseImplementation {
 		accountData = (EditTextPreference) parent.findPreference("data");
 		accountDataType = (ListPreference) parent.findPreference("data_type");
 		accountScheme = (ListPreference) parent.findPreference("scheme");
-		accountUseTcp = (CheckBoxPreference) parent.findPreference("use_tcp");
-		accountPreventTcp = (CheckBoxPreference) parent.findPreference("prevent_tcp");
+		accountTransport = (ListPreference) parent.findPreference("transport");
 		accountUseSrtp = (ListPreference) parent.findPreference("use_srtp");
 		accountPublishEnabled = (CheckBoxPreference) parent.findPreference("publish_enabled");
 		accountRegTimeout = (EditTextPreference) parent.findPreference("reg_timeout");
 		accountKaInterval = (EditTextPreference) parent.findPreference("ka_interval");
 		accountForceContact = (EditTextPreference) parent.findPreference("force_contact");
+		accountAllowContactRewrite = (CheckBoxPreference) parent.findPreference("allow_contact_rewrite");
+		accountContactRewriteMethod = (ListPreference) parent.findPreference("contact_rewrite_method");
 		accountProxy = (EditTextPreference) parent.findPreference("proxy");
 	}
 
@@ -110,13 +113,14 @@ public class Expert extends BaseImplementation {
 			}
 		}
 
-		accountUseTcp.setChecked((account.use_tcp));
-		accountPreventTcp.setChecked((account.prevent_tcp));
+		accountTransport.setValue(account.transport.toString());
 		accountPublishEnabled.setChecked((account.cfg.getPublish_enabled() == 1));
 		accountRegTimeout.setText(Long.toString(account.cfg.getReg_timeout()));
 		accountKaInterval.setText(Long.toString(account.cfg.getKa_interval()));
 		
 		accountForceContact.setText(account.cfg.getForce_contact().getPtr());
+		accountAllowContactRewrite.setChecked(account.cfg.getAllow_contact_rewrite() == 1);
+		accountContactRewriteMethod.setValue(Integer.toString(account.cfg.getContact_rewrite_method()));
 		accountProxy.setText(account.cfg.getProxy()[0].getPtr());
 		
 		accountUseSrtp.setValueIndex(account.cfg.getUse_srtp().swigValue());
@@ -170,8 +174,11 @@ public class Expert extends BaseImplementation {
 
 	public Account buildAccount(Account account) {
 		account.display_name = accountDisplayName.getText();
-		account.use_tcp = accountUseTcp.isChecked();
-		account.prevent_tcp = accountPreventTcp.isChecked();
+		try {
+			account.transport = Integer.parseInt(accountTransport.getValue());
+		}catch(NumberFormatException e) {
+			Log.e(THIS_FILE, "Transport is not a number");
+		}
 		account.cfg.setId(getPjText(accountAccId));
 		account.cfg.setReg_uri(getPjText(accountRegUri));
 		try {
@@ -221,10 +228,17 @@ public class Expert extends BaseImplementation {
 		} catch (NumberFormatException e) {
 			account.cfg.setKa_interval(0);
 		}
+		try {
+			account.cfg.setContact_rewrite_method(Integer.parseInt(accountContactRewriteMethod.getValue()));
+		} catch (NumberFormatException e) {
+			//DO nothing
+		}
+		account.cfg.setAllow_contact_rewrite(accountAllowContactRewrite.isChecked()?1:0);
+		String forceContact = accountForceContact.getText();
+		if(!TextUtils.isEmpty(forceContact)) {
+			account.cfg.setForce_contact(getPjText(accountForceContact));
+		}
 		
-		/*
-		 * account.cfg.setForce_contact(getPjText(accountForceContact));
-		 */
 		if (!isEmpty(accountProxy)) {
 			account.cfg.setProxy_cnt(1);
 			pj_str_t[] proxies = account.cfg.getProxy();

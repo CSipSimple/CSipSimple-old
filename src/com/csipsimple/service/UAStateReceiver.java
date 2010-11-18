@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2010 Regis Montoya (aka r3gis - www.r3gis.fr)
+ * Copyright (C) 2010 Chris McCormick (aka mccormix - chris@mccormick.cx) 
  * This file is part of CSipSimple.
  *
  *  CSipSimple is free software: you can redistribute it and/or modify
@@ -114,7 +115,7 @@ public class UAStateReceiver extends Callback {
 	@Override
 	public void on_buddy_state(int buddy_id)
 	{
-		Log.e(THIS_FILE, "On buddy state");
+		Log.d(THIS_FILE, "On buddy state");
 		// buddy_info = pjsua.buddy_get_info(buddy_id, new pjsua_buddy_info());
 	}
 
@@ -128,7 +129,7 @@ public class UAStateReceiver extends Callback {
 				+ "TEXT: " + body.getPtr();
 		//msgHandler.sendMessage(msgHandler.obtainMessage(ON_PAGER, msg));
 		notificationManager.showNotificationForMessage(from.getPtr(), body.getPtr());
-		Log.e(THIS_FILE, msg);
+		Log.d(THIS_FILE, msg);
 	}
 
 	/*@Override
@@ -156,7 +157,7 @@ public class UAStateReceiver extends Callback {
 			code    -- SIP status code
 			reason  -- SIP reason phrase
 		*/
-		Log.e(THIS_FILE, "Message in on pager status");
+		Log.d(THIS_FILE, "Message in on pager status");
 	}
 	
 	/*@Override
@@ -266,6 +267,7 @@ public class UAStateReceiver extends Callback {
 	private static final int ON_PAGER = 5;
 
 
+
     
 	private class WorkerHandler extends Handler {
 
@@ -330,7 +332,8 @@ public class UAStateReceiver extends Callback {
 							
 						//	remoteContact = m.group(1);
 							String phoneNumber =  m.group(2);
-							if(!TextUtils.isEmpty(phoneNumber)) {
+							//Only log numbers that can be called by GSM too.
+							if(!TextUtils.isEmpty(phoneNumber) && Pattern.matches("[0-9#\\-+*]*", phoneNumber)) {
 								cv.put(Calls.NUMBER, phoneNumber);
 								// For log in call logs => don't add as new calls... we manage it ourselves.
 								cv.put(Calls.NEW, false);
@@ -364,14 +367,14 @@ public class UAStateReceiver extends Callback {
 				service.sendBroadcast(regStateChangedIntent);
 				break;
 			}
-				case ON_PAGER: {
-					//startSMSRing();
-					//String message = (String) msg.obj;
-					//service.showMessage(message);
-					Log.e(THIS_FILE, "yana you in CASE ON_PAGER");
-					//stopRing();
-					break;
-				}
+			case ON_PAGER: {
+				//startSMSRing();
+				//String message = (String) msg.obj;
+				//service.showMessage(message);
+				Log.e(THIS_FILE, "yana you in CASE ON_PAGER");
+				//stopRing();
+				break;
+			}
 			}
 		}
 	};
@@ -401,7 +404,7 @@ public class UAStateReceiver extends Callback {
 		//In account
 		Account acc = service.getAccountForPjsipId(accountId);
 		if(acc != null) {
-			Pattern p = Pattern.compile("^(?:\")?([^<\"]*)(?:\")?[ ]*(?:<)?sip(?:s)?:([^@]*@[^>]*)(?:>)?");
+			Pattern p = Pattern.compile("^(?:\")?([^<\"]*)(?:\")?[ ]*(?:<)?sip(?:s)?:([^@]*@[^>]*)(?:>)?", Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(remContact);
 			String number = remContact;
 			if (m.matches()) {

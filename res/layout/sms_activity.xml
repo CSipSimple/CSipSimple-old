@@ -17,8 +17,45 @@
     along with CSipSimple.  If not, see <http://www.gnu.org/licenses/>.
  -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/sms_toplevel" android:orientation="vertical"
+	android:id="@+id/sms_reader" android:orientation="vertical"
 	android:layout_width="fill_parent" android:layout_height="fill_parent">
-
-	<include android:id="@+id/sms_composer" layout="@layout/sms_composer" />
+	
+	<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/scrllvwNo1" android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		
+		<LinearLayout android:orientation="vertical" android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			
+			<TextView android:layout_height="wrap_content" android:layout_marginLeft="5px"
+				android:textStyle="bold" android:layout_width="wrap_content"
+				android:text="" android:id="@+id/sms_read_number" />
+			
+			<AbsoluteLayout android:layout_height="wrap_content"
+				android:layout_width="fill_parent" android:layout_marginLeft="5px">
+				
+				<TextView android:layout_height="wrap_content" android:layout_marginLeft="5px"
+					android:textStyle="bold" android:layout_width="wrap_content"
+					android:text="Message:" />
+			
+			</AbsoluteLayout>
+			
+			<TextView android:layout_height="wrap_content" android:layout_marginLeft="5px"
+				android:gravity="top" android:id="@+id/sms_read_message" android:lines="10"
+				android:layout_width="fill_parent" android:layout_marginRight="5px"/>
+			
+			<LinearLayout android:layout_width="wrap_content"
+				android:layout_marginTop="10px" android:layout_height="50px"
+				android:layout_gravity="right">
+				
+				<Button android:layout_gravity="right" android:textStyle="bold"
+				android:layout_height="50px" android:layout_width="100px"
+				android:id="@+id/reply_sms" android:text="Reply" />
+				
+				<Button android:layout_gravity="right" android:textStyle="bold"
+				android:layout_height="50px" android:layout_width="100px"
+				android:id="@+id/ok_sms" android:text="Ok" />
+			</LinearLayout>
+		</LinearLayout>
+	</ScrollView>
 </RelativeLayout>

@@ -16,6 +16,7 @@
 <string name="for_outgoings">For outgoing calls</string>
 <string name="perfs">Performances</string>
 <string name="transport">Transport</string>
+<string name="transport_desc">Force the use of a transport for this account</string>
 
 <string name="use_wifi">Use WiFi</string>
 <string name="use_wifi_in_desc">Use WiFi for incoming calls</string>
@@ -87,7 +88,8 @@
 <string name="verify_server_desc">Verify server\'s certificate</string>
 <string name="verify_client">Check client</string>
 <string name="verify_client_desc">Verify client\'s certificate</string>
-
+<string name="tls_method">TLS Method</string>
+<string name="tls_method_desc">Method for TLS transport</string>
 <string name="use_srtp">SRTP mode</string>
 <string name="use_srtp_desc">Mode for Secure RTP</string>
 
@@ -118,8 +120,8 @@
 <string name="echo_cancellation_tail">Echo cancellation tail</string>
 <string name="echo_cancellation_tail_desc">Tail length of echo cancellation</string>
 <string name="codecs_desc">Priority (0 is disabled)</string>
-<string name="sip_info_dtmf">DTMF SIP INFO</string>
-<string name="sip_info_dtmf_desc">Use SIP INFO to send DTMF</string>
+<string name="sip_dtmf">DTMF mode</string>
+<string name="sip_dtmf_desc">How to send DTMF</string>
 <string name="use_soft_volume">Use software volume</string>
 <string name="use_soft_volume_desc">Use software volume instead of android volume</string>
 
@@ -140,7 +142,7 @@
 <string name="dial_press_vibrate_desc">Haptic (vibrate) feedback when dialing</string>
 <string name="start_with_text_dialer">Text dialer</string>
 <string name="start_with_text_dialer_desc">Start with text dialer</string>
-<string name="use_alternate_unlocker">Don\'t use slide unlocker</string>
+<string name="use_alternate_unlocker">Don\'t use slide answer</string>
 <string name="use_alternate_unlocker_desc">Use buttons instead of slide to take incoming calls</string>
 <string name="keep_awake_incall">Keep awake while on call</string>
 <string name="keep_awake_incall_desc">Fixes if you get choppy sound when screen turn off while in WIFI call</string>

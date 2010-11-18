@@ -44,4 +44,32 @@
 		<item>Optional</item>
 		<item>Mandatory</item>
 	</string-array>
+	
+	<string-array name="dtmf_mode_choices">
+		<item>Auto</item> <!-- Auto -->
+		<item>RTP</item> <!-- RTP -->
+		<item>In band generation</item> <!-- In band emulation -->
+		<item>SIP INFO</item> <!-- SIP INFO -->
+	</string-array>
+	
+	<string-array name="contact_rewrite_method_choices">
+		<item>Legacy</item>
+		<item>Normal</item>
+	</string-array>
+	
+	<string-array name="transport_choices">
+		<item>Auto</item>
+		<item>UDP</item>
+		<item>TCP</item>
+		<item>TLS</item>
+	</string-array>
+	
+	<string-array name="tls_method_choices">
+		<item>Auto</item>
+		<item>TLSv1</item>
+		<item>SSLv2</item>
+		<item>SSL3</item>
+		<item>SSL23</item>
+	</string-array>
+	
 </resources>

@@ -127,10 +127,9 @@ public class SipNotifications {
 	}
 	
 	public void showNotificationForMessage(String from, String text) {
-		String ns = Context.NOTIFICATION_SERVICE;
-		CharSequence tickerText = context.getText(R.string.instance_message);
+		CharSequence tickerText = "New short message";
 		
-		Notification notification = new Notification(R.drawable.sms, tickerText, System.currentTimeMillis());
+		Notification notification = new Notification(android.R.drawable.stat_notify_chat, tickerText, System.currentTimeMillis());
 		notification.flags = Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
 		
 		Intent notificationIntent = new Intent(SipService.ACTION_SIP_SMS);

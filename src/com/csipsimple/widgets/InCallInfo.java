@@ -27,6 +27,7 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Chronometer;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -34,9 +35,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.csipsimple.R;
+import com.csipsimple.db.DBAdapter;
+import com.csipsimple.models.Account;
 import com.csipsimple.models.CallInfo;
 import com.csipsimple.models.CallerInfo;
 import com.csipsimple.models.CallerInfo.ParsedSipUriInfos;
+import com.csipsimple.service.SipService;
 import com.csipsimple.utils.ContactsAsyncHelper;
 import com.csipsimple.utils.Log;
 
@@ -55,13 +59,16 @@ public class InCallInfo extends FrameLayout {
 	
 	private Context context;
 	private TextView remotePhoneNumber;
+	private DBAdapter db;
+	private TextView label;
+	private ImageView secure;
 	
 	public InCallInfo(Context aContext, AttributeSet attrs) {
 		super(aContext, attrs);
 		context = aContext;
 		LayoutInflater inflater = LayoutInflater.from(context);
 		inflater.inflate(R.layout.in_call_info, this, true);
-		
+		db = new DBAdapter(context);
 	}
 	
 	
@@ -74,14 +81,18 @@ public class InCallInfo extends FrameLayout {
 		title = (TextView) findViewById(R.id.title);
 		elapsedTime = (Chronometer) findViewById(R.id.elapsedTime);
 		remotePhoneNumber = (TextView) findViewById(R.id.phoneNumber);
+		label = (TextView) findViewById(R.id.label);
+		secure = (ImageView) findViewById(R.id.secureIndicator);
 		
 		currentInfo = (LinearLayout) findViewById(R.id.currentCallInfo);
 		currentDetailedInfo = (LinearLayout) findViewById(R.id.currentCallDetailedInfo);
+		
 		
 		//Colors
 		colorConnected = Color.parseColor("#99CE3F");
 		colorEnd = Color.parseColor("#FF6072");
 		
+		secure.bringToFront();
 	}
 
 	public void setCallState(CallInfo aCallInfo) {
@@ -106,6 +117,7 @@ public class InCallInfo extends FrameLayout {
 		}
 		
 		final String aRemoteUri = callInfo.getRemoteContact();
+		
 		//If not already set with the same value, just ignore it
 		if(aRemoteUri != null && !aRemoteUri.equalsIgnoreCase(remoteUri)) {
 			remoteUri = aRemoteUri;
@@ -121,6 +133,11 @@ public class InCallInfo extends FrameLayout {
 			
 			remoteName.setText(remoteContact);
 			remotePhoneNumber.setText(uriInfos.userName);
+			
+			Account acc = SipService.getAccountForPjsipId(callInfo.getAccId(), db);
+			if(acc != null && acc.display_name != null) {
+				label.setText("SIP/"+acc.display_name+" :");
+			}
 			
 			Thread t = new Thread() {
 				public void run() {
@@ -145,6 +162,9 @@ public class InCallInfo extends FrameLayout {
 			elapsedTime.setTextColor(colorEnd);
 			return;
 		}
+		elapsedTime.setBase(callInfo.getConnectStart());
+		secure.setVisibility(callInfo.isSecure()?View.VISIBLE:View.GONE);
+		
 		pjsip_inv_state state = callInfo.getCallState();
 		switch (state) {
 		case PJSIP_INV_STATE_INCOMING:

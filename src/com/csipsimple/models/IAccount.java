@@ -27,8 +27,7 @@ public class IAccount implements Parcelable {
 	public int id = -1;
 	public String display_name = "";
 	public String wizard = "EXPERT";
-	public boolean use_tcp = false;
-	public boolean prevent_tcp = false;
+	public Integer transport = 0;
 	public boolean active = true;
 	public int priority = 100;
 	public String acc_id = null;
@@ -38,6 +37,8 @@ public class IAccount implements Parcelable {
 	public int ka_interval = -1;
 	public String pidf_tuple_id = null;
 	public String force_contact = null;
+	public boolean allow_contact_rewrite = true;
+	public int contact_rewrite_method = 2;
 	public String proxy = null;
 	public String realm = null;
 	public String username = null;
@@ -85,8 +86,7 @@ public class IAccount implements Parcelable {
 		dest.writeInt(id);
 		dest.writeString(display_name);
 		dest.writeString(wizard);
-		dest.writeInt(use_tcp?1:0);
-		dest.writeInt(prevent_tcp?1:0);
+		dest.writeInt(transport);
 		dest.writeInt(active?1:0);
 		dest.writeInt(priority);
 		dest.writeString(getWriteParcelableString(acc_id));
@@ -102,6 +102,8 @@ public class IAccount implements Parcelable {
 		dest.writeInt(datatype);
 		dest.writeString(getWriteParcelableString(data));
 		dest.writeInt(use_srtp);
+		dest.writeInt(allow_contact_rewrite?1:0);
+		dest.writeInt(contact_rewrite_method);
 	}
 
 	public void readFromParcel(Parcel in) {
@@ -109,8 +111,7 @@ public class IAccount implements Parcelable {
 		id = in.readInt();
 		display_name = in.readString();
 		wizard = in.readString();
-		use_tcp = (in.readInt()!=0)?true:false;
-		prevent_tcp = (in.readInt()!=0)?true:false;
+		transport = in.readInt();
 		active = (in.readInt()!=0)?true:false;
 		priority = in.readInt();
 		acc_id = getReadParcelableString(in.readString());
@@ -126,5 +127,7 @@ public class IAccount implements Parcelable {
 		datatype = in.readInt();
 		data = getReadParcelableString(in.readString());
 		use_srtp = in.readInt();
+		allow_contact_rewrite = (in.readInt()!=0);
+		contact_rewrite_method = in.readInt();
 	}
 }

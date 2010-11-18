@@ -24,11 +24,13 @@ import org.pjsip.pjsua.pj_str_t;
 import org.pjsip.pjsua.pjmedia_srtp_use;
 import org.pjsip.pjsua.pjsip_cred_info;
 import org.pjsip.pjsua.pjsua;
+import org.pjsip.pjsua.pjsuaConstants;
 import org.pjsip.pjsua.pjsua_acc_config;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.text.TextUtils;
 
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.service.SipService;
@@ -45,17 +47,21 @@ public class Account {
 	public static final String FIELD_PRIORITY = "priority";
 	public static final String FIELD_ACC_ID = "acc_id";
 	public static final String FIELD_REG_URI = "reg_uri";
-	public static final String FIELD_USE_TCP = "use_tcp";
-	public static final String FIELD_PREVENT_TCP = "prevent_tcp";
 	public static final String FIELD_MWI_ENABLED = "mwi_enabled";
 	public static final String FIELD_PUBLISH_ENABLED = "publish_enabled";
 	public static final String FIELD_REG_TIMEOUT = "reg_timeout";
 	public static final String FIELD_KA_INTERVAL = "ka_interval";
 	public static final String FIELD_PIDF_TUPLE_ID = "pidf_tuple_id";
 	public static final String FIELD_FORCE_CONTACT = "force_contact";
+	
+	public static final String FIELD_ALLOW_CONTACT_REWRITE = "allow_contact_rewrite";
+	public static final String FIELD_CONTACT_REWRITE_METHOD = "contact_rewrite_method";
+	
 	public static final String FIELD_CONTACT_PARAMS = "contact_params";
 	public static final String FIELD_CONTACT_URI_PARAMS = "contact_uri_params";
+	public static final String FIELD_TRANSPORT = "transport";
 	public static final String FIELD_USE_SRTP = "use_srtp";
+	
 	// For now, assume unique proxy
 	public static final String FIELD_PROXY = "proxy";
 	// For now, assume unique credential
@@ -72,10 +78,10 @@ public class Account {
 
 		// Here comes pjsua_acc_config fields
 		FIELD_PRIORITY, FIELD_ACC_ID, FIELD_REG_URI, 
-		FIELD_USE_TCP, FIELD_PREVENT_TCP,
 		FIELD_MWI_ENABLED, FIELD_PUBLISH_ENABLED, FIELD_REG_TIMEOUT, FIELD_KA_INTERVAL, FIELD_PIDF_TUPLE_ID,
-		FIELD_FORCE_CONTACT, FIELD_CONTACT_PARAMS, FIELD_CONTACT_URI_PARAMS,
-		FIELD_USE_SRTP,
+		FIELD_FORCE_CONTACT, FIELD_ALLOW_CONTACT_REWRITE, FIELD_CONTACT_REWRITE_METHOD, 
+		FIELD_CONTACT_PARAMS, FIELD_CONTACT_URI_PARAMS,
+		FIELD_TRANSPORT, FIELD_USE_SRTP,
 
 		// Proxy infos
 		FIELD_PROXY,
@@ -93,14 +99,28 @@ public class Account {
 	public boolean active;
 	public pjsua_acc_config cfg;
 	public Integer id;
-	public boolean use_tcp;
-	public boolean prevent_tcp;
+	/**
+	 * transport : transport to force for this account
+	 * 0 : automatic
+	 * 1 : udp
+	 * 2 : tcp
+	 * 3 : tls
+	 */
+	public Integer transport = 0;
+	
+	
+	
+	public final static int INVALID_ID = -1;
+	
+	public final static int TRANSPORT_AUTO = 0;
+	public final static int TRANSPORT_UDP = 1;
+	public final static int TRANSPORT_TCP = 2;
+	public final static int TRANSPORT_TLS = 3;
+	
 	
 	public Account() {
 		display_name = "";
 		wizard = "EXPERT";
-		use_tcp = false;
-		prevent_tcp = false;
 		active = true;
 		
 		
@@ -113,15 +133,14 @@ public class Account {
 	}
 	
 	public Account(IAccount parcelable) {
-		if(parcelable.id != -1) {
+		if(parcelable.id != INVALID_ID) {
 			id = parcelable.id;
 		}
 		display_name = parcelable.display_name;
 		wizard = parcelable.wizard;
-		use_tcp = parcelable.use_tcp;
-		prevent_tcp = parcelable.prevent_tcp;
+		transport = parcelable.transport;
 		active = parcelable.active;
-		
+		transport = parcelable.transport;
 
 		cfg = new pjsua_acc_config();
 		pjsua.acc_config_default(cfg);
@@ -148,6 +167,11 @@ public class Account {
 		if(parcelable.force_contact != null) {
 			cfg.setForce_contact(pjsua.pj_str_copy(parcelable.force_contact));
 		}
+		
+		cfg.setAllow_contact_rewrite(parcelable.allow_contact_rewrite ? pjsuaConstants.PJ_TRUE : pjsuaConstants.PJ_FALSE);
+		cfg.setContact_rewrite_method(parcelable.contact_rewrite_method);
+		
+		
 		if(parcelable.use_srtp != -1) {
 			cfg.setUse_srtp(pjmedia_srtp_use.swigToEnum(parcelable.use_srtp));
 			cfg.setSrtp_secure_signaling(0);
@@ -185,8 +209,7 @@ public class Account {
 		}
 		parcelable.display_name = display_name;
 		parcelable.wizard = wizard ;
-		parcelable.use_tcp = use_tcp;
-		parcelable.prevent_tcp = prevent_tcp;
+		parcelable.transport = transport;
 		parcelable.active = active ;
 		
 		parcelable.priority = cfg.getPriority();
@@ -197,6 +220,8 @@ public class Account {
 		parcelable.ka_interval = (int) cfg.getKa_interval();
 		parcelable.pidf_tuple_id = cfg.getPidf_tuple_id().getPtr();
 		parcelable.force_contact = cfg.getForce_contact().getPtr();
+		parcelable.allow_contact_rewrite = cfg.getAllow_contact_rewrite()==pjsuaConstants.PJ_TRUE;
+		parcelable.contact_rewrite_method = cfg.getContact_rewrite_method();
 		parcelable.proxy = (cfg.getProxy_cnt()>0)? cfg.getProxy()[0].getPtr():null;
 		parcelable.use_srtp = cfg.getUse_srtp().swigValue();
 		
@@ -233,18 +258,11 @@ public class Account {
 		if (tmp_s != null) {
 			wizard = tmp_s;
 		}
-		tmp_i = args.getAsInteger(FIELD_USE_TCP);
+		tmp_i = args.getAsInteger(FIELD_TRANSPORT);
 		if (tmp_i != null) {
-			use_tcp =(tmp_i != 0);
-		} else {
-			use_tcp = false;
+			transport = tmp_i;
 		}
-		tmp_i = args.getAsInteger(FIELD_PREVENT_TCP);
-		if (tmp_i != null) {
-			prevent_tcp =(tmp_i != 0);
-		} else {
-			prevent_tcp = false;
-		}
+		
 		tmp_i = args.getAsInteger(FIELD_ACTIVE);
 		if (tmp_i != null) {
 			active = (tmp_i != 0);
@@ -288,6 +306,15 @@ public class Account {
 		if (tmp_s != null) {
 			cfg.setForce_contact(pjsua.pj_str_copy(tmp_s));
 		}
+		tmp_i = args.getAsInteger(FIELD_ALLOW_CONTACT_REWRITE);
+		if (tmp_i != null) {
+			cfg.setAllow_contact_rewrite(tmp_i);
+		}
+		tmp_i = args.getAsInteger(FIELD_CONTACT_REWRITE_METHOD);
+		if (tmp_i != null) {
+			cfg.setContact_rewrite_method(tmp_i);
+		}
+		
 		tmp_i = args.getAsInteger(FIELD_USE_SRTP);
 		if (tmp_i != null) {
 			cfg.setUse_srtp(pjmedia_srtp_use.swigToEnum(tmp_i));
@@ -339,8 +366,7 @@ public class Account {
 		args.put(FIELD_ACTIVE, active?"1":"0");
 		args.put(FIELD_WIZARD, wizard);
 		args.put(FIELD_DISPLAY_NAME, display_name);
-		args.put(FIELD_USE_TCP, use_tcp);
-		args.put(FIELD_PREVENT_TCP, prevent_tcp);
+		args.put(FIELD_TRANSPORT, transport);
 		
 		args.put(FIELD_PRIORITY, cfg.getPriority());
 		args.put(FIELD_ACC_ID, cfg.getId().getPtr());
@@ -353,6 +379,8 @@ public class Account {
 		args.put(FIELD_KA_INTERVAL, cfg.getKa_interval());
 		args.put(FIELD_PIDF_TUPLE_ID, cfg.getPidf_tuple_id().getPtr());
 		args.put(FIELD_FORCE_CONTACT, cfg.getForce_contact().getPtr());
+		args.put(FIELD_ALLOW_CONTACT_REWRITE, cfg.getAllow_contact_rewrite());
+		args.put(FIELD_CONTACT_REWRITE_METHOD, cfg.getContact_rewrite_method());
 		args.put(FIELD_USE_SRTP, cfg.getUse_srtp().swigValue());
 
 		// CONTACT_PARAM and CONTACT_PARAM_URI not yet in JNI
@@ -485,24 +513,37 @@ public class Account {
 
 	public void applyExtraParams() {
 		
-		//TODO : should NOT be done here !!! 
-		
 		String reg_uri = "";
-		if (use_tcp) {
+		String argument = "";
+		switch (transport) {
+		case TRANSPORT_UDP:
+			argument = ";transport=udp";
+			break;
+		case TRANSPORT_TCP:
+			argument = ";transport=tcp";
+			break;
+		case TRANSPORT_TLS:
+			//TODO : differentiate ssl/tls ?
+			argument = ";transport=tls";
+			break;
+		default:
+			break;
+		}
+		
+		if (!TextUtils.isEmpty(argument)) {
 			reg_uri = cfg.getReg_uri().getPtr();
 			pj_str_t[] proxies = cfg.getProxy();
 			
-			String proposed_server = reg_uri + ";transport=tcp";
+			String proposed_server = reg_uri + argument;
 			cfg.setReg_uri(pjsua.pj_str_copy(proposed_server));
 			
 			if (cfg.getProxy_cnt() == 0 || proxies[0].getPtr() == null || proxies[0].getPtr() == "") {
 				proxies[0] = pjsua.pj_str_copy(proposed_server);
 				cfg.setProxy(proxies);
 			} else {
-				proxies[0] = pjsua.pj_str_copy(proxies[0].getPtr() + ";transport=tcp");
+				proxies[0] = pjsua.pj_str_copy(proxies[0].getPtr() + argument);
 				cfg.setProxy(proxies);
 			}
-			Log.w(THIS_FILE, "We are using TCP !!!");
 		}
 		
 	}
@@ -513,14 +554,14 @@ public class Account {
 			return null;
 		}
 		
-		Pattern p = Pattern.compile("^sip(s)?:([^@]*)$", Pattern.CASE_INSENSITIVE);
+		Pattern p = Pattern.compile("^(<)?sip(s)?:([^@]*)(>)?$", Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(regUri);
 		Log.v(THIS_FILE, "Try to find into "+regUri);
 		if(!m.matches()) {
 			Log.e(THIS_FILE, "Default domain can't be guessed from regUri of this account");
 			return null;
 		}
-		return m.group(2);
+		return m.group(3);
 	}
 
 	public int getIconResource() {
