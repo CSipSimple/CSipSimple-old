@@ -124,8 +124,14 @@
 <string name="sip_dtmf_desc">How to send DTMF</string>
 <string name="use_soft_volume">Use software volume</string>
 <string name="use_soft_volume_desc">Use software volume instead of android volume</string>
-
-
+<string name="use_routing_api">Use routing API</string>
+<string name="use_routing_api_desc">Try to enable that if audio is routing to speaker instead of earpiece</string>
+<string name="use_mode_api">Use Mode audio API</string>
+<string name="use_mode_api_desc">Try to enable that if audio is routing to speaker instead of earpiece</string>
+<string name="sip_audio_mode">Audio mode for SIP calls</string>
+<string name="sip_audio_mode_desc">Change only if developers advise you to</string>
+<string name="has_io_queue">IO Queue</string>
+<string name="has_io_queue_desc">Activate Queue for input/output</string>
 
 <!-- UI -->
 <string name="general_ui">General user interface</string>
@@ -156,6 +162,8 @@
 <string name="ringtone_desc">Default ringtone for SIP calls</string>
 <string name="prevent_screen_rotation">Prevent screen rotation</string>
 <string name="prevent_screen_rotation_desc">Avoid rotation of the screen and keep in portrait mode</string>
+<string name="gsm_integration_type">Integration type with GSM</string>
+<string name="gsm_integration_type_desc">How CSipSimple use GSM (or not)</string>
 
 <!-- Fast settings -->
 <string name="android_integration">Integrate with Android</string>

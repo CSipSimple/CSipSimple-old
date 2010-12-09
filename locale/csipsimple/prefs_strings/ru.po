@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  csipsimple\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2010-10-27 00:26+0200\n"
-"PO-Revision-Date: 2010-10-05 18:28+0000\n"
+"POT-Creation-Date: 2010-12-04 18:58+0100\n"
+"PO-Revision-Date: 2010-11-25 15:35+0000\n"
 "Last-Translator: Dmitry Kutsenko <Unknown>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
@@ -54,6 +54,7 @@ msgctxt "prefs_ui_desc"
 msgid "Tweak the user interface"
 msgstr "Настройки интерфейса"
 
+#. Network
 msgctxt "for_incomings"
 msgid "For incoming calls"
 msgstr "Входящие вызовы"
@@ -68,7 +69,11 @@ msgstr "Производительность"
 
 msgctxt "transport"
 msgid "Transport"
-msgstr "Передача данных"
+msgstr "Протокол"
+
+msgctxt "transport_desc"
+msgid "Force the use of a transport for this account"
+msgstr "Принудительно использовать протокол шифрования для данного аккаунта"
 
 msgctxt "use_wifi"
 msgid "Use WiFi"
@@ -140,7 +145,7 @@ msgstr "UDP"
 
 msgctxt "enable_udp_desc"
 msgid "Enable UDP transport"
-msgstr "Поддерживать UDP протокол"
+msgstr "Включить UDP протокол"
 
 msgctxt "network_udp_transport_port"
 msgid "UDP Port"
@@ -155,14 +160,6 @@ msgid "TCP Port"
 msgstr "TCP порт"
 
 msgctxt "network_tcp_transport_port_desc"
-msgid "Port number to bind locally"
-msgstr "Номер порта для локальной привязки"
-
-msgctxt "network_tls_transport_port"
-msgid "TLS Port"
-msgstr "Порт TLS"
-
-msgctxt "network_tls_transport_port_desc"
 msgid "Port number to bind locally"
 msgstr "Номер порта для локальной привязки"
 
@@ -199,18 +196,6 @@ msgstr "Указать DNS самостоятельно"
 msgctxt "override_nameserver_desc"
 msgid "Left blank to retrieve DNS from Android"
 msgstr "Оставьте пустым, чтобы получить адрес DNS-сервера из Андроид"
-
-msgctxt "secure_transport"
-msgid "Secure transport"
-msgstr "Безопасный протокол"
-
-msgctxt "use_srtp"
-msgid "SRTP mode"
-msgstr "SRTP режим"
-
-msgctxt "use_srtp_desc"
-msgid "Mode for Secure RTP"
-msgstr "Режим безопасного RTP"
 
 msgctxt "nat_traversal"
 msgid "NAT traversal"
@@ -256,13 +241,127 @@ msgctxt "stun_server_desc"
 msgid "STUN server (HOST:PORT)"
 msgstr "STUN сервер (HOST:PORT)"
 
+msgctxt "enable_qos"
+msgid "Enable QoS"
+msgstr "Включить QoS"
+
+msgctxt "enable_qos_desc"
+msgid "Enable QoS on packets"
+msgstr "Система поддержки качества и класса передачи данных"
+
+msgctxt "dscp_val"
+msgid "DSCP value"
+msgstr "Значение DSCP"
+
+msgctxt "dscp_val_desc"
+msgid "DSCP value for SIP traffic"
+msgstr "Значение DSCP для SIP трафика"
+
+#. Security
+msgctxt "tls"
+msgid "TLS"
+msgstr "TLS"
+
+msgctxt "secure_transport"
+msgid "Secure transport"
+msgstr "Безопасный протокол"
+
+msgctxt "secure_transport_desc"
+msgid "Security mechanism for SIP and RTP"
+msgstr "Механизм безопасности для SIP и RTP"
+
+msgctxt "secure_media"
+msgid "Secure media"
+msgstr "Безопасность мультимедиа"
+
+msgctxt "network_tls_transport_port"
+msgid "TLS Port"
+msgstr "Порт TLS"
+
+msgctxt "network_tls_transport_port_desc"
+msgid "Port number to bind locally"
+msgstr "Номер порта для локальной привязки"
+
+msgctxt "network_tls_server_name"
+msgid "TLS server name"
+msgstr "Имя TSL-сервера"
+
+msgctxt "network_tls_server_name_desc"
+msgid "For multi-hosting server (optional)"
+msgstr "Для мультихостинговых серверов (опционально)"
+
+msgctxt "ca_list_file"
+msgid "TLS CA file"
+msgstr "TLS CA файл"
+
+msgctxt "ca_list_file_desc"
+msgid "For example /sdcard/CSipSimple/myAuthority.ca"
+msgstr "Например: /sdcard/CSipSimple/myAuthority.ca"
+
+msgctxt "cert_file"
+msgid "TLS certificate file"
+msgstr "Файл сертификата TLS"
+
+msgctxt "cert_file_desc"
+msgid "For example /sdcard/CSipSimple/myCert.crt"
+msgstr "Например: /sdcard/CSipSimple/myCert.crt"
+
+msgctxt "privkey_file"
+msgid "TLS private key file"
+msgstr "Файл с личным ключом TLS"
+
+msgctxt "privkey_file_desc"
+msgid "For example /sdcard/CSipSimple/myKey.key"
+msgstr "Например: /sdcard/CSipSimple/myKey.key"
+
+msgctxt "tls_password"
+msgid "TLS password"
+msgstr "TLS пароль"
+
+msgctxt "tls_password_desc"
+msgid "TLS password to private key file"
+msgstr "TSL пароль к файлу с личным ключом"
+
+msgctxt "verify_server"
+msgid "Check server"
+msgstr "Проверить сервер"
+
+msgctxt "verify_server_desc"
+msgid "Verify server's certificate"
+msgstr "Определить сертификат сервера"
+
+msgctxt "verify_client"
+msgid "Check client"
+msgstr "Проверять клиента"
+
+msgctxt "verify_client_desc"
+msgid "Verify client's certificate"
+msgstr "Определять сертификат клиента"
+
+msgctxt "tls_method"
+msgid "TLS Method"
+msgstr "TLS метод"
+
+msgctxt "tls_method_desc"
+msgid "Method for TLS transport"
+msgstr "Метод TLS протокола"
+
+msgctxt "use_srtp"
+msgid "SRTP mode"
+msgstr "SRTP режим"
+
+msgctxt "use_srtp_desc"
+msgid "Mode for Secure RTP"
+msgstr "Режим безопасного RTP"
+
+#. Media
 msgctxt "audio_quality"
 msgid "Audio quality"
 msgstr "Качество аудио"
 
 msgctxt "audio_volume"
 msgid "Volume"
-msgstr ""
+msgstr "Громкость"
 
 msgctxt "codecs"
 msgid "Codecs"
@@ -282,7 +381,8 @@ msgstr "Активировать VAD"
 
 msgctxt "enable_vad_desc"
 msgid "Activate voice audio detection"
-msgstr "Определять голосовую активность в микрофоне для отделения от фонового шума"
+msgstr ""
+"Определять голосовую активность в микрофоне для отделения от фонового шума"
 
 msgctxt "snd_mic_level"
 msgid "Micro amplification"
@@ -321,7 +421,8 @@ msgid "Media quality"
 msgstr "Качество медиа"
 
 msgctxt "snd_media_quality_desc"
-msgid "Quality of the media stream (modify only if you know what you are doing)"
+msgid ""
+"Quality of the media stream (modify only if you know what you are doing)"
 msgstr "Качество медиа потока (только для опытных пользователей)"
 
 msgctxt "snd_clock_rate"
@@ -352,22 +453,57 @@ msgctxt "codecs_desc"
 msgid "Priority (0 is disabled)"
 msgstr "Приоритет (0 - отключено)"
 
-msgctxt "sip_info_dtmf"
-msgid "DTMF SIP INFO"
-msgstr "DTMF SIP INFO"
+msgctxt "sip_dtmf"
+msgid "DTMF mode"
+msgstr "DTMF режим"
 
-msgctxt "sip_info_dtmf_desc"
-msgid "Use SIP INFO to send DTMF"
-msgstr "Использовать SIP INFO для передачи DTMF-сигналов"
+msgctxt "sip_dtmf_desc"
+msgid "How to send DTMF"
+msgstr "Каким образом отправлять DTMF"
 
 msgctxt "use_soft_volume"
 msgid "Use software volume"
-msgstr ""
+msgstr "Программная регулировка"
 
 msgctxt "use_soft_volume_desc"
 msgid "Use software volume instead of android volume"
 msgstr ""
+"Регулировать громкость из программы CSipSimple и не использовать настройки "
+"Андроид"
 
+msgctxt "use_routing_api"
+msgid "Use routing API"
+msgstr ""
+
+msgctxt "use_routing_api_desc"
+msgid "Try to enable that if audio is routing to speaker instead of earpiece"
+msgstr ""
+
+msgctxt "use_mode_api"
+msgid "Use Mode audio API"
+msgstr ""
+
+msgctxt "use_mode_api_desc"
+msgid "Try to enable that if audio is routing to speaker instead of earpiece"
+msgstr ""
+
+msgctxt "sip_audio_mode"
+msgid "Audio mode for SIP calls"
+msgstr "Аудио режим для SIP вызовов"
+
+msgctxt "sip_audio_mode_desc"
+msgid "Change only if developers advise you to"
+msgstr ""
+
+msgctxt "has_io_queue"
+msgid "IO Queue"
+msgstr ""
+
+msgctxt "has_io_queue_desc"
+msgid "Activate Queue for input/output"
+msgstr ""
+
+#. UI
 msgctxt "general_ui"
 msgid "General user interface"
 msgstr "Общие настройки интерфейса"
@@ -386,8 +522,8 @@ msgstr "Номеронабиратель"
 
 msgctxt "integrate_with_native_dialer_desc"
 msgid ""
-"When dialing with native dialer you'll be asked if you want to use SIP or"
-" mobile"
+"When dialing with native dialer you'll be asked if you want to use SIP or "
+"mobile"
 msgstr "Предлагать использовать SIP или мобильную связь при вызовах"
 
 msgctxt "integrate_with_native_calllogs"
@@ -423,7 +559,7 @@ msgid "Start with text dialer"
 msgstr "Использовать изначально текстовый номеронабиратель"
 
 msgctxt "use_alternate_unlocker"
-msgid "Don't use slide unlocker"
+msgid "Don't use slide answer"
 msgstr "Не использовать слайдер"
 
 msgctxt "use_alternate_unlocker_desc"
@@ -452,7 +588,8 @@ msgstr "Отчёт об ошибках"
 
 msgctxt "log_level_desc"
 msgid "Log level for debug between 0 (none) and 5 (verbose)"
-msgstr "Уровень отчёта об ошибках для отладки программы (0 - нет, 5 - подробный)"
+msgstr ""
+"Уровень отчёта об ошибках для отладки программы (0 - нет, 5 - подробный)"
 
 msgctxt "integrate_with_native_music"
 msgid "Integrate with Music application"
@@ -461,8 +598,7 @@ msgstr "Интеграция с плеером"
 msgctxt "integrate_with_native_music_desc"
 msgid "Disable it if you use another music application than the official one"
 msgstr ""
-"Интегрировать с музыкальным плеером, если используется стандартное "
-"приложение"
+"Интегрировать с музыкальным плеером, если используется стандартное приложение"
 
 msgctxt "ringtone"
 msgid "Ringtone"
@@ -474,12 +610,14 @@ msgstr "Рингтон для SIP вызовов по умолчанию"
 
 msgctxt "prevent_screen_rotation"
 msgid "Prevent screen rotation"
-msgstr ""
+msgstr "Не поворачивать экран"
 
 msgctxt "prevent_screen_rotation_desc"
 msgid "Avoid rotation of the screen and keep in portrait mode"
 msgstr ""
+"Не поворачивать экран автоматически и всегда использовать портретный вид"
 
+#. Fast settings
 msgctxt "android_integration"
 msgid "Integrate with Android"
 msgstr "Интегрировать с Андроид"
@@ -530,7 +668,8 @@ msgstr "Передача VoIP пакетов должна быть разреш�
 
 msgctxt "codecs_availability_text"
 msgid "Only available if sip is currently registered"
-msgstr "Выбор кодеков возможен только, если SIP сейчас зарегистрирован в сети"
+msgstr ""
+"Выбор кодеков возможен только, если SIP сейчас зарегистрирован в сети"
 
 msgctxt "expert_preferences"
 msgid "Expert mode"

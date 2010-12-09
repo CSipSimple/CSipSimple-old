@@ -31,6 +31,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -41,13 +42,9 @@ import android.text.TextUtils;
 
 public class PreferencesWrapper {
 	
-	
-	public static final String TURN_SERVER = "turn_server";
-	public static final String ENABLE_TURN = "enable_turn";
-	public static final String ENABLE_ICE = "enable_ice";
+	//Media
 	public static final String SND_MEDIA_QUALITY = "snd_media_quality";
 	public static final String ECHO_CANCELLATION_TAIL = "echo_cancellation_tail";
-	public static final String USER_AGENT = "user_agent";
 	public static final String RTP_PORT = "network_rtp_port";
 	public static final String TCP_TRANSPORT_PORT = "network_tcp_transport_port";
 	public static final String UDP_TRANSPORT_PORT = "network_udp_transport_port";
@@ -57,15 +54,28 @@ public class PreferencesWrapper {
 	public static final String SND_CLOCK_RATE = "snd_clock_rate";
 	public static final String ECHO_CANCELLATION = "echo_cancellation";
 	public static final String ENABLE_VAD = "enable_vad";
-	public static final String KEEP_AWAKE_IN_CALL = "keep_awake_incall";
 	public static final String SND_MIC_LEVEL = "snd_mic_level";
 	public static final String SND_SPEAKER_LEVEL = "snd_speaker_level";
+	public static final String HAS_IO_QUEUE = "has_io_queue";
+	public static final String BITS_PER_SAMPLE = "bits_per_sample";
+	
+	
+	//UI
 	public static final String USE_SOFT_VOLUME = "use_soft_volume";
 	public static final String PREVENT_SCREEN_ROTATION = "prevent_screen_rotation";
 	public static final String LOG_LEVEL = "log_level";
 	public static final String DTMF_MODE = "dtmf_mode";
+	public static final String USE_ROUTING_API = "use_routing_api";
+	public static final String USE_MODE_API = "use_mode_api";
+	public static final String SIP_AUDIO_MODE = "sip_audio_mode";
+	public static final String ICON_IN_STATUS_BAR = "icon_in_status_bar";
+	public static final String KEEP_AWAKE_IN_CALL = "keep_awake_incall";
+	public static final String GSM_INTEGRATION_TYPE = "gsm_integration_type";
 	
 	// NETWORK
+	public static final String TURN_SERVER = "turn_server";
+	public static final String ENABLE_TURN = "enable_turn";
+	public static final String ENABLE_ICE = "enable_ice";
 	public static final String ENABLE_STUN = "enable_stun";
 	public static final String STUN_SERVER = "stun_server";
 	public static final String USE_IPV6 = "use_ipv6";
@@ -87,9 +97,11 @@ public class PreferencesWrapper {
 	public static final String TLS_VERIFY_SERVER = "tls_verify_server";
 //	public static final String TLS_VERIFY_CLIENT = "tls_verify_client";
 	public static final String TLS_METHOD = "tls_method";
-	
-	
 	public static final String USE_SRTP = "use_srtp";
+	
+	//Internal use
+	public static final String HAS_BEEN_QUIT = "has_been_quit";
+	public static final String USER_AGENT = "user_agent"; 
 	
 	
 	private static final String THIS_FILE = "PreferencesWrapper";
@@ -103,7 +115,7 @@ public class PreferencesWrapper {
 		private static final long serialVersionUID = 1L;
 	{
 		
-		put(USER_AGENT, "CSipSimple");
+		put(USER_AGENT, CustomDistribution.getUserAgent());
 		put(LOG_LEVEL, "1");
 		
 		put(USE_SRTP, "0");
@@ -115,6 +127,8 @@ public class PreferencesWrapper {
 		put(ECHO_CANCELLATION_TAIL, "200");
 		put(SND_MEDIA_QUALITY, "4");
 		put(SND_CLOCK_RATE, "16000");
+		put(BITS_PER_SAMPLE, "16");
+		put(SIP_AUDIO_MODE, "0");
 		
 		put(STUN_SERVER, "stun.counterpath.com");
 		put(TURN_SERVER, "");
@@ -127,6 +141,9 @@ public class PreferencesWrapper {
 		
 		put(DSCP_VAL, "26");
 		put(DTMF_MODE, "0");
+		
+
+		put(GSM_INTEGRATION_TYPE, "0");
 		
 		
 	}};
@@ -148,8 +165,12 @@ public class PreferencesWrapper {
 		put(ECHO_CANCELLATION, true);
 		put(ENABLE_VAD, false);
 		put(USE_SOFT_VOLUME, false);
+		put(USE_ROUTING_API, false);
+		put(USE_MODE_API, false);
+		put(HAS_IO_QUEUE, false);
 		
 		put(PREVENT_SCREEN_ROTATION, true);
+		put(ICON_IN_STATUS_BAR, true);
 		
 		put(TLS_VERIFY_SERVER, false);
 //		put(TLS_VERIFY_CLIENT, false);
@@ -182,6 +203,7 @@ public class PreferencesWrapper {
 		prefs = PreferenceManager.getDefaultSharedPreferences(aContext);
 		connectivityManager = (ConnectivityManager) aContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		resolver = aContext.getContentResolver();
+		
 	}
 	
 
@@ -473,6 +495,23 @@ public class PreferencesWrapper {
 		return Integer.parseInt(STRING_PREFS.get(TLS_METHOD));
 	}
 	
+	private boolean hasStunServer(String string) {
+		String[] servers = getPreferenceStringValue(PreferencesWrapper.STUN_SERVER).split(",");
+		for(String server : servers) {
+			if(server.equalsIgnoreCase(string)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public void addStunServer(String server) {
+		if(!hasStunServer(server)) {
+			setPreferenceStringValue(PreferencesWrapper.STUN_SERVER, getPreferenceStringValue(PreferencesWrapper.STUN_SERVER)+","+server);
+		}
+		
+	}
 
 	public String getUserAgent() {
 		return getPreferenceStringValue(USER_AGENT);
@@ -547,6 +586,30 @@ public class PreferencesWrapper {
 		return 4;
 	}
 	
+	public int getBitsPerSample() {
+		try {
+			return Integer.parseInt(getPreferenceStringValue(BITS_PER_SAMPLE));
+		}catch(NumberFormatException e) {
+			Log.e(THIS_FILE, "Bits per sample not well formated");
+		}
+		return Integer.parseInt(STRING_PREFS.get(BITS_PER_SAMPLE));
+	}
+	
+	/**
+	 * Get the audio codec quality setting
+	 * @return the audio quality
+	 */
+	public int getInCallMode() {
+		String mode = getPreferenceStringValue(SIP_AUDIO_MODE);
+		try {
+			return Integer.parseInt(mode);
+		}catch(NumberFormatException e) {
+			Log.e(THIS_FILE, "In call mode "+mode+" not well formated");
+		}
+		
+		return AudioManager.MODE_NORMAL;
+	}
+	
 	/**
 	 * Get current clock rate
 	 * @return clock rate in Hz
@@ -559,6 +622,15 @@ public class PreferencesWrapper {
 			Log.e(THIS_FILE, "Clock rate "+clockRate+" not well formated");
 		}
 		return 16000;
+	}
+	
+	
+	public boolean getUseRoutingApi() {
+		return getPreferenceBooleanValue(USE_ROUTING_API);
+	}
+	
+	public boolean getUseModeApi() {
+		return getPreferenceBooleanValue(USE_MODE_API);
 	}
 	
 	/**
@@ -665,7 +737,12 @@ public class PreferencesWrapper {
 		}
 		return 30;
 	}
-
+	
+	public int getHasIOQueue() {
+		return getPreferenceBooleanValue(HAS_IO_QUEUE)?1:0;
+	}
+	
+	
 
 	public boolean useSipInfoDtmf() {
 		return getPreferenceStringValue(DTMF_MODE).equalsIgnoreCase("3");
@@ -757,6 +834,27 @@ public class PreferencesWrapper {
 		}
 		return 1;
 	}
+	
+	
+	public final static int GSM_TYPE_AUTO = 0;
+	public final static int GSM_TYPE_FORCE = 1;
+	public final static int GSM_TYPE_PREVENT = 2;
+	
+	public int getGsmIntegrationType() {
+		int prefsValue = 1;
+		String gsmType = getPreferenceStringValue(GSM_INTEGRATION_TYPE);
+		try {
+			prefsValue = Integer.parseInt(gsmType);
+		}catch(NumberFormatException e) {
+			Log.e(THIS_FILE, "Gsm type "+gsmType+" not well formated");
+		}
+		return prefsValue;
+	}
+	
+	public boolean showIconInStatusBar() {
+		return getPreferenceBooleanValue(ICON_IN_STATUS_BAR);
+	}
+
 
 	public final static int HEADSET_ACTION_CLEAR_CALL = 0;
 	public final static int HEADSET_ACTION_MUTE = 1;
@@ -824,10 +922,21 @@ public class PreferencesWrapper {
 	public void toogleExpertMode() {
 		setPreferenceBooleanValue(IS_ADVANCED_USER, !isAdvancedUser());
 	}
+	
+	public boolean hasBeenQuit() {
+		return prefs.getBoolean(HAS_BEEN_QUIT, false);
+	}
 
+	public void setQuit(boolean quit) {
+		setPreferenceBooleanValue(HAS_BEEN_QUIT, quit);
+	}
 
 
 
 
 	
+
+
+
+
 }

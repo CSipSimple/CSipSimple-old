@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2010-10-27 00:26+0200\n"
+"POT-Creation-Date: 2010-12-04 18:58+0100\n"
 "PO-Revision-Date: 2010-10-04 21:18+0000\n"
 "Last-Translator: Gianluca <Unknown>\n"
 "Language-Team: it <LL@li.org>\n"
@@ -60,4 +60,64 @@ msgstr "Opzionale"
 msgctxt "use_srtp_choices:2"
 msgid "Mandatory"
 msgstr "Obbligatorio"
+
+msgctxt "dtmf_mode_choices:0"
+msgid "Auto"
+msgstr "Automatico"
+
+msgctxt "dtmf_mode_choices:1"
+msgid "RTP"
+msgstr "RTP"
+
+msgctxt "dtmf_mode_choices:2"
+msgid "In band generation"
+msgstr "In band generation"
+
+msgctxt "dtmf_mode_choices:3"
+msgid "SIP INFO"
+msgstr "SIP INFO"
+
+msgctxt "contact_rewrite_method_choices:0"
+msgid "Legacy"
+msgstr "Legacy"
+
+msgctxt "contact_rewrite_method_choices:1"
+msgid "Normal"
+msgstr "Normale"
+
+msgctxt "transport_choices:0"
+msgid "Auto"
+msgstr "Automatico"
+
+msgctxt "transport_choices:1"
+msgid "UDP"
+msgstr "UDP"
+
+msgctxt "transport_choices:2"
+msgid "TCP"
+msgstr "TCP"
+
+msgctxt "transport_choices:3"
+msgid "TLS"
+msgstr "TLS"
+
+msgctxt "tls_method_choices:0"
+msgid "Auto"
+msgstr "Automatico"
+
+msgctxt "tls_method_choices:1"
+msgid "TLSv1"
+msgstr "TLSv1"
+
+msgctxt "tls_method_choices:2"
+msgid "SSLv2"
+msgstr "SSLv2"
+
+msgctxt "tls_method_choices:3"
+msgid "SSL3"
+msgstr "SSL3"
+
+msgctxt "tls_method_choices:4"
+msgid "SSL23"
+msgstr "SSL23"
 

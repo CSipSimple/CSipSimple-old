@@ -17,9 +17,14 @@
  */
 package com.csipsimple.wizards;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,9 +34,12 @@ import android.widget.Button;
 import com.csipsimple.R;
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.models.Account;
+import com.csipsimple.service.ISipService;
+import com.csipsimple.service.SipService;
 import com.csipsimple.ui.AccountFilters;
 import com.csipsimple.ui.prefs.GenericPrefs;
 import com.csipsimple.utils.Log;
+import com.csipsimple.utils.PreferencesWrapper;
 import com.csipsimple.wizards.WizardUtils.WizardInfo;
 
 public class BasePrefsWizard extends GenericPrefs{
@@ -51,7 +59,6 @@ public class BasePrefsWizard extends GenericPrefs{
 	private String wizardId = "";
 	private WizardInfo wizardInfo = null;
 	private WizardIface wizard = null;
-	private boolean needRestart = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +67,7 @@ public class BasePrefsWizard extends GenericPrefs{
         accountId = intent.getIntExtra(Intent.EXTRA_UID, -1);
         
         //TODO : ensure this is not null...
-        setWizardId(intent.getStringExtra(Intent.EXTRA_REMOTE_INTENT_TOKEN));
+        setWizardId(intent.getStringExtra(Account.FIELD_WIZARD));
         
         
         database = new DBAdapter(this);
@@ -92,11 +99,43 @@ public class BasePrefsWizard extends GenericPrefs{
 	}
 	
 	@Override
+	protected void onStart() {
+		super.onStart();
+		bindService(new Intent(this, SipService.class), connection, Context.BIND_AUTO_CREATE);
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Log.d(THIS_FILE, "Unbind from service");
+		try {
+			unbindService(connection);
+		}catch(Exception e) {
+			//Just ignore that
+		}
+	}
+	
+	@Override
 	protected void onResume() {
 		super.onResume();
 		updateDescriptions();
-		saveButton.setEnabled(wizard.canSave());
+		updateValidation();
 	}
+	
+	
+	// Service connection
+	private ISipService service;
+	private ServiceConnection connection = new ServiceConnection(){
+		@Override
+		public void onServiceConnected(ComponentName arg0, IBinder arg1) {
+			service = ISipService.Stub.asInterface(arg1);
+			updateValidation();
+		}
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {
+			
+		}
+    };
 	
 	private boolean setWizardId(String wId) {
 		if(wizardId == null) {
@@ -143,15 +182,21 @@ public class BasePrefsWizard extends GenericPrefs{
 			String key) {
 
 		updateDescriptions();
-		saveButton.setEnabled(wizard.canSave());
+		updateValidation();
 	}
 	
+	private void updateValidation() {
+		if(service != null) {
+			saveButton.setEnabled(wizard.canSave());
+		}else {
+			saveButton.setEnabled(false);
+		}
+	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, SAVE_MENU, Menu.NONE, R.string.save).setIcon(
 				android.R.drawable.ic_menu_save);
-
 		if(account.id != null && !account.id.equals(-1)){
 			menu.add(Menu.NONE, TRANSFORM_MENU, Menu.NONE, R.string.choose_wizard).setIcon(
 					android.R.drawable.ic_menu_edit);
@@ -161,6 +206,13 @@ public class BasePrefsWizard extends GenericPrefs{
 					android.R.drawable.ic_menu_delete);
 		}
 		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.findItem(SAVE_MENU).setVisible(wizard.canSave());
+	
+		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	 @Override
@@ -214,7 +266,6 @@ public class BasePrefsWizard extends GenericPrefs{
 	private void saveAndFinish() {
 		saveAccount();
 		Intent intent = getIntent();
-		intent.putExtra("need_restart", needRestart);
 		setResult(RESULT_OK, intent);
 		finish();
 	}
@@ -224,21 +275,68 @@ public class BasePrefsWizard extends GenericPrefs{
 	}
 	
 	protected void saveAccount(String wizardId){
-		needRestart = false;
+		boolean needRestart = false;
+
+		PreferencesWrapper prefs = new PreferencesWrapper(this);
 		account = wizard.buildAccount(account);
 		account.wizard = wizardId;
 		database.open();
 		if(account.id == null || account.id.equals(-1)){
+			wizard.setDefaultParams(prefs);
 			account.id = (int) database.insertAccount(account);
-			if(wizard.needRestart()) {
-				needRestart = true;
-			}
+			needRestart = wizard.needRestart();
 		}else{
+			//TODO : should not be done there but if not we should add an option to re-apply default params
+			wizard.setDefaultParams(prefs);
 			database.updateAccount(account);
 		}
 		database.close();
 		
+		
+		if(needRestart) {
+			restartAsync();
+		}else {
+			reloadAccountsAsync();
+		}
 	}
+	
+	private void restartAsync() {
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				Log.d(THIS_FILE, "Would like to restart stack");
+				if (service != null) {
+					Log.d(THIS_FILE, "Will reload the stack !");
+					try {
+						service.sipStop();
+						service.sipStart();
+					} catch (RemoteException e) {
+						Log.e(THIS_FILE, "Impossible to reload stack", e);
+					}
+				}
+			};
+		};
+		t.start();
+	}
+	
+	private void reloadAccountsAsync() {
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				Log.d(THIS_FILE, "Would like to reload all accounts");
+				if (service != null) {
+					Log.d(THIS_FILE, "Will reload accounts !");
+					try {
+						service.reAddAllAccounts();
+					} catch (RemoteException e) {
+						Log.e(THIS_FILE, "Impossible to readd accoutns", e);
+					}
+				}
+			};
+		};
+		t.start();
+	}
+	
 
 	@Override
 	protected int getXmlPreferences() {

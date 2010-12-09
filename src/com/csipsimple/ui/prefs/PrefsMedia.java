@@ -39,6 +39,8 @@ public class PrefsMedia extends GenericPrefs {
 			hidePreference("audio_quality", "snd_media_quality");
 			hidePreference("audio_quality", "echo_cancellation_tail");
 			hidePreference("audio_quality", "snd_ptime");
+			hidePreference("audio_quality", "has_io_queue");
+			
 			
 			hidePreference("audio_volume", "snd_mic_level");
 			hidePreference("audio_volume", "snd_speaker_level");
@@ -49,6 +51,9 @@ public class PrefsMedia extends GenericPrefs {
 			hidePreference(null, "perfs");
 			
 			hidePreference("misc", "snd_auto_close_time");
+			hidePreference("misc", "use_routing_api");
+			hidePreference("misc", "use_mode_api");
+			hidePreference("misc", "sip_audio_mode");
 		}
 	}
 

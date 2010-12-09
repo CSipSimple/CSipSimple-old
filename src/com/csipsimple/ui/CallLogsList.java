@@ -21,6 +21,7 @@ package com.csipsimple.ui;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
@@ -34,6 +35,7 @@ import android.provider.CallLog.Calls;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,6 +60,8 @@ public class CallLogsList extends ListActivity {
 	private Drawable drawableOutgoing;
 	private Drawable drawableMissed;
 
+	private Activity contextToBindTo = this;
+
 	private static final String THIS_FILE = "Call log list";
 	
 	public static final int MENU_ITEM_DELETE_CALL = Menu.FIRST;
@@ -77,6 +81,11 @@ public class CallLogsList extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// Bind to the service
+		if (getParent() != null) {
+			contextToBindTo  = getParent();
+		}
+		
 		setContentView(R.layout.recent_calls);
 		registerForContextMenu(getListView());
 
@@ -274,36 +283,6 @@ public class CallLogsList extends ListActivity {
 			}else {
 				Log.e(THIS_FILE, "Failed to place call"+number);
 			}
-			/*
-			
-			if (!TextUtils.isEmpty(m.group(2))) {
-				String phoneNumber = m.group(2);
-				Pattern p = Pattern.compile("^[0-9]+$");
-				Matcher matchDigits = p.matcher(phoneNumber);
-				if (matchDigits.matches() || false) {
-					//Disabled since if we do that
-					try {
-						Intent intent = new Intent(Intent.ACTION_CALL);
-						intent.setData(Uri.fromParts("tel", phoneNumber, null));
-						startActivity(intent);
-						return;
-					} catch (Exception e) {
-						Log.e(THIS_FILE, "Failed to place call", e);
-					}
-				} else {
-					if (!TextUtils.isEmpty(m.group(2))) {
-						try {
-							Intent intent = new Intent(Intent.ACTION_CALL);
-							intent.setData(Uri.fromParts("sip" ,m.group(2) + "@" + m.group(3), null));
-							startActivity(intent);
-							return;
-						} catch (Exception e) {
-							Log.e(THIS_FILE, "Failed to place call", e);
-						}
-					}
-				}
-			}
-			*/
 		}
 	}
 	
@@ -312,5 +291,27 @@ public class CallLogsList extends ListActivity {
 		return sipUriSpliter.matcher(number);
 	}
 	
+	
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_BACK : {
+			onBackPressed();
+			//return true;
+			break;
+		}
+		}
+
+		return super.onKeyUp(keyCode, event);
+	}
+	
+	public void onBackPressed() {
+		if(contextToBindTo != null && contextToBindTo instanceof SipHome) {
+			((SipHome) contextToBindTo).onBackPressed();
+		}else {
+			finish();
+		}
+	}
 	
 }

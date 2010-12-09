@@ -34,6 +34,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.telephony.PhoneNumberUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -50,6 +51,7 @@ import com.csipsimple.service.OutgoingCall;
 import com.csipsimple.service.SipService;
 import com.csipsimple.utils.Compatibility;
 import com.csipsimple.utils.Log;
+import com.csipsimple.utils.PreferencesWrapper;
 
 public class OutgoingCallChooser extends ListActivity {
 	
@@ -99,21 +101,8 @@ public class OutgoingCallChooser extends ListActivity {
 
 			// Inform the list we provide context menus for items
 			//	getListView().setOnCreateContextMenuListener(this);
+			OutgoingCallChooser.this.bindAddedRows();
 
-			LinearLayout add_row = (LinearLayout) findViewById(R.id.use_pstn_row);
-			add_row.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Log.d(THIS_FILE, "Choosen : pstn");
-					placePstnCall();
-				}
-			});
-			
-			
-			if(!Compatibility.canMakeGSMCall(OutgoingCallChooser.this)) {
-				add_row.setVisibility(View.GONE);
-			}
-			
 		}
 		
 		@Override
@@ -169,6 +158,7 @@ public class OutgoingCallChooser extends ListActivity {
 		bindService(sipService, connection, Context.BIND_AUTO_CREATE);
 		registerReceiver(regStateReceiver, new IntentFilter(SipService.ACTION_SIP_REGISTRATION_CHANGED));
 		
+
 		
 	}
 	
@@ -182,6 +172,35 @@ public class OutgoingCallChooser extends ListActivity {
 		}
 	}
 
+	private void bindAddedRows() {
+		//GSM ROW
+		LinearLayout gsmRow = (LinearLayout) findViewById(R.id.use_pstn_row);
+		gsmRow.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.d(THIS_FILE, "Choosen : pstn");
+				placePstnCall();
+			}
+		});
+		if(Compatibility.canMakeGSMCall(this)) {
+			gsmRow.setVisibility(View.VISIBLE);
+		}
+		
+		//Skype row
+		LinearLayout skypeRow = (LinearLayout) findViewById(R.id.use_skype_row);
+		skypeRow.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.d(THIS_FILE, "Choosen : skype");
+				placeSkypeCall();
+			}
+		});
+		if(Compatibility.canMakeSkypeCall(this)) {
+	//		skypeRow.setVisibility(View.VISIBLE);
+		}
+	}
+	
+	
 	/**
 	 * Place a PSTN call
 	 */
@@ -191,15 +210,25 @@ public class OutgoingCallChooser extends ListActivity {
 		Intent intentMakePstnCall = new Intent(Intent.ACTION_CALL);
 		intentMakePstnCall.setData(Uri.fromParts("tel", phoneNumber, null));
 		startActivity(intentMakePstnCall);
-		if(service != null) {
-			try {
-				service.forceStopService();
-			} catch (RemoteException e) {
-				Log.e(THIS_FILE, "Unable to stop service", e);
-			}
-		}
+		finishServiceIfNeeded();
 		finish();
 	}
+	
+	/**
+	 * Place a Skype call
+	 */
+	private void placeSkypeCall() {
+		/* --- OK Skype doesn't support skype: intent.... well ... still something to find here
+		String phoneNumber = number;
+		OutgoingCall.ignoreNext = phoneNumber;
+		Intent intentMakeSkypeCall = new Intent(Intent.ACTION_CALL);
+		intentMakeSkypeCall.setData(Uri.fromParts("skype", phoneNumber, null));
+		startActivity(intentMakeSkypeCall);
+		finishServiceIfNeeded();
+		finish();
+		*/
+	}
+	
 	
 	private void checkNumberWithSipStarted() {
 		database.open();
@@ -351,7 +380,7 @@ public class OutgoingCallChooser extends ListActivity {
 						String phoneNumber = number;
 						String toCall = account.rewritePhoneNumber(phoneNumber, database);
 						
-						service.makeCall(Uri.fromParts("sip", toCall, null).toString(), account.id);
+						service.makeCall("sip:"+toCall, account.id);
 						finish();
 						return true;
 					} catch (RemoteException e) {
@@ -363,6 +392,35 @@ public class OutgoingCallChooser extends ListActivity {
 		return false;
 	}
 	
-
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		
+	    if (keyCode == KeyEvent.KEYCODE_BACK 
+	    		&& event.getRepeatCount() == 0
+	    		&& !Compatibility.isCompatible(5)) {
+	    	onBackPressed();
+	    	
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
+	
+	public void onBackPressed() {
+		finishServiceIfNeeded();
+		finish();
+	}
+	
+	private void finishServiceIfNeeded() {
+		if(service != null) {
+			PreferencesWrapper prefsWrapper = new PreferencesWrapper(this);
+		
+			if( ! prefsWrapper.isValidConnectionForIncoming()) {
+				try {
+					service.forceStopService();
+				} catch (RemoteException e) {
+					Log.e(THIS_FILE, "Unable to stop service", e);
+				}
+			}
+		}
+	}
 
 }

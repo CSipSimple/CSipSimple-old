@@ -22,12 +22,16 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.provider.Contacts;
 import android.text.TextUtils;
 
+@SuppressWarnings("deprecation")
 public class Compatibility {
 	
 	private static final String THIS_FILE = "Compat";
@@ -75,26 +79,44 @@ public class Compatibility {
 		return AudioManager.STREAM_VOICE_CALL;
 	}
 	
-	public static boolean useRoutingApi() {
+	public static boolean shouldUseRoutingApi() {
 		Log.d(THIS_FILE, "Current device " + android.os.Build.BRAND + " - " + android.os.Build.DEVICE);
+		
 		if (!isCompatible(4)) {
+			//If android 1.5, force routing api use 
 			return true;
 		} else {
 			return false;
 		}
 	}
+	
+	public static boolean shouldUseModeApi() {
+		Log.d(THIS_FILE, "Current device " + android.os.Build.BRAND + " - " + android.os.Build.DEVICE);
+		//ZTE blade
+		if(android.os.Build.DEVICE.equalsIgnoreCase("blade")) {
+			return true;
+		}
+		//Samsung GT-I5500
+		if(android.os.Build.DEVICE.equalsIgnoreCase("GT-I5500")) {
+			return true;
+		}
+		return false;
+	}
 
 
-	public static int getInCallMode() {
+	public static String guessInCallMode() {
 		if (android.os.Build.BRAND.equalsIgnoreCase("sdg")) {
-			return 3;
+			return "3";
+		}
+		if(android.os.Build.DEVICE.equalsIgnoreCase("blade")) {
+			return Integer.toString(AudioManager.MODE_IN_CALL);
 		}
 
-		if (/*(android.os.Build.BRAND.equalsIgnoreCase("htc") || android.os.Build.BRAND.equalsIgnoreCase("tmobile")) &&*/ !isCompatible(5)) {
-			return AudioManager.MODE_IN_CALL;
+		if (!isCompatible(5)) {
+			return Integer.toString(AudioManager.MODE_IN_CALL);
 		}
 
-		return AudioManager.MODE_NORMAL;
+		return Integer.toString(AudioManager.MODE_NORMAL);
 	}
 	
 	public static String getCpuAbi() {
@@ -117,16 +139,26 @@ public class Compatibility {
 			return true;
 		}
 		//All htc except....
-		if(android.os.Build.BRAND.equalsIgnoreCase("htc")) {
+		if(android.os.Build.BRAND.toLowerCase().startsWith("htc") 
+				|| android.os.Build.BRAND.toLowerCase().startsWith("telstra_wwe") /*First cause : bravo (desire)*/
+				|| android.os.Build.BRAND.toLowerCase().equalsIgnoreCase("verizon_wwe") /* First cause inc (incredible)*/ ) {
 			if(android.os.Build.DEVICE.equalsIgnoreCase("hero") /* HTC HERO */ 
-					|| android.os.Build.DEVICE.equalsIgnoreCase("magic") /* Magic */
+					|| android.os.Build.DEVICE.equalsIgnoreCase("magic") /* Magic Aka Dev G2 */
 					|| android.os.Build.DEVICE.equalsIgnoreCase("tatoo") /* Tatoo */
-					|| android.os.Build.DEVICE.equalsIgnoreCase("dream") /* Dream */
+					|| android.os.Build.DEVICE.equalsIgnoreCase("dream") /* Dream Aka Dev G1 */
+					|| android.os.Build.DEVICE.equalsIgnoreCase("legend") /* Legend */
+					
 					) {
 				return false;
 			}
 			return true;
 		}
+		//Dell streak
+		if(android.os.Build.BRAND.toLowerCase().equalsIgnoreCase("dell") &&
+				android.os.Build.DEVICE.equalsIgnoreCase("streak")) {
+			return true;
+		}
+		
 		return false;
 	}
 	
@@ -134,6 +166,7 @@ public class Compatibility {
 		//Disable iLBC if not armv7
 		preferencesWrapper.setCodecPriority("iLBC/8000/1", 
 				getCpuAbi().equalsIgnoreCase("armeabi-v7a") ? "189" : "0");
+		preferencesWrapper.setPreferenceStringValue(PreferencesWrapper.SND_MEDIA_QUALITY, getCpuAbi().equalsIgnoreCase("armeabi-v7a") ? "4" : "3");
 		
 		//Values get from wince pjsip app
 		preferencesWrapper.setCodecPriority("PCMU/8000/1", "240");
@@ -143,6 +176,7 @@ public class Compatibility {
 		preferencesWrapper.setCodecPriority("speex/32000/1", "0");
 		preferencesWrapper.setCodecPriority("GSM/8000/1", "100");
 		preferencesWrapper.setCodecPriority("G722/16000/1", "0");
+		preferencesWrapper.setCodecPriority("G729/8000/1", "0");
 
 		preferencesWrapper.setPreferenceStringValue(PreferencesWrapper.SND_AUTO_CLOSE_TIME, isCompatible(4) ? "1" : "5");
 		preferencesWrapper.setPreferenceStringValue(PreferencesWrapper.SND_CLOCK_RATE, isCompatible(4) ? "16000" : "8000");
@@ -157,6 +191,8 @@ public class Compatibility {
 			preferencesWrapper.setPreferenceBooleanValue(PreferencesWrapper.USE_SOFT_VOLUME, true);
 		}
 		
+		//Use routing API?
+		preferencesWrapper.setPreferenceBooleanValue(PreferencesWrapper.USE_ROUTING_API, shouldUseRoutingApi());
 	}
 
 	public static boolean useFlipAnimation() {
@@ -174,25 +210,59 @@ public class Compatibility {
 	}
 	
 	private static Boolean canMakeGSMCall = null;
+	private static Boolean canMakeSkypeCall = null;
 	
 	public static boolean canMakeGSMCall(Context context) {
-		if (canMakeGSMCall == null) {
-			Intent intentMakePstnCall = new Intent(Intent.ACTION_CALL);
-			intentMakePstnCall.setData(Uri.fromParts("tel", "1", null));
-			canMakeGSMCall = canResolveIntent(context, intentMakePstnCall);
+		PreferencesWrapper prefs = new PreferencesWrapper(context);
+		if(prefs.getGsmIntegrationType() == PreferencesWrapper.GSM_TYPE_AUTO) {
+			if (canMakeGSMCall == null) {
+				Intent intentMakePstnCall = new Intent(Intent.ACTION_CALL);
+				intentMakePstnCall.setData(Uri.fromParts("tel", "12345", null));
+				canMakeGSMCall = canResolveIntent(context, intentMakePstnCall);
+			}
+			return canMakeGSMCall;
 		}
-		return canMakeGSMCall;
+		if(prefs.getGsmIntegrationType() == PreferencesWrapper.GSM_TYPE_PREVENT) {
+			return false;
+		}
+		return true;
 	}
+	
+	public static boolean canMakeSkypeCall(Context context) {
+		if (canMakeSkypeCall == null) {
+			try {
+			    PackageInfo skype = context.getPackageManager().getPackageInfo("com.skype.raider", 0);
+			    if(skype != null) {
+			    	canMakeSkypeCall = true;
+			    }
+			} catch (NameNotFoundException e) {
+				canMakeSkypeCall = false;
+			}
+		}
+		return canMakeSkypeCall;
+	}
+	
+
+	public static Intent getContactPhoneIntent() {
+    	Intent intent = new Intent(Intent.ACTION_PICK);
+    	/*
+		intent.setAction(Intent.ACTION_GET_CONTENT);
+		intent.setType(Contacts.Phones.CONTENT_ITEM_TYPE);
+		*/
+    	if (!isCompatible(5)) {
+    		intent.setData(Contacts.People.CONTENT_URI);
+    	}else {
+    		intent.setData(Uri.parse("content://com.android.contacts/contacts"));
+    	}
+    	
+
+		return intent;
+		
+    }
 
 
 	public static void updateVersion(PreferencesWrapper prefWrapper, int lastSeenVersion, int runningVersion) {
 		if (lastSeenVersion < 14) {
-			//HTC PSP mode hack
-			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.KEEP_AWAKE_IN_CALL, 
-					(android.os.Build.DEVICE.equalsIgnoreCase("passion") /*NEXUS ONE*/
-							|| android.os.Build.DEVICE.equalsIgnoreCase("bravo") /*HTC DESIRE*/
-							|| android.os.Build.DEVICE.equalsIgnoreCase("supersonic") /*HTC EVO*/
-					) ? true : false);
 			
 			// Galaxy S default settings
 			if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000")) {
@@ -208,16 +278,30 @@ public class Compatibility {
 			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.ENABLE_STUN, false);
 		}
 		//Now we use svn revisions
-		if (lastSeenVersion < 338) {
+		if (lastSeenVersion < 369) {
 			// Galaxy S default settings
 			if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000")) {
 				prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.USE_SOFT_VOLUME, true);
 			}
+			
+		}
+		
+		if(lastSeenVersion < 385) {
 			if(needPspWorkaround(prefWrapper)) {
 				prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.KEEP_AWAKE_IN_CALL, true);
 			}
+			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.USE_ROUTING_API, shouldUseRoutingApi());
+			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.USE_MODE_API, shouldUseModeApi());
+			prefWrapper.setPreferenceStringValue(PreferencesWrapper.SIP_AUDIO_MODE, guessInCallMode());
 		}
 		
+		if(lastSeenVersion < 394) {
+			//HTC PSP mode hack
+			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
+		}
+		if(lastSeenVersion < 400) {
+			prefWrapper.setCodecPriority("G729/8000/1", "0");
+		}
 		 
 	}
 }

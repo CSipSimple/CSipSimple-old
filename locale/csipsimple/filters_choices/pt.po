@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  csipsimple\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2010-10-27 00:26+0200\n"
+"POT-Creation-Date: 2010-12-04 18:58+0100\n"
 "PO-Revision-Date: 2010-10-10 18:09+0000\n"
 "Last-Translator: Daniel Borene <Unknown>\n"
 "Language-Team: Portuguese <pt@li.org>\n"
@@ -39,25 +39,29 @@ msgstr "Atendimento Automatico"
 
 msgctxt "filters_type:0"
 msgid "Starts with"
-msgstr "Começa com"
+msgstr ""
 
 msgctxt "filters_type:1"
 msgid "Ends with"
-msgstr "Termina com"
+msgstr ""
 
 msgctxt "filters_type:2"
-msgid "Has exactly N digit"
-msgstr "Tem exatamente N digito"
+msgid "All"
+msgstr ""
 
 msgctxt "filters_type:3"
-msgid "Has more than N digit"
-msgstr "Tem mais que N digito"
+msgid "Has exactly N digit"
+msgstr ""
 
 msgctxt "filters_type:4"
-msgid "Is exactly"
-msgstr "É exatamente"
+msgid "Has more than N digit"
+msgstr ""
 
 msgctxt "filters_type:5"
+msgid "Is exactly"
+msgstr ""
+
+msgctxt "filters_type:6"
 msgid "Custom RegExp"
 msgstr ""
 
@@ -71,7 +75,7 @@ msgstr "Fufixo com"
 
 msgctxt "replace_type:2"
 msgid "Replace match by"
-msgstr ""
+msgstr "Substituir correspondência por"
 
 msgctxt "replace_type:3"
 msgid "Replace all by"
@@ -79,5 +83,9 @@ msgstr "Regravar todos por"
 
 msgctxt "replace_type:4"
 msgid "Custom RegExp"
-msgstr ""
+msgstr "RegExp personalizada"
+
+#~ msgctxt "filters_type:5"
+#~ msgid "Custom RegExp"
+#~ msgstr "RegExp personalizada"
 

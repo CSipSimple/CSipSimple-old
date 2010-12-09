@@ -79,8 +79,10 @@ import com.csipsimple.models.AccountInfo;
 import com.csipsimple.models.CallInfo;
 import com.csipsimple.models.CallInfo.UnavailableException;
 import com.csipsimple.models.IAccount;
+import com.csipsimple.models.SipMessage;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
+import com.csipsimple.utils.SipUri;
 
 public class SipService extends Service {
 
@@ -96,14 +98,20 @@ public class SipService extends Service {
 	// Static constants
 	// -------
 	// ACTIONS
-	public static final String ACTION_SIP_CALL_CHANGED = "com.csipsimple.service.CALL_CHANGED";
-	public static final String ACTION_SIP_REGISTRATION_CHANGED = "com.csipsimple.service.REGISTRATION_CHANGED";
-	public static final String ACTION_SIP_MEDIA_CHANGED = "com.csipsimple.service.MEDIA_CHANGED";
 	public static final String ACTION_SIP_CALL_UI = "com.csipsimple.phone.action.INCALL";
 	public static final String ACTION_SIP_DIALER = "com.csipsimple.phone.action.DIALER";
 	public static final String ACTION_SIP_CALLLOG = "com.csipsimple.phone.action.CALLLOG";
+	public static final String ACTION_SIP_MESSAGES = "com.csipsimple.phone.action.MESSAGES";
+	
+	// SERVICE BROADCASTS
+	public static final String ACTION_SIP_CALL_CHANGED = "com.csipsimple.service.CALL_CHANGED";
+	public static final String ACTION_SIP_REGISTRATION_CHANGED = "com.csipsimple.service.REGISTRATION_CHANGED";
+	public static final String ACTION_SIP_MEDIA_CHANGED = "com.csipsimple.service.MEDIA_CHANGED";
 	public static final String ACTION_SIP_ACCOUNT_ACTIVE_CHANGED = "com.csipsimple.service.ACCOUNT_ACTIVE_CHANGED";
-	public static final String ACTION_SIP_SMS = "com.csipsimple.phone.action.SMS_RECEIVED";
+	public static final String ACTION_SIP_MESSAGE_RECEIVED = "com.csipsimple.service.MESSAGE_RECEIVED";
+	//TODO : message sent?
+	public static final String ACTION_SIP_MESSAGE_STATUS = "com.csipsimple.service.MESSAGE_STATUS";
+	
 	
 	// EXTRAS
 	public static final String EXTRA_CALL_INFO = "call_info";
@@ -145,8 +153,8 @@ public class SipService extends Service {
 		 * Send SMS using
 		 */
 		@Override
-		public void sendSMS(String msg,String to,int accountId)throws RemoteException { 
-			SipService.this.sendSMS(msg, to, accountId);
+		public void sendMessage(String msg,String to,int accountId)throws RemoteException { 
+			SipService.this.sendMessage(msg, to, accountId);
 		}
 	
 		/**
@@ -314,12 +322,6 @@ public class SipService extends Service {
 				}
 			}
 			return null;
-		}
-
-		@Override
-		public void onPager(String callInfo, String text) throws RemoteException
-		{
-			Log.e(THIS_FILE, "Pager:" + callInfo + " " + text);
 		}
 
 		@Override
@@ -604,22 +606,31 @@ public class SipService extends Service {
 		public void onCallStateChanged(int state, String incomingNumber) {
 			Log.d(THIS_FILE, "Call state has changed !" + state + " : " + incomingNumber);
 
-			// Avoid ringing while not idle
+			// Avoid ringing if new GSM state is not idle
 			if (state != TelephonyManager.CALL_STATE_IDLE && mediaManager != null) {
 				mediaManager.stopRing();
 			}
 
+			// If new call state is not idle
 			if (state != TelephonyManager.CALL_STATE_IDLE && userAgentReceiver != null) {
 				CallInfo currentActiveCall = userAgentReceiver.getActiveCallInProgress();
-				if (currentActiveCall != null && state != TelephonyManager.CALL_STATE_RINGING) {
-					hasBeenHoldByGSM = currentActiveCall.getCallId();
-					SipService.this.callHold(hasBeenHoldByGSM);
-					pjsua.set_no_snd_dev();
-
-					AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
-					am.setMode(AudioManager.MODE_IN_CALL);
+				
+				if (currentActiveCall != null) {
+				
+					if(state != TelephonyManager.CALL_STATE_RINGING) {
+						//New state is not ringing nor idle... so off hook, hold current sip call
+						hasBeenHoldByGSM = currentActiveCall.getCallId();
+						SipService.this.callHold(hasBeenHoldByGSM);
+						pjsua.set_no_snd_dev();
+	
+						AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+						am.setMode(AudioManager.MODE_IN_CALL);
+					}else {
+						//We have a ringing incoming call.
+					}
 				}
 			} else {
+				//GSM is now back to an IDLE state, resume previously stopped SIP calls 
 				if (hasBeenHoldByGSM != null && created) {
 					pjsua.set_snd_dev(0, 0);
 					SipService.this.callReinvite(hasBeenHoldByGSM, true);
@@ -781,7 +792,7 @@ public class SipService extends Service {
 	// Start the sip stack according to current settings
 	synchronized void sipStart() {
 		Log.setLogLevel(prefsWrapper.getLogLevel());
-
+		
 		if (!hasSipStack) {
 			Log.e(THIS_FILE, "We have no sip stack, we can't start");
 			return;
@@ -820,7 +831,10 @@ public class SipService extends Service {
 					if (mediaManager == null) {
 						mediaManager = new MediaManager(SipService.this);
 					}
+					mediaManager.startService();
+					
 					pjsua.setCallbackObject(userAgentReceiver);
+					
 
 					Log.d(THIS_FILE, "Attach is done to callback");
 
@@ -845,15 +859,22 @@ public class SipService extends Service {
 					// STUN
 					int isStunEnabled = prefsWrapper.getStunEnabled();
 					if (isStunEnabled == 1) {
-						cfg.setStun_srv_cnt(1);
+						String[] servers = prefsWrapper.getStunServer().split(",");
+						cfg.setStun_srv_cnt(servers.length);
 						pj_str_t[] stunServers = cfg.getStun_srv();
-						stunServers[0] = pjsua.pj_str_copy(prefsWrapper.getStunServer());
+						int i = 0;
+						for(String server : servers) {
+							Log.d(THIS_FILE, "add server "+server.trim() );
+							stunServers[i] = pjsua.pj_str_copy(server.trim());
+							i++;
+						}
 						cfg.setStun_srv(stunServers);
 					}
 
 					// IGNORE NOTIFY -- TODO : for now that's something we want
 					// since it pollute battery life
-					cfg.setEnable_unsolicited_mwi(pjsuaConstants.PJ_FALSE);
+			//		cfg.setEnable_unsolicited_mwi(pjsuaConstants.PJ_FALSE);
+					
 
 					// LOGGING CONFIG
 					pjsua.logging_config_default(logCfg);
@@ -869,12 +890,12 @@ public class SipService extends Service {
 					mediaCfg.setSnd_auto_close_time(prefsWrapper.getAutoCloseTime());
 					// Echo cancellation
 					mediaCfg.setEc_tail_len(prefsWrapper.getEchoCancellationTail());
-					mediaCfg.setEc_options(2); // ECHO SIMPLE
+					mediaCfg.setEc_options(2); // ECHO SIMPLE : TODO -> setting that
 					mediaCfg.setNo_vad(prefsWrapper.getNoVad());
 					mediaCfg.setQuality(prefsWrapper.getMediaQuality());
 					mediaCfg.setClock_rate(prefsWrapper.getClockRate());
 					mediaCfg.setAudio_frame_ptime(prefsWrapper.getAudioFramePtime());
-					mediaCfg.setHas_ioqueue(1);
+					mediaCfg.setHas_ioqueue(prefsWrapper.getHasIOQueue());
 
 					// ICE
 					mediaCfg.setEnable_ice(prefsWrapper.getIceEnabled());
@@ -888,12 +909,15 @@ public class SipService extends Service {
 					// INITIALIZE
 					status = pjsua.csipsimple_init(cfg, logCfg, mediaCfg);
 					if (status != pjsuaConstants.PJ_SUCCESS) {
-						Log.e(THIS_FILE, "Fail to init pjsua with failure code " + status);
+						String msg = "Fail to init pjsua "+ pjsua.get_error_message(status).getPtr();
+						Log.e(THIS_FILE, msg);
+						ToastHandler.sendMessage(ToastHandler.obtainMessage(0, msg));
 						pjsua.csipsimple_destroy();
 						created = false;
 						creating = false;
 						return;
 					}
+					
 				}
 
 				// Add transports
@@ -911,9 +935,10 @@ public class SipService extends Service {
 							created = false;
 							return;
 						}
-//						 int[] p_acc_id = new int[1];
-//						 pjsua.acc_add_local(udpTranportId, pjsua.PJ_FALSE,
-//						 p_acc_id);
+			/*			 int[] p_acc_id = new int[1];
+						 pjsua.acc_add_local(udpTranportId, pjsua.PJ_FALSE,
+						 p_acc_id);
+			*/
 						// Log.d(THIS_FILE, "Udp account "+p_acc_id);
 
 					}
@@ -930,9 +955,11 @@ public class SipService extends Service {
 							created = false;
 							return;
 						}
-						// int[] p_acc_id = new int[1];
-						// pjsua.acc_add_local(tcpTranportId, pjsua.PJ_FALSE,
-						// p_acc_id);
+			/*
+						int[] p_acc_id = new int[1];
+						pjsua.acc_add_local(tcpTranportId, pjsua.PJ_FALSE,
+						p_acc_id);
+			*/
 
 					}
 
@@ -967,7 +994,10 @@ public class SipService extends Service {
 							status = pjsua.media_transports_create(cfg);
 						}
 						if (status != pjsuaConstants.PJ_SUCCESS) {
-							Log.e(THIS_FILE, "Fail to add media transport with failure code " + status);
+							String msg = "Fail to add media transport "+ pjsua.get_error_message(status).getPtr();
+							Log.e(THIS_FILE, msg);
+							
+							ToastHandler.sendMessage(ToastHandler.obtainMessage(0, msg));
 							pjsua.csipsimple_destroy();
 							creating = false;
 							created = false;
@@ -980,7 +1010,9 @@ public class SipService extends Service {
 				status = pjsua.start();
 
 				if (status != pjsua.PJ_SUCCESS) {
-					Log.e(THIS_FILE, "Fail to start pjsip " + status);
+					String msg = "Fail to start pjsip  "+ pjsua.get_error_message(status).getPtr();
+					Log.e(THIS_FILE, msg);
+					ToastHandler.sendMessage(ToastHandler.obtainMessage(0, msg));
 					pjsua.csipsimple_destroy();
 					creating = false;
 					created = false;
@@ -1034,7 +1066,6 @@ public class SipService extends Service {
 
 				if (mediaManager != null) {
 					mediaManager.stopService();
-					mediaManager = null;
 				}
 			}
 		}
@@ -1102,7 +1133,13 @@ public class SipService extends Service {
 
 		status = pjsua.transport_create(type, cfg, tId);
 		if (status != pjsuaConstants.PJ_SUCCESS) {
-			Log.e(THIS_FILE, "Fail to add transport with failure code " + status);
+
+			String msg = "Fail to create transport "+ pjsua.get_error_message(status).getPtr();
+			Log.e(THIS_FILE, msg);
+			if(status == 120098) { /* Already binded */
+				msg = getString(R.string.another_application_use_sip_port);
+			}
+			ToastHandler.sendMessage(ToastHandler.obtainMessage(0, msg));
 			return null;
 		}
 		return tId[0];
@@ -1163,7 +1200,7 @@ public class SipService extends Service {
 				break;
 			case Account.TRANSPORT_TCP:
 				if(tcpTranportId != null) {
-				//	account.cfg.setTransport_id(tcpTranportId);
+			//		account.cfg.setTransport_id(tcpTranportId);
 				}
 				break;
 			case Account.TRANSPORT_TLS:
@@ -1183,6 +1220,9 @@ public class SipService extends Service {
 				}
 				if (status == pjsuaConstants.PJ_SUCCESS) {
 					status = pjsua.acc_set_registration(currentAccountId, 1);
+					if(status == pjsuaConstants.PJ_SUCCESS) {
+						pjsua.acc_set_online_status(currentAccountId, 1);
+					}
 				}
 			} else {
 				int[] accId = new int[1];
@@ -1192,11 +1232,13 @@ public class SipService extends Service {
 					status = pjsua.acc_add_local(udpTranportId, pjsuaConstants.PJ_FALSE, accId);
 				}else {
 					status = pjsua.acc_add(account.cfg, pjsuaConstants.PJ_FALSE, accId);
+					
 				}
 				synchronized (activeAccountsLock) {
 					accountsAddingStatus.put(account.id, status);
 					if (status == pjsuaConstants.PJ_SUCCESS) {
 						activeAccounts.put(account.id, accId[0]);
+						pjsua.acc_set_online_status(accId[0], 1);
 					}
 				}
 			}
@@ -1221,6 +1263,7 @@ public class SipService extends Service {
 				}
 
 				if (renew == 1) {
+					pjsua.acc_set_online_status(cAccId, 1);
 					status = pjsua.acc_set_registration(cAccId, renew);
 				} else {
 					// if(status == pjsuaConstants.PJ_SUCCESS && renew == 0) {
@@ -1377,7 +1420,7 @@ public class SipService extends Service {
 		Collections.sort(activeAccountsInfos, accountInfoComparator);
 
 		// Handle status bar notification
-		if (activeAccountsInfos.size() > 0) {
+		if (activeAccountsInfos.size() > 0 && prefsWrapper.showIconInStatusBar()) {
 			notificationManager.notifyRegisteredAccounts(activeAccountsInfos);
 			acquireResources();
 		} else {
@@ -1619,12 +1662,13 @@ public class SipService extends Service {
 	public static File getStackLibFile(Context context) {
 		// Standard case
 		File standardOut = getGuessedStackLibFile(context);
-		
+		//If production .so file exists and app is not in debuggable mode 
+		//if debuggable we have to get the file from bundle dir
 		if (standardOut.exists() && !isDebuggableApp(context)) {
 			return standardOut;
 		}
 
-		// One target build
+		// Have a look if it's not a dev build
 		// TODO : find a clean way to access the libPath for one shot builds
 		File targetForBuild = new File(context.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
 		Log.d(THIS_FILE, "Search for " + targetForBuild.getAbsolutePath());
@@ -1641,7 +1685,7 @@ public class SipService extends Service {
 		
 	}
 
-	public static boolean isBundleStack(Context ctx) {
+	public static boolean hasBundleStack(Context ctx) {
 		File targetForBuild = new File(ctx.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
 		Log.d(THIS_FILE, "Search for " + targetForBuild.getAbsolutePath());
 		return targetForBuild.exists();
@@ -1737,9 +1781,9 @@ public class SipService extends Service {
 	}
 	
 	/**
-	 * Send sms using SIP server
+	 * Send sms/message using SIP server
 	 */
-	public int sendSMS(String message, String callee, int accountId) {
+	public int sendMessage(String message, String callee, int accountId) {
 		if (!created) {
 			return -1;
 		}
@@ -1761,9 +1805,19 @@ public class SipService extends Service {
 			// Nothing to do with this values
 			byte[] userData = new byte[1];
 			
-			Log.e("Sent", callee + " " + message + " " + toCall.getPjsipAccountId());
-			//return pjsua.call_make_call(pjsipAccountId, uri, 0, userData, null, callId);
+			Log.d("Sent", callee + " " + message + " " + toCall.getPjsipAccountId());
+			SipMessage msg = new SipMessage(SipMessage.SELF, 
+					SipUri.getCanonicalSipUri(toCall.getCallee()), SipUri.getCanonicalSipUri(toCall.getCallee()), 
+					message, "text/plain", System.currentTimeMillis(), 
+					SipMessage.MESSAGE_TYPE_QUEUED);
+			msg.setRead(true);
+			db.open();
+			db.insertMessage(msg);
+			db.close();
+			Log.d(THIS_FILE, "Inserted "+msg.getTo());
 			return pjsua.im_send(toCall.getPjsipAccountId(), uri, null, text, (org.pjsip.pjsua.SWIGTYPE_p_pjsua_msg_data)null, userData);
+			
+			
 		}else {
 			Log.e(THIS_FILE, "Asked for a bad uri " + callee);
 			ToastHandler.sendMessage(ToastHandler.obtainMessage(0, R.string.invalid_sip_uri, 0));
@@ -1965,7 +2019,7 @@ public class SipService extends Service {
 
 		
 		// Check integrity of callee field
-		Pattern p = Pattern.compile("^.*(?:<)?(sip(?:s)?):([^@]*@[^@]*)(?:>)?$", Pattern.CASE_INSENSITIVE);
+		Pattern p = Pattern.compile("^.*(?:<)?(sip(?:s)?):([^@]*@[^>]*)(?:>)?$", Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(callee);
 		
 		if (!m.matches()) {
@@ -2002,5 +2056,7 @@ public class SipService extends Service {
 		
 		return null;
 	}
+	
+	
 
 }

@@ -30,11 +30,11 @@ import android.net.wifi.WifiManager.WifiLock;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.provider.Settings;
-import android.view.accessibility.AccessibilityManager;
 
 import com.csipsimple.utils.Compatibility;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.Ringer;
+import com.csipsimple.utils.accessibility.AccessibilityWrapper;
 import com.csipsimple.utils.audio.AudioFocusWrapper;
 import com.csipsimple.utils.bluetooth.BluetoothWrapper;
 
@@ -72,50 +72,59 @@ public class MediaManager {
 	private Intent mediaStateChangedIntent;
 	
 	//Bluetooth related
-	private static boolean bluetoothClassAvailable;
 	private BluetoothWrapper bluetoothWrapper;
 
 	private AudioFocusWrapper audioFocusWrapper;
 
 
-	private AccessibilityManager accessibilityManager;
+	private AccessibilityWrapper accessibilityManager;
+
+
 
 	private static int MODE_SIP_IN_CALL = AudioManager.MODE_NORMAL;
 	
 
-	/* establish whether the "new" class is available to us */
-	static {
-		try {
-			BluetoothWrapper.checkAvailable();
-			bluetoothClassAvailable = true;
-		} catch (Throwable t) {
-			bluetoothClassAvailable = false;
-		}
-	}
 
 	
 	public MediaManager(SipService aService) {
 		service = aService;
 		audioManager = (AudioManager) service.getSystemService(Context.AUDIO_SERVICE);
-		accessibilityManager = (AccessibilityManager) service.getSystemService(Context.ACCESSIBILITY_SERVICE);
+		accessibilityManager = AccessibilityWrapper.getInstance();
+		accessibilityManager.init(service);
+		
+		
 		ringer = new Ringer(service);
 		
 		mediaStateChangedIntent = new Intent(SipService.ACTION_SIP_MEDIA_CHANGED);
 		
-		if(bluetoothClassAvailable) {
-			bluetoothWrapper = new BluetoothWrapper(service, this);
-		}
-		audioFocusWrapper = new AudioFocusWrapper(service, audioManager);
-		MODE_SIP_IN_CALL = Compatibility.getInCallMode();
+		MODE_SIP_IN_CALL = service.prefsWrapper.getInCallMode();
 		
+	}
+	
+	public void startService() {
+		if(bluetoothWrapper == null) {
+			bluetoothWrapper = BluetoothWrapper.getInstance();
+			bluetoothWrapper.init(service, this);
+		}
+		if(audioFocusWrapper == null) {
+			audioFocusWrapper = AudioFocusWrapper.getInstance();
+			audioFocusWrapper.init(service, audioManager);
+		}
 	}
 	
 	public void stopService() {
 		Log.i(THIS_FILE, "Remove media manager....");
 		if(bluetoothWrapper != null) {
-			bluetoothWrapper.destroy();
-			bluetoothWrapper = null;
+			bluetoothWrapper.unregister();
 		}
+	}
+	
+	private int getAudioTargetMode() {
+		int targetMode = MODE_SIP_IN_CALL;
+		if(service.prefsWrapper.getUseModeApi()) {
+			return userWantSpeaker ? AudioManager.MODE_NORMAL : AudioManager.MODE_IN_CALL;
+		}
+		return targetMode;
 	}
 	
 	/**
@@ -131,26 +140,28 @@ public class MediaManager {
 		saveAudioState();
 		
 		//Set the rest of the phone in a better state to not interferate with current call
-		audioManager.setVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER, AudioManager.VIBRATE_SETTING_OFF);
+		audioManager.setVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER, AudioManager.VIBRATE_SETTING_ON);
 		audioManager.setVibrateSetting(AudioManager.VIBRATE_TYPE_NOTIFICATION, AudioManager.VIBRATE_SETTING_OFF);
-		audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+		audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
 		
 		
-		
+		int targetMode = getAudioTargetMode();
 		Log.d(THIS_FILE, "Set mode audio in call");
 		//Set mode
-		//For galaxy S we need to set in call mode before to reset stack
-		audioManager.setMode(AudioManager.MODE_IN_CALL);
+		if(targetMode != AudioManager.MODE_IN_CALL) {
+			//For galaxy S we need to set in call mode before to reset stack
+			audioManager.setMode(AudioManager.MODE_IN_CALL);
+		}
 		
-		audioManager.setMode(MODE_SIP_IN_CALL);
+		audioManager.setMode(targetMode);
 		//Routing
-		if(Compatibility.useRoutingApi()) {
-			audioManager.setRouting(MODE_SIP_IN_CALL, userWantSpeaker?AudioManager.ROUTE_SPEAKER:AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
+		if(service.prefsWrapper.getUseRoutingApi()) {
+			audioManager.setRouting(targetMode, userWantSpeaker?AudioManager.ROUTE_SPEAKER:AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
 		}else {
-			audioManager.setSpeakerphoneOn(userWantSpeaker?true:false);
+			audioManager.setSpeakerphoneOn(userWantSpeaker ? true : false);
 		}
 		audioManager.setMicrophoneMute(false);
-		if(bluetoothClassAvailable && userWantBluetooth && bluetoothWrapper.canBluetooth()) {
+		if(bluetoothWrapper != null && userWantBluetooth && bluetoothWrapper.canBluetooth()) {
 			Log.d(THIS_FILE, "Try to enable bluetooth");
 			bluetoothWrapper.setBluetoothOn(true);
 		}
@@ -224,9 +235,11 @@ public class MediaManager {
 		savedWifiPolicy = android.provider.Settings.System.getInt(ctntResolver, android.provider.Settings.System.WIFI_SLEEP_POLICY, Settings.System.WIFI_SLEEP_POLICY_DEFAULT);
 		savedVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
 		
-		savedSpeakerPhone = audioManager.isSpeakerphoneOn();
+		if(!service.prefsWrapper.getUseRoutingApi()) {
+			savedSpeakerPhone = audioManager.isSpeakerphoneOn();
+		}
 		savedMode = audioManager.getMode();
-		savedRoute = audioManager.getRouting(MODE_SIP_IN_CALL);
+		savedRoute = audioManager.getRouting(getAudioTargetMode());
 		
 		isSavedAudioState = true;
 		
@@ -250,15 +263,15 @@ public class MediaManager {
 		audioManager.setVibrateSetting(AudioManager.VIBRATE_TYPE_NOTIFICATION, savedVibradeNotif);
 		audioManager.setRingerMode(savedRingerMode);
 		
+		int targetMode = getAudioTargetMode();
 		
-		
-		if(Compatibility.useRoutingApi()) {
-			audioManager.setRouting(MODE_SIP_IN_CALL, savedRoute, AudioManager.ROUTE_ALL);
+		if(service.prefsWrapper.getUseRoutingApi()) {
+			audioManager.setRouting(targetMode, savedRoute, AudioManager.ROUTE_ALL);
 		}else {
 			audioManager.setSpeakerphoneOn(savedSpeakerPhone);
 		}
 		
-		if(bluetoothClassAvailable) {
+		if(bluetoothWrapper != null) {
 			//This fixes the BT activation but... but... seems to introduce a lot of other issues
 			//bluetoothWrapper.setBluetoothOn(true);
 			Log.d(THIS_FILE, "Unset bt");
@@ -390,7 +403,7 @@ public class MediaManager {
 		
 		//Bluetooth
 		
-		if(bluetoothClassAvailable) {
+		if(bluetoothWrapper != null) {
 			mediaState.isBluetoothScoOn = bluetoothWrapper.isBluetoothOn();
 			mediaState.canBluetoothSco = bluetoothWrapper.canBluetooth();
 		}else {

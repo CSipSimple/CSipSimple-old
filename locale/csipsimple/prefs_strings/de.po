@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2010-10-27 00:26+0200\n"
+"POT-Creation-Date: 2010-12-04 18:58+0100\n"
 "PO-Revision-Date: 2010-10-06 13:32+0000\n"
 "Last-Translator: Jan Tschirschwitz <Unknown>\n"
 "Language-Team: de <LL@li.org>\n"
@@ -53,6 +53,7 @@ msgctxt "prefs_ui_desc"
 msgid "Tweak the user interface"
 msgstr "Anpassen der Benutzeroberfläche"
 
+#. Network
 msgctxt "for_incomings"
 msgid "For incoming calls"
 msgstr "Für eingehende Anrufe"
@@ -68,6 +69,10 @@ msgstr "Performanz"
 msgctxt "transport"
 msgid "Transport"
 msgstr "Protokoll"
+
+msgctxt "transport_desc"
+msgid "Force the use of a transport for this account"
+msgstr ""
 
 msgctxt "use_wifi"
 msgid "Use WiFi"
@@ -99,7 +104,8 @@ msgstr "Verwende UMTS"
 
 msgctxt "use_3g_disclamer"
 msgid "Your carrier MUST allow you to use this option"
-msgstr "Dein Provider MUSS die Verwendung von VoIP über UMTS/EDGE/GPRS erlauben"
+msgstr ""
+"Dein Provider MUSS die Verwendung von VoIP über UMTS/EDGE/GPRS erlauben"
 
 msgctxt "use_edge"
 msgid "Use EDGE"
@@ -157,14 +163,6 @@ msgctxt "network_tcp_transport_port_desc"
 msgid "Port number to bind locally"
 msgstr "Lokale TCP Portnummer"
 
-msgctxt "network_tls_transport_port"
-msgid "TLS Port"
-msgstr "TLS Port"
-
-msgctxt "network_tls_transport_port_desc"
-msgid "Port number to bind locally"
-msgstr "Lokale TLS Portnummer"
-
 msgctxt "network_rtp_port"
 msgid "RTP port"
 msgstr "RTP port"
@@ -189,31 +187,19 @@ msgstr "DNS SRV auflösen"
 
 msgctxt "enable_dns_srv_desc"
 msgid "Use the application resolver to resolve DNS names"
-msgstr ""
+msgstr "Verwendet eigenen DNS um IP-Adressen aufzulösen"
 
 msgctxt "override_nameserver"
 msgid "Use a custom DNS"
-msgstr "Einen eigenen DNS-Server benutzen"
+msgstr "Benutzerdefinierte DNS Server verwenden"
 
 msgctxt "override_nameserver_desc"
 msgid "Left blank to retrieve DNS from Android"
-msgstr ""
-
-msgctxt "secure_transport"
-msgid "Secure transport"
-msgstr ""
-
-msgctxt "use_srtp"
-msgid "SRTP mode"
-msgstr "SRTP-Modus"
-
-msgctxt "use_srtp_desc"
-msgid "Mode for Secure RTP"
-msgstr "Modus für Secure RTP"
+msgstr "Leer lassen um den DNS von Android zu verwenden"
 
 msgctxt "nat_traversal"
 msgid "NAT traversal"
-msgstr ""
+msgstr "NAT Traversal"
 
 msgctxt "enable_ice"
 msgid "Enable ICE"
@@ -255,13 +241,127 @@ msgctxt "stun_server_desc"
 msgid "STUN server (HOST:PORT)"
 msgstr "STUN Server (HOST:PORT)"
 
+msgctxt "enable_qos"
+msgid "Enable QoS"
+msgstr ""
+
+msgctxt "enable_qos_desc"
+msgid "Enable QoS on packets"
+msgstr ""
+
+msgctxt "dscp_val"
+msgid "DSCP value"
+msgstr ""
+
+msgctxt "dscp_val_desc"
+msgid "DSCP value for SIP traffic"
+msgstr ""
+
+#. Security
+msgctxt "tls"
+msgid "TLS"
+msgstr ""
+
+msgctxt "secure_transport"
+msgid "Secure transport"
+msgstr "Gesicherte Übertragung"
+
+msgctxt "secure_transport_desc"
+msgid "Security mechanism for SIP and RTP"
+msgstr ""
+
+msgctxt "secure_media"
+msgid "Secure media"
+msgstr ""
+
+msgctxt "network_tls_transport_port"
+msgid "TLS Port"
+msgstr "TLS Port"
+
+msgctxt "network_tls_transport_port_desc"
+msgid "Port number to bind locally"
+msgstr "Lokale TLS Portnummer"
+
+msgctxt "network_tls_server_name"
+msgid "TLS server name"
+msgstr ""
+
+msgctxt "network_tls_server_name_desc"
+msgid "For multi-hosting server (optional)"
+msgstr ""
+
+msgctxt "ca_list_file"
+msgid "TLS CA file"
+msgstr ""
+
+msgctxt "ca_list_file_desc"
+msgid "For example /sdcard/CSipSimple/myAuthority.ca"
+msgstr ""
+
+msgctxt "cert_file"
+msgid "TLS certificate file"
+msgstr ""
+
+msgctxt "cert_file_desc"
+msgid "For example /sdcard/CSipSimple/myCert.crt"
+msgstr ""
+
+msgctxt "privkey_file"
+msgid "TLS private key file"
+msgstr ""
+
+msgctxt "privkey_file_desc"
+msgid "For example /sdcard/CSipSimple/myKey.key"
+msgstr ""
+
+msgctxt "tls_password"
+msgid "TLS password"
+msgstr ""
+
+msgctxt "tls_password_desc"
+msgid "TLS password to private key file"
+msgstr ""
+
+msgctxt "verify_server"
+msgid "Check server"
+msgstr ""
+
+msgctxt "verify_server_desc"
+msgid "Verify server's certificate"
+msgstr ""
+
+msgctxt "verify_client"
+msgid "Check client"
+msgstr ""
+
+msgctxt "verify_client_desc"
+msgid "Verify client's certificate"
+msgstr ""
+
+msgctxt "tls_method"
+msgid "TLS Method"
+msgstr ""
+
+msgctxt "tls_method_desc"
+msgid "Method for TLS transport"
+msgstr ""
+
+msgctxt "use_srtp"
+msgid "SRTP mode"
+msgstr "SRTP-Modus"
+
+msgctxt "use_srtp_desc"
+msgid "Mode for Secure RTP"
+msgstr "Modus für Secure RTP"
+
+#. Media
 msgctxt "audio_quality"
 msgid "Audio quality"
 msgstr "Audioqualität"
 
 msgctxt "audio_volume"
 msgid "Volume"
-msgstr ""
+msgstr "Lautstärke"
 
 msgctxt "codecs"
 msgid "Codecs"
@@ -320,7 +420,8 @@ msgid "Media quality"
 msgstr "Audioqualität"
 
 msgctxt "snd_media_quality_desc"
-msgid "Quality of the media stream (modify only if you know what you are doing)"
+msgid ""
+"Quality of the media stream (modify only if you know what you are doing)"
 msgstr ""
 "Qualität der Audiodaten (Verändere diesen Wert nur, wenn du weißt was du "
 "tust)"
@@ -353,22 +454,55 @@ msgctxt "codecs_desc"
 msgid "Priority (0 is disabled)"
 msgstr "Priorität (0=deaktiviert)"
 
-msgctxt "sip_info_dtmf"
-msgid "DTMF SIP INFO"
+msgctxt "sip_dtmf"
+msgid "DTMF mode"
 msgstr ""
 
-msgctxt "sip_info_dtmf_desc"
-msgid "Use SIP INFO to send DTMF"
+msgctxt "sip_dtmf_desc"
+msgid "How to send DTMF"
 msgstr ""
 
 msgctxt "use_soft_volume"
 msgid "Use software volume"
-msgstr ""
+msgstr "Verwende eigene Lautstärke"
 
 msgctxt "use_soft_volume_desc"
 msgid "Use software volume instead of android volume"
+msgstr "Verwendet eigene Lautstärke anstatt der Android-Lautstärke"
+
+msgctxt "use_routing_api"
+msgid "Use routing API"
 msgstr ""
 
+msgctxt "use_routing_api_desc"
+msgid "Try to enable that if audio is routing to speaker instead of earpiece"
+msgstr ""
+
+msgctxt "use_mode_api"
+msgid "Use Mode audio API"
+msgstr ""
+
+msgctxt "use_mode_api_desc"
+msgid "Try to enable that if audio is routing to speaker instead of earpiece"
+msgstr ""
+
+msgctxt "sip_audio_mode"
+msgid "Audio mode for SIP calls"
+msgstr ""
+
+msgctxt "sip_audio_mode_desc"
+msgid "Change only if developers advise you to"
+msgstr ""
+
+msgctxt "has_io_queue"
+msgid "IO Queue"
+msgstr ""
+
+msgctxt "has_io_queue_desc"
+msgid "Activate Queue for input/output"
+msgstr ""
+
+#. UI
 msgctxt "general_ui"
 msgid "General user interface"
 msgstr "Standard-Benutzeroberfläche"
@@ -411,7 +545,7 @@ msgstr "Es werden Wähltöne beim Wählen abgespielt"
 
 msgctxt "dial_press_vibrate"
 msgid "Dialing vibrate feedback"
-msgstr "Feedback durch Vibrator"
+msgstr "Feedback duch Vibration"
 
 msgctxt "dial_press_vibrate_desc"
 msgid "Haptic (vibrate) feedback when dialing"
@@ -426,8 +560,8 @@ msgid "Start with text dialer"
 msgstr "Startet mit Textwähler"
 
 msgctxt "use_alternate_unlocker"
-msgid "Don't use slide unlocker"
-msgstr "Rufannahme durch Schieben verhindern"
+msgid "Don't use slide answer"
+msgstr ""
 
 msgctxt "use_alternate_unlocker_desc"
 msgid "Use buttons instead of slide to take incoming calls"
@@ -450,6 +584,8 @@ msgstr "Blockiere Einschlafen"
 msgctxt "use_partial_wake_lock_desc"
 msgid "Ensure CPU is always running for the application (drain battery)"
 msgstr ""
+"Stelle sicher das die CPU die Applikation bevorzugt (erhöhter Akku-"
+"Verbrauch)"
 
 msgctxt "log_level"
 msgid "Log level"
@@ -471,20 +607,21 @@ msgstr ""
 
 msgctxt "ringtone"
 msgid "Ringtone"
-msgstr ""
+msgstr "Klingelton"
 
 msgctxt "ringtone_desc"
 msgid "Default ringtone for SIP calls"
-msgstr ""
+msgstr "Standard-Klingelton für SIP Anrufe"
 
 msgctxt "prevent_screen_rotation"
 msgid "Prevent screen rotation"
-msgstr ""
+msgstr "Verhindere Displayroation"
 
 msgctxt "prevent_screen_rotation_desc"
 msgid "Avoid rotation of the screen and keep in portrait mode"
-msgstr ""
+msgstr "Verhindert die Rotation des Displays und hält es im Portraitformat"
 
+#. Fast settings
 msgctxt "android_integration"
 msgid "Integrate with Android"
 msgstr "Integration mit Android"
@@ -541,9 +678,9 @@ msgstr "Nur verfügbar, wenn SIP registriert ist"
 
 msgctxt "expert_preferences"
 msgid "Expert mode"
-msgstr ""
+msgstr "Experten Modus"
 
 msgctxt "advanced_preferences"
 msgid "Advanced mode"
-msgstr ""
+msgstr "Erweiterter Modus"
 

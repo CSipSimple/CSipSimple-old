@@ -35,7 +35,7 @@
 				android:title="@string/snd_media_quality"
 				android:numeric="signed"
 				android:summary="@string/snd_media_quality_desc"
-				android:defaultValue="3"></EditTextPreference>
+				android:defaultValue="4"></EditTextPreference>
 				
 			<ListPreference android:title="@string/snd_clock_rate" android:key="snd_clock_rate"
 				android:summary="@string/snd_clock_rate_desc"
@@ -47,7 +47,9 @@
 				android:defaultValue="20"
 				android:numeric="signed"></EditTextPreference>
 				
-				
+			<CheckBoxPreference android:summary="@string/has_io_queue_desc"
+				android:title="@string/has_io_queue" android:key="has_io_queue"
+				android:defaultValue="false"></CheckBoxPreference>
 
 		</PreferenceCategory>
 		
@@ -97,5 +99,19 @@
 				android:numeric="signed"
 				android:summary="@string/snd_auto_close_time_desc"
 				android:defaultValue="1"></EditTextPreference>
+				
+				
+			<CheckBoxPreference android:summary="@string/use_routing_api_desc"
+				android:title="@string/use_routing_api" android:key="use_routing_api"
+				android:defaultValue="false"></CheckBoxPreference>
+				
+			<CheckBoxPreference android:summary="@string/use_mode_api_desc"
+				android:title="@string/use_mode_api" android:key="use_mode_api"
+				android:defaultValue="false"></CheckBoxPreference>
+				
+			<ListPreference android:title="@string/sip_audio_mode" android:key="sip_audio_mode"
+				android:summary="@string/sip_audio_mode_desc"
+				android:defaultValue="0"
+				android:entryValues="@array/sip_audio_mode_values" android:entries="@array/sip_audio_mode_choices"></ListPreference>
 		</PreferenceCategory>
 </PreferenceScreen>

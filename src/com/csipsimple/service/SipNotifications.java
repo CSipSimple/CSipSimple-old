@@ -25,11 +25,18 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.provider.CallLog;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.style.StyleSpan;
 
 import com.csipsimple.R;
 import com.csipsimple.models.AccountInfo;
 import com.csipsimple.models.CallInfo;
+import com.csipsimple.models.SipMessage;
+import com.csipsimple.utils.SipUri;
 import com.csipsimple.widgets.RegistrationNotification;
 
 public class SipNotifications {
@@ -39,11 +46,12 @@ public class SipNotifications {
 	private Notification inCallNotification;
 	private Context context;
 	private Notification missedCallNotification;
+	private Notification messageNotification;
 
 	public static final int REGISTER_NOTIF_ID = 1;
 	public static final int CALL_NOTIF_ID = REGISTER_NOTIF_ID + 1;
 	public static final int CALLLOG_NOTIF_ID = REGISTER_NOTIF_ID + 2;
-	public static final int SMS_NOTIF_ID = REGISTER_NOTIF_ID + 3;
+	public static final int MESSAGE_NOTIF_ID = REGISTER_NOTIF_ID + 3;
 	
 	public SipNotifications(Context aContext) {
 		context = aContext;
@@ -96,7 +104,7 @@ public class SipNotifications {
 
 		Intent notificationIntent = new Intent(SipService.ACTION_SIP_CALL_UI);
 		notificationIntent.putExtra(SipService.EXTRA_CALL_INFO, currentCallInfo2);
-		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
 		
@@ -114,6 +122,8 @@ public class SipNotifications {
 		if(missedCallNotification == null) {
 			missedCallNotification = new Notification(icon, tickerText, when);
 			missedCallNotification.flags = Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+			missedCallNotification.defaults |= Notification.DEFAULT_LIGHTS;
+			missedCallNotification.defaults |= Notification.DEFAULT_SOUND;
 		}
 		
 		Intent notificationIntent = new Intent(SipService.ACTION_SIP_CALLLOG);
@@ -126,22 +136,61 @@ public class SipNotifications {
 		notificationManager.notify(CALLLOG_NOTIF_ID, missedCallNotification);
 	}
 	
-	public void showNotificationForMessage(String from, String text) {
-		CharSequence tickerText = "New short message";
-		
-		Notification notification = new Notification(android.R.drawable.stat_notify_chat, tickerText, System.currentTimeMillis());
-		notification.flags = Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
-		
-		Intent notificationIntent = new Intent(SipService.ACTION_SIP_SMS);
-		notificationIntent.putExtra("com.ui.SMSReader.number", from);
-		notificationIntent.putExtra("com.ui.SMSReader.message", text);
-		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-		
-		notification.defaults |= Notification.DEFAULT_SOUND;
-		notification.setLatestEventInfo(context, from, text, contentIntent);
-		notificationManager.notify(SMS_NOTIF_ID, notification);
+	public void showNotificationForMessage(SipMessage msg) {
+		//CharSequence tickerText = context.getText(R.string.instance_message);
+		if(!msg.getFrom().equalsIgnoreCase(viewingRemoteFrom)) {
+			String from = SipUri.getDisplayedSimpleUri(msg.getFrom());
+			CharSequence tickerText = buildTickerMessage(context, from, msg.getBody());
+			
+			if(messageNotification == null) {
+				messageNotification = new Notification(SipUri.isPhoneNumber(from)?R.drawable.stat_notify_sms: android.R.drawable.stat_notify_chat, tickerText, System.currentTimeMillis());
+				messageNotification.flags = Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+				messageNotification.defaults |= Notification.DEFAULT_SOUND;
+				messageNotification.defaults |= Notification.DEFAULT_LIGHTS;
+			}
+			
+			
+			Intent notificationIntent = new Intent(SipService.ACTION_SIP_MESSAGES);
+			notificationIntent.putExtra(SipMessage.FIELD_FROM, msg.getFrom());
+			notificationIntent.putExtra(SipMessage.FIELD_BODY, msg.getBody());
+			notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+			
+			messageNotification.setLatestEventInfo(context, from, msg.getBody(), contentIntent);
+			notificationManager.notify(MESSAGE_NOTIF_ID, messageNotification);
+		}
 	}
+	
+	private static String viewingRemoteFrom = null;
+	public void setViewingMessageFrom(String remoteFrom) {
+		viewingRemoteFrom = remoteFrom;
+	}
+	
+	
+    protected static CharSequence buildTickerMessage(
+            Context context, String address, String body) {
+        String displayAddress = address;
+
+        StringBuilder buf = new StringBuilder(
+                displayAddress == null
+                ? ""
+                : displayAddress.replace('\n', ' ').replace('\r', ' '));
+        buf.append(':').append(' ');
+
+        int offset = buf.length();
+
+        if (!TextUtils.isEmpty(body)) {
+            body = body.replace('\n', ' ').replace('\r', ' ');
+            buf.append(body);
+        }
+
+        SpannableString spanText = new SpannableString(buf.toString());
+        spanText.setSpan(new StyleSpan(Typeface.BOLD), 0, offset,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        return spanText;
+    }
+	
 	
 	// Cancels
 	public void cancelRegisters() {
@@ -154,6 +203,10 @@ public class SipNotifications {
 	
 	public void cancelMissedCalls() {
 		notificationManager.cancel(CALLLOG_NOTIF_ID);
+	}
+	
+	public void cancelMessages() {
+		notificationManager.cancel(MESSAGE_NOTIF_ID);
 	}
 	
 	public void cancelAll() {

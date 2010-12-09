@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2010-10-27 00:26+0200\n"
+"POT-Creation-Date: 2010-12-04 18:58+0100\n"
 "PO-Revision-Date: 2010-10-10 08:22+0000\n"
 "Last-Translator: r3gis <r3gis@r3gis.fr>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -53,6 +53,7 @@ msgctxt "prefs_ui_desc"
 msgid "Tweak the user interface"
 msgstr "Modifier lapparence et les comportement de lapplication"
 
+#. Network
 msgctxt "for_incomings"
 msgid "For incoming calls"
 msgstr "Pour les appels entrants"
@@ -68,6 +69,10 @@ msgstr "Performances"
 msgctxt "transport"
 msgid "Transport"
 msgstr "Transport"
+
+msgctxt "transport_desc"
+msgid "Force the use of a transport for this account"
+msgstr "Forcer le protocole de communication"
 
 msgctxt "use_wifi"
 msgid "Use WiFi"
@@ -157,14 +162,6 @@ msgctxt "network_tcp_transport_port_desc"
 msgid "Port number to bind locally"
 msgstr "Numéro du port sur lequel écouter localement"
 
-msgctxt "network_tls_transport_port"
-msgid "TLS Port"
-msgstr "Port TLS"
-
-msgctxt "network_tls_transport_port_desc"
-msgid "Port number to bind locally"
-msgstr "Numéro du port sur lequel écouter localement"
-
 msgctxt "network_rtp_port"
 msgid "RTP port"
 msgstr "Port RTP"
@@ -196,18 +193,6 @@ msgstr "DNS personnalisé"
 msgctxt "override_nameserver_desc"
 msgid "Left blank to retrieve DNS from Android"
 msgstr "Laisser vide pour récupérer les DNS d'Android"
-
-msgctxt "secure_transport"
-msgid "Secure transport"
-msgstr "Transport sécurisé"
-
-msgctxt "use_srtp"
-msgid "SRTP mode"
-msgstr "Mode SRTP"
-
-msgctxt "use_srtp_desc"
-msgid "Mode for Secure RTP"
-msgstr "Mode pour le RTP sécurisé"
 
 msgctxt "nat_traversal"
 msgid "NAT traversal"
@@ -253,13 +238,127 @@ msgctxt "stun_server_desc"
 msgid "STUN server (HOST:PORT)"
 msgstr "Server STUN (hôte:port)"
 
+msgctxt "enable_qos"
+msgid "Enable QoS"
+msgstr "Activer la QoS"
+
+msgctxt "enable_qos_desc"
+msgid "Enable QoS on packets"
+msgstr "Activer la QoS sur les paquets"
+
+msgctxt "dscp_val"
+msgid "DSCP value"
+msgstr "Valeur DSCP"
+
+msgctxt "dscp_val_desc"
+msgid "DSCP value for SIP traffic"
+msgstr "Valeur DSCP pour le trafic SIP"
+
+#. Security
+msgctxt "tls"
+msgid "TLS"
+msgstr "Chiffrement TLS"
+
+msgctxt "secure_transport"
+msgid "Secure transport"
+msgstr "Transport sécurisé"
+
+msgctxt "secure_transport_desc"
+msgid "Security mechanism for SIP and RTP"
+msgstr "Mécanismes de sécurité pour le SIP et RTP"
+
+msgctxt "secure_media"
+msgid "Secure media"
+msgstr "Média sécurisé"
+
+msgctxt "network_tls_transport_port"
+msgid "TLS Port"
+msgstr "Port TLS"
+
+msgctxt "network_tls_transport_port_desc"
+msgid "Port number to bind locally"
+msgstr "Numéro du port sur lequel écouter localement"
+
+msgctxt "network_tls_server_name"
+msgid "TLS server name"
+msgstr "Nom du serveur TLS"
+
+msgctxt "network_tls_server_name_desc"
+msgid "For multi-hosting server (optional)"
+msgstr "Pour des serveurs mutualisés (optionnel)"
+
+msgctxt "ca_list_file"
+msgid "TLS CA file"
+msgstr "Fichier TLS CA (certificat)"
+
+msgctxt "ca_list_file_desc"
+msgid "For example /sdcard/CSipSimple/myAuthority.ca"
+msgstr "Par exemple /sdcard/CSipSimple/myAuthority.ca"
+
+msgctxt "cert_file"
+msgid "TLS certificate file"
+msgstr "Certificat TLS"
+
+msgctxt "cert_file_desc"
+msgid "For example /sdcard/CSipSimple/myCert.crt"
+msgstr "Par exemple /sdcard/CSipSimple/myCert.crt"
+
+msgctxt "privkey_file"
+msgid "TLS private key file"
+msgstr "Fichier de clef privée TLS"
+
+msgctxt "privkey_file_desc"
+msgid "For example /sdcard/CSipSimple/myKey.key"
+msgstr "Par exemple /sdcard/CSipSimple/myKey.key"
+
+msgctxt "tls_password"
+msgid "TLS password"
+msgstr "Mot de passe TLS"
+
+msgctxt "tls_password_desc"
+msgid "TLS password to private key file"
+msgstr "Mot de passe de la clef privée TLS"
+
+msgctxt "verify_server"
+msgid "Check server"
+msgstr "Vérifier le serveur"
+
+msgctxt "verify_server_desc"
+msgid "Verify server's certificate"
+msgstr "Vérifier le certificat du serveur"
+
+msgctxt "verify_client"
+msgid "Check client"
+msgstr "Vérifier le client"
+
+msgctxt "verify_client_desc"
+msgid "Verify client's certificate"
+msgstr "vérifier le certificat du client"
+
+msgctxt "tls_method"
+msgid "TLS Method"
+msgstr "Méthode TLS"
+
+msgctxt "tls_method_desc"
+msgid "Method for TLS transport"
+msgstr "Méthode de transport TLS"
+
+msgctxt "use_srtp"
+msgid "SRTP mode"
+msgstr "Mode SRTP"
+
+msgctxt "use_srtp_desc"
+msgid "Mode for Secure RTP"
+msgstr "Mode pour le RTP sécurisé"
+
+#. Media
 msgctxt "audio_quality"
 msgid "Audio quality"
 msgstr "Qualité audio"
 
 msgctxt "audio_volume"
 msgid "Volume"
-msgstr ""
+msgstr "Volume"
 
 msgctxt "codecs"
 msgid "Codecs"
@@ -353,22 +452,59 @@ msgctxt "codecs_desc"
 msgid "Priority (0 is disabled)"
 msgstr "Priorité (0 = désactivé)"
 
-msgctxt "sip_info_dtmf"
-msgid "DTMF SIP INFO"
-msgstr "SIP INFO DTMF"
+msgctxt "sip_dtmf"
+msgid "DTMF mode"
+msgstr "Modes DTMF"
 
-msgctxt "sip_info_dtmf_desc"
-msgid "Use SIP INFO to send DTMF"
-msgstr "Utiliser SIP INFO pour envoyer du DTMF"
+msgctxt "sip_dtmf_desc"
+msgid "How to send DTMF"
+msgstr "Manière d'envoyer les signaux DTMF"
 
 msgctxt "use_soft_volume"
 msgid "Use software volume"
-msgstr ""
+msgstr "Utiliser le volume logiciel"
 
 msgctxt "use_soft_volume_desc"
 msgid "Use software volume instead of android volume"
+msgstr "Utiliser le volume logiciel au lieu du volume Android"
+
+msgctxt "use_routing_api"
+msgid "Use routing API"
+msgstr "Utiliser l'API de routing"
+
+msgctxt "use_routing_api_desc"
+msgid "Try to enable that if audio is routing to speaker instead of earpiece"
+msgstr ""
+"Essayer d'activer cela si le son est sur le haut parleur au lieu de "
+"l'écouteur"
+
+msgctxt "use_mode_api"
+msgid "Use Mode audio API"
+msgstr "Utiliser le Mode Audio API"
+
+msgctxt "use_mode_api_desc"
+msgid "Try to enable that if audio is routing to speaker instead of earpiece"
+msgstr ""
+"Essayez ce mode si le flux audio passe par le haut parleur en mode mains "
+"libres"
+
+msgctxt "sip_audio_mode"
+msgid "Audio mode for SIP calls"
+msgstr "Mode audio des appels SIP"
+
+msgctxt "sip_audio_mode_desc"
+msgid "Change only if developers advise you to"
+msgstr "Ne changer ceci que si les développeurs vous le conseillent"
+
+msgctxt "has_io_queue"
+msgid "IO Queue"
 msgstr ""
 
+msgctxt "has_io_queue_desc"
+msgid "Activate Queue for input/output"
+msgstr ""
+
+#. UI
 msgctxt "general_ui"
 msgid "General user interface"
 msgstr "Interface utilisateur générale"
@@ -428,8 +564,8 @@ msgid "Start with text dialer"
 msgstr "Démarrer avec le numéroteur de type texte"
 
 msgctxt "use_alternate_unlocker"
-msgid "Don't use slide unlocker"
-msgstr "Dévérouillage bouttons"
+msgid "Don't use slide answer"
+msgstr "Ne pas utiliser le Slide pour répondre"
 
 msgctxt "use_alternate_unlocker_desc"
 msgid "Use buttons instead of slide to take incoming calls"
@@ -483,12 +619,13 @@ msgstr "Sonnerie à défaut pour les appels SIP"
 
 msgctxt "prevent_screen_rotation"
 msgid "Prevent screen rotation"
-msgstr ""
+msgstr "Empêcher la rotation d'écran"
 
 msgctxt "prevent_screen_rotation_desc"
 msgid "Avoid rotation of the screen and keep in portrait mode"
-msgstr ""
+msgstr "Eviter la rotation de l'écran et rester en mode portrait"
 
+#. Fast settings
 msgctxt "android_integration"
 msgid "Integrate with Android"
 msgstr "S'intégrer à Android"
