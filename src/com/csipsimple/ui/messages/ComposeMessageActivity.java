@@ -49,15 +49,16 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipManager;
+import com.csipsimple.api.SipProfile;
+import com.csipsimple.api.SipUri;
 import com.csipsimple.db.DBAdapter;
-import com.csipsimple.models.Account;
 import com.csipsimple.models.SipMessage;
 import com.csipsimple.service.ISipService;
 import com.csipsimple.service.SipNotifications;
 import com.csipsimple.service.SipService;
 import com.csipsimple.ui.PickupSipUri;
 import com.csipsimple.utils.Log;
-import com.csipsimple.utils.SipUri;
 import com.csipsimple.utils.SmileyParser;
 import com.csipsimple.widgets.AccountChooserButton;
 
@@ -109,10 +110,10 @@ public class ComposeMessageActivity extends Activity implements OnClickListener 
 		registrationReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				if(SipService.ACTION_SIP_REGISTRATION_CHANGED.equalsIgnoreCase(intent.getAction())) {
+				if(SipManager.ACTION_SIP_REGISTRATION_CHANGED.equalsIgnoreCase(intent.getAction())) {
 					updateRegistrations();
-				}else if(SipService.ACTION_SIP_MESSAGE_RECEIVED.equalsIgnoreCase(intent.getAction()) ||
-						SipService.ACTION_SIP_MESSAGE_STATUS.equalsIgnoreCase(intent.getAction())) {
+				}else if(SipManager.ACTION_SIP_MESSAGE_RECEIVED.equalsIgnoreCase(intent.getAction()) ||
+						SipManager.ACTION_SIP_MESSAGE_STATUS.equalsIgnoreCase(intent.getAction())) {
 					//Check if intent correspond to current message
 					String from = intent.getStringExtra(SipMessage.FIELD_FROM);
 					if(from != null && from.equalsIgnoreCase(remoteFrom)) {
@@ -121,9 +122,9 @@ public class ComposeMessageActivity extends Activity implements OnClickListener 
 				}
 			}
 		};
-		registerReceiver(registrationReceiver, new IntentFilter(SipService.ACTION_SIP_REGISTRATION_CHANGED));
-		registerReceiver(registrationReceiver, new IntentFilter(SipService.ACTION_SIP_MESSAGE_RECEIVED));
-		registerReceiver(registrationReceiver, new IntentFilter(SipService.ACTION_SIP_MESSAGE_STATUS));
+		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_REGISTRATION_CHANGED));
+		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_RECEIVED));
+		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_STATUS));
 
 		
 
@@ -346,7 +347,7 @@ public class ComposeMessageActivity extends Activity implements OnClickListener 
 			if(contact.equalsIgnoreCase(SipMessage.SELF)) {
 				formatedContact = getString(R.string.messagelist_sender_self);
 			}else {
-				formatedContact = SipUri.getDisplayedSimpleUri(contact);
+				formatedContact = SipUri.getDisplayedSimpleContact(contact);
 			}
 			SpannableStringBuilder buf = new SpannableStringBuilder(TextUtils.replace(template, 
 					new String[] { "%s" }, 
@@ -387,8 +388,8 @@ public class ComposeMessageActivity extends Activity implements OnClickListener 
 
 	private void sendMessage() {
 		if(service != null) {
-			Account acc = accountChooserButton.getSelectedAccount();
-			if(acc != null && acc.id != Account.INVALID_ID) {
+			SipProfile acc = accountChooserButton.getSelectedAccount();
+			if(acc != null && acc.id != SipProfile.INVALID_ID) {
 				try {
 					service.sendMessage(bodyInput.getText().toString(), remoteFrom, acc.id);
 					bodyInput.getText().clear();

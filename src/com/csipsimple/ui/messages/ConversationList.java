@@ -50,13 +50,13 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipManager;
+import com.csipsimple.api.SipUri;
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.models.SipMessage;
 import com.csipsimple.service.SipNotifications;
-import com.csipsimple.service.SipService;
 import com.csipsimple.ui.SipHome;
 import com.csipsimple.utils.Log;
-import com.csipsimple.utils.SipUri;
 
 /**
  * This activity provides a list view of existing conversations.
@@ -103,12 +103,12 @@ public class ConversationList extends ListActivity {
         registrationReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				if(SipService.ACTION_SIP_MESSAGE_RECEIVED.equalsIgnoreCase(intent.getAction()) ) {
+				if(SipManager.ACTION_SIP_MESSAGE_RECEIVED.equalsIgnoreCase(intent.getAction()) ) {
 					updateAdapter();
 				}
 			}
 		};
-		registerReceiver(registrationReceiver, new IntentFilter(SipService.ACTION_SIP_MESSAGE_RECEIVED));
+		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_RECEIVED));
         
     }
     
@@ -374,7 +374,7 @@ public class ConversationList extends ListActivity {
 		
 		private CharSequence formatMessage(Cursor cursor) {
 			String remoteContact = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_FROM));
-	        SpannableStringBuilder buf = new SpannableStringBuilder(SipUri.getDisplayedSimpleUri(remoteContact));
+	        SpannableStringBuilder buf = new SpannableStringBuilder(SipUri.getDisplayedSimpleContact(remoteContact));
 
 	        
 	        int counter = cursor.getInt(cursor.getColumnIndex("counter"));

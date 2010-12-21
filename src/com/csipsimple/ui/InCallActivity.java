@@ -59,6 +59,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipManager;
 import com.csipsimple.models.CallInfo;
 import com.csipsimple.service.ISipService;
 import com.csipsimple.service.MediaManager.MediaState;
@@ -161,8 +162,8 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		lockOverlay.setActivity(this, this);
 		
 		//Listen to media & sip events to update the UI
-		registerReceiver(callStateReceiver, new IntentFilter(SipService.ACTION_SIP_CALL_CHANGED));
-		registerReceiver(callStateReceiver, new IntentFilter(SipService.ACTION_SIP_MEDIA_CHANGED));
+		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_SIP_CALL_CHANGED));
+		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_SIP_MEDIA_CHANGED));
 		
 		// Sensor management
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -619,6 +620,9 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
     			break;
     		}
     		pjsip_inv_state state = currentCallInfo.getCallState();
+    		if(state == null) {
+    			break;
+    		}
     		boolean ringing = state.equals(pjsip_inv_state.PJSIP_INV_STATE_INCOMING) ||
     			state.equals(pjsip_inv_state.PJSIP_INV_STATE_EARLY);
     		
@@ -673,7 +677,7 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			
-			if(action.equals(SipService.ACTION_SIP_CALL_CHANGED)){
+			if(action.equals(SipManager.ACTION_SIP_CALL_CHANGED)){
 				if(service != null) {
 					try {
 						callsInfo = service.getCalls();
@@ -683,7 +687,7 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 				}
 
 				handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
-			}else if(action.equals(SipService.ACTION_SIP_MEDIA_CHANGED)) {
+			}else if(action.equals(SipManager.ACTION_SIP_MEDIA_CHANGED)) {
 				handler.sendMessage(handler.obtainMessage(UPDATE_FROM_MEDIA));
 			}
 		}

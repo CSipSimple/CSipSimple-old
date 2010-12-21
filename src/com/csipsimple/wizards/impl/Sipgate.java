@@ -18,13 +18,13 @@
 package com.csipsimple.wizards.impl;
 
 import com.csipsimple.R;
-import com.csipsimple.models.Account;
+import com.csipsimple.api.SipProfile;
 import com.csipsimple.utils.PreferencesWrapper;
 
 public class Sipgate extends AlternateServerImplementation {
 	
 	@Override
-	public void fillLayout(Account account) {
+	public void fillLayout(final SipProfile account) {
 		super.fillLayout(account);
 		//Override titles
 		accountDisplayName.setTitle(R.string.w_sipgate_display_name);
@@ -37,7 +37,13 @@ public class Sipgate extends AlternateServerImplementation {
 		accountPassword.setDialogTitle(R.string.w_sipgate_password);
 	}
 	
+
 	
+	public SipProfile buildAccount(SipProfile account) {
+		account = super.buildAccount(account);
+		account.transport = SipProfile.TRANSPORT_UDP;
+		return account;
+	}
 
 	@Override
 	public void setDefaultParams(PreferencesWrapper prefs) {

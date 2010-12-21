@@ -43,7 +43,6 @@ import org.pjsip.pjsua.pjsua_call_media_status;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -56,17 +55,19 @@ import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipManager;
+import com.csipsimple.api.SipProfile;
+import com.csipsimple.api.SipUri;
+import com.csipsimple.api.SipUri.ParsedSipContactInfos;
 import com.csipsimple.db.DBAdapter;
-import com.csipsimple.models.Account;
 import com.csipsimple.models.CallInfo;
 import com.csipsimple.models.CallInfo.UnavailableException;
+import com.csipsimple.models.Filter;
 import com.csipsimple.models.SipMessage;
 import com.csipsimple.utils.CallLogHelper;
 import com.csipsimple.utils.Compatibility;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
-import com.csipsimple.utils.SipUri;
-import com.csipsimple.utils.SipUri.ParsedSipUriInfos;
 
 public class UAStateReceiver extends Callback {
 	static String THIS_FILE = "SIP UA Receiver";
@@ -135,7 +136,7 @@ public class UAStateReceiver extends Callback {
 	@Override
 	public void on_pager(int call_id, pj_str_t from, pj_str_t to, pj_str_t contact, pj_str_t mime_type, pj_str_t body) {
 		long date = System.currentTimeMillis();
-		String sFrom = SipUri.getCanonicalSipUri(from.getPtr());
+		String sFrom = SipUri.getCanonicalSipContact(from.getPtr());
 		SipMessage msg = new SipMessage(sFrom, to.getPtr(), contact.getPtr(), body.getPtr(), mime_type.getPtr(),  date, SipMessage.MESSAGE_TYPE_INBOX);
 		
 		//Insert the message to the DB 
@@ -145,7 +146,7 @@ public class UAStateReceiver extends Callback {
 		database.close();
 		
 		//Broadcast the message
-		Intent intent = new Intent(SipService.ACTION_SIP_MESSAGE_RECEIVED);
+		Intent intent = new Intent(SipManager.ACTION_SIP_MESSAGE_RECEIVED);
 		//TODO : could be parcelable !
 		intent.putExtra(SipMessage.FIELD_FROM, msg.getFrom());
 		intent.putExtra(SipMessage.FIELD_BODY, msg.getBody());
@@ -160,7 +161,7 @@ public class UAStateReceiver extends Callback {
 		//TODO : treat error / acknowledge of messages
 		int messageType = (status.equals(pjsip_status_code.PJSIP_SC_OK) 
 				|| status.equals(pjsip_status_code.PJSIP_SC_ACCEPTED))? SipMessage.MESSAGE_TYPE_SENT : SipMessage.MESSAGE_TYPE_FAILED;
-		String sTo = SipUri.getCanonicalSipUri(to.getPtr());
+		String sTo = SipUri.getCanonicalSipContact(to.getPtr());
 
 		Log.d(THIS_FILE, "SipMessage in on pager status "+status.toString()+" / "+reason.getPtr());
 		
@@ -171,7 +172,7 @@ public class UAStateReceiver extends Callback {
 		database.close();
 		
 		//Broadcast the information
-		Intent intent = new Intent(SipService.ACTION_SIP_MESSAGE_RECEIVED);
+		Intent intent = new Intent(SipManager.ACTION_SIP_MESSAGE_RECEIVED);
 		intent.putExtra(SipMessage.FIELD_FROM, sTo);
 		service.sendBroadcast(intent);
 	}
@@ -214,6 +215,12 @@ public class UAStateReceiver extends Callback {
 			}
 			pjsua.conf_adjust_rx_level(0, micLevel);
 			
+			
+			// Auto record
+			if (recordedCall == INVALID_RECORD && 
+					service.prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.AUTO_RECORD_CALLS)) {
+				startRecording(callId);
+			}
 			
 		}
 		
@@ -336,7 +343,7 @@ public class UAStateReceiver extends Callback {
 						cv.put(CallLog.Calls.NEW, false);
 						
 						//Reformat number for callogs
-						ParsedSipUriInfos callerInfos = SipUri.parseSipUri(cv.getAsString(Calls.NUMBER));
+						ParsedSipContactInfos callerInfos = SipUri.parseSipContact(cv.getAsString(Calls.NUMBER));
 						if (callerInfos != null) {
 							String phoneNumber = null;
 							if(SipUri.isPhoneNumber(callerInfos.displayName)) {
@@ -376,7 +383,7 @@ public class UAStateReceiver extends Callback {
 				((SipService) service).updateRegistrationsState();
 				// Send a broadcast message that for an account
 				// registration state has changed
-				Intent regStateChangedIntent = new Intent(SipService.ACTION_SIP_REGISTRATION_CHANGED);
+				Intent regStateChangedIntent = new Intent(SipManager.ACTION_SIP_REGISTRATION_CHANGED);
 				service.sendBroadcast(regStateChangedIntent);
 				break;
 			}
@@ -417,7 +424,7 @@ public class UAStateReceiver extends Callback {
 		//Auto answer feature
 		boolean shouldAutoAnswer = false;
 		//In account
-		Account acc = service.getAccountForPjsipId(accountId);
+		SipProfile acc = service.getAccountForPjsipId(accountId);
 		if(acc != null) {
 			Pattern p = Pattern.compile("^(?:\")?([^<\"]*)(?:\")?[ ]*(?:<)?sip(?:s)?:([^@]*@[^>]*)(?:>)?", Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(remContact);
@@ -426,7 +433,7 @@ public class UAStateReceiver extends Callback {
 				number = m.group(2);
 			}
 			Log.w(THIS_FILE, "Search if should auto answer : "+number);
-			shouldAutoAnswer = acc.isAutoAnswerNumber(number, service.db);
+			shouldAutoAnswer = Filter.isAutoAnswerNumber(acc, number, service.db);
 		}
 		//Or by api
 		if (autoAcceptCurrent || shouldAutoAnswer) {
@@ -513,8 +520,8 @@ public class UAStateReceiver extends Callback {
 
 	private void onBroadcastCallState(final CallInfo callInfo) {
 		//Internal event
-		Intent callStateChangedIntent = new Intent(SipService.ACTION_SIP_CALL_CHANGED);
-		callStateChangedIntent.putExtra(SipService.EXTRA_CALL_INFO, callInfo);
+		Intent callStateChangedIntent = new Intent(SipManager.ACTION_SIP_CALL_CHANGED);
+		callStateChangedIntent.putExtra(SipManager.EXTRA_CALL_INFO, callInfo);
 		service.sendBroadcast(callStateChangedIntent);
 		
 		
@@ -539,8 +546,8 @@ public class UAStateReceiver extends Callback {
 	private synchronized void launchCallHandler(CallInfo currentCallInfo2) {
 		
 		// Launch activity to choose what to do with this call
-		Intent callHandlerIntent = new Intent(SipService.ACTION_SIP_CALL_UI); //new Intent(service, getInCallClass());
-		callHandlerIntent.putExtra(SipService.EXTRA_CALL_INFO, currentCallInfo2);
+		Intent callHandlerIntent = new Intent(SipManager.ACTION_SIP_CALL_UI); //new Intent(service, getInCallClass());
+		callHandlerIntent.putExtra(SipManager.EXTRA_CALL_INFO, currentCallInfo2);
 		callHandlerIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP  );
 		
 		Log.d(THIS_FILE, "Anounce call activity");
@@ -623,7 +630,7 @@ public class UAStateReceiver extends Callback {
 		// Ensure nothing is recording actually
 		if (recordedCall == INVALID_RECORD) {
 			CallInfo callInfo = getCallInfo(callId);
-			if(callInfo == null || !callInfo.getMediaStatus().equals(pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE)) {
+			if(callInfo == null || ! callInfo.getMediaStatus().equals(pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE)) {
 				return;
 			}
 			
@@ -673,13 +680,9 @@ public class UAStateReceiver extends Callback {
 	}
 	
 	private File getRecordFile(String remoteContact) {
-		File root = Environment.getExternalStorageDirectory();
-	    if (root.canWrite()){
-			File dir = new File(root.getAbsolutePath() + File.separator + "CSipSimple");
-			dir.mkdirs();
-			Log.d(THIS_FILE, "Create directory " + dir.getAbsolutePath());
+		File dir = PreferencesWrapper.getRecordsFolder();
+	    if (dir != null){
 			Date d = new Date();
-			
 			File file = new File(dir.getAbsoluteFile() + File.separator + sanitizeForFile(remoteContact)+ "_"+DateFormat.format("MM-dd-yy_kkmmss", d)+".wav");
 			Log.d(THIS_FILE, "Out dir " + file.getAbsolutePath());
 			return file;

@@ -26,7 +26,12 @@
 				android:summary="@string/echo_cancellation_tail_desc"
 				android:defaultValue="200"
 				android:numeric="signed"></EditTextPreference>
-				
+			<ListPreference android:title="@string/echo_mode" android:key="echo_mode"
+				android:summary="@string/echo_mode_desc"
+				android:defaultValue="2"
+				android:entryValues="@array/echo_mode_values" android:entries="@array/echo_mode_choices"/>
+			
+			
 			<CheckBoxPreference android:summary="@string/enable_vad_desc"
 				android:title="@string/enable_vad" android:key="enable_vad"
 				android:defaultValue="false"></CheckBoxPreference>
@@ -40,24 +45,20 @@
 			<ListPreference android:title="@string/snd_clock_rate" android:key="snd_clock_rate"
 				android:summary="@string/snd_clock_rate_desc"
 				android:defaultValue="8000"
-				android:entryValues="@array/clock_rate_values" android:entries="@array/clock_rate_choices"></ListPreference>
+				android:entryValues="@array/clock_rate_values" android:entries="@array/clock_rate_choices"/>
 				
 			<EditTextPreference android:title="@string/snd_ptime" android:key="snd_ptime"
 				android:summary="@string/snd_ptime_desc"
 				android:defaultValue="20"
-				android:numeric="signed"></EditTextPreference>
+				android:numeric="signed"/>
 				
 			<CheckBoxPreference android:summary="@string/has_io_queue_desc"
 				android:title="@string/has_io_queue" android:key="has_io_queue"
-				android:defaultValue="false"></CheckBoxPreference>
+				android:defaultValue="false"/>
 
 		</PreferenceCategory>
 		
-		<PreferenceScreen android:title="@string/codecs" android:summary="@string/codecs_availability_text">
-			<intent android:action="android.intent.action.MAIN"
-                   android:targetPackage="com.csipsimple"
-                   android:targetClass="com.csipsimple.ui.prefs.Codecs" ></intent>
-		</PreferenceScreen>
+		<PreferenceScreen android:title="@string/codecs" android:summary="@string/codecs_availability_text" android:key="codecs_list"/>
 		
 		<PreferenceCategory android:key="audio_volume" android:title="@string/audio_volume">
 			
@@ -83,7 +84,7 @@
 		<PreferenceCategory android:title="@string/perfs" android:key="perfs">
 			<EditTextPreference android:title="Thread count" android:key="thread_count"
 				android:summary="Number of thread allocated for the native stack"
-				android:defaultValue="1"
+				android:defaultValue="3"
 				android:numeric="signed"></EditTextPreference>
 				
 		</PreferenceCategory>
@@ -108,6 +109,11 @@
 			<CheckBoxPreference android:summary="@string/use_mode_api_desc"
 				android:title="@string/use_mode_api" android:key="use_mode_api"
 				android:defaultValue="false"></CheckBoxPreference>
+			
+			<CheckBoxPreference android:summary="@string/set_audio_generate_tone_desc"
+				android:title="@string/set_audio_generate_tone" android:key="set_audio_generate_tone"
+				android:defaultValue="false"></CheckBoxPreference>	
+				
 				
 			<ListPreference android:title="@string/sip_audio_mode" android:key="sip_audio_mode"
 				android:summary="@string/sip_audio_mode_desc"

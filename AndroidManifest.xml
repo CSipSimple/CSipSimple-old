@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.csipsimple"
 	android:installLocation="auto"
-	android:versionName="0.00-16" android:versionCode="410">
+	android:versionName="0.00-16" android:versionCode="458">
 	<supports-screens android:smallScreens="true" 
 		android:normalScreens="true"
 		android:largeScreens="true"
@@ -72,10 +72,12 @@
 		<activity android:name="com.csipsimple.ui.BuddyList"></activity>
 
 		<!-- Preferences -->
-		<activity android:name="com.csipsimple.ui.prefs.MainPrefs" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"></activity>
-		<activity android:name="com.csipsimple.ui.prefs.PrefsNetwork" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"></activity>
-		<activity android:name="com.csipsimple.ui.prefs.PrefsMedia" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"></activity>
-		<activity android:name="com.csipsimple.ui.prefs.PrefsUI" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"></activity>
+		<activity android:name="com.csipsimple.ui.prefs.MainPrefs" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"/>
+		<activity android:name="com.csipsimple.ui.prefs.PrefsNetwork" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"/>
+		<activity android:name="com.csipsimple.ui.prefs.PrefsMedia" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"/>
+		<activity android:name="com.csipsimple.ui.prefs.PrefsUI" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"/>
+		<activity android:name="com.csipsimple.ui.prefs.PrefsCalls" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"/>
+		<activity android:name="com.csipsimple.ui.prefs.PrefsFilters" android:theme="@android:style/Theme.NoTitleBar" android:configChanges="orientation"/>
 		<activity android:name="com.csipsimple.ui.prefs.PrefsFast" android:label="@string/prefs_fast" 
 			android:theme="@style/CupcakeDialog" android:screenOrientation="portrait">
 			<intent-filter>
@@ -119,9 +121,11 @@
 		</activity>
 		
 		
-		<activity android:name="com.csipsimple.ui.InCallActivity" android:screenOrientation="portrait" android:excludeFromRecents="true"
-			android:noHistory="true" android:allowTaskReparenting="false"
-			android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleInstance">
+		<activity android:name="com.csipsimple.ui.InCallActivity" android:screenOrientation="portrait" 
+			
+			android:allowTaskReparenting="true"
+			android:taskAffinity=""
+			android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTask">
 			<intent-filter android:priority="10">
                  <action android:name="com.csipsimple.phone.action.INCALL" />
                  <category android:name="android.intent.category.DEFAULT" />

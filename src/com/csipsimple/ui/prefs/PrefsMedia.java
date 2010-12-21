@@ -17,6 +17,10 @@
  */
 package com.csipsimple.ui.prefs;
 
+import android.content.Intent;
+import android.preference.Preference;
+import android.preference.PreferenceScreen;
+
 import com.csipsimple.R;
 import com.csipsimple.utils.PreferencesWrapper;
 
@@ -38,6 +42,7 @@ public class PrefsMedia extends GenericPrefs {
 			
 			hidePreference("audio_quality", "snd_media_quality");
 			hidePreference("audio_quality", "echo_cancellation_tail");
+			hidePreference("audio_quality", "echo_mode");
 			hidePreference("audio_quality", "snd_ptime");
 			hidePreference("audio_quality", "has_io_queue");
 			
@@ -53,8 +58,14 @@ public class PrefsMedia extends GenericPrefs {
 			hidePreference("misc", "snd_auto_close_time");
 			hidePreference("misc", "use_routing_api");
 			hidePreference("misc", "use_mode_api");
+			hidePreference("misc", "set_audio_generate_tone");
 			hidePreference("misc", "sip_audio_mode");
 		}
+		
+		PreferenceScreen pfs = getPreferenceScreen();
+		Preference codecsPrefs = pfs.findPreference("codecs_list");
+		codecsPrefs.setIntent(new Intent(this, Codecs.class));
+		
 	}
 
 	@Override

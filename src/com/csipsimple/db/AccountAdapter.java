@@ -33,14 +33,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.csipsimple.R;
-import com.csipsimple.models.Account;
+import com.csipsimple.api.SipProfile;
+import com.csipsimple.models.Filter;
 import com.csipsimple.service.ISipService;
 import com.csipsimple.utils.AccountListUtils;
 import com.csipsimple.utils.AccountListUtils.AccountStatusDisplay;
+import com.csipsimple.wizards.WizardUtils;
 
-public class AccountAdapter extends ArrayAdapter<Account> implements OnClickListener {
+public class AccountAdapter extends ArrayAdapter<SipProfile> implements OnClickListener {
 
-	private static final String THIS_FILE = "Account adapter";
+	private static final String THIS_FILE = "PjSipAccount adapter";
 	private ISipService service;
 	private HashMap<Integer, AccountStatusDisplay> cacheStatusDisplay;
 	Activity context;
@@ -54,13 +56,13 @@ public class AccountAdapter extends ArrayAdapter<Account> implements OnClickList
 		View refreshView;
 	}
 
-	public AccountAdapter(Activity aContext, List<Account> list) {
+	public AccountAdapter(Activity aContext, List<SipProfile> list) {
 		super(aContext, R.layout.choose_account_row, list);
 		this.context= aContext;
 		cacheStatusDisplay = new HashMap<Integer, AccountStatusDisplay>();
 	}
 	
-	public AccountAdapter(Activity aContext, List<Account> list, String aForNumber, DBAdapter database) {
+	public AccountAdapter(Activity aContext, List<SipProfile> list, String aForNumber, DBAdapter database) {
 		super(aContext, R.layout.choose_account_row, list);
 		this.context= aContext;
 		cacheStatusDisplay = new HashMap<Integer, AccountStatusDisplay>();
@@ -102,7 +104,7 @@ public class AccountAdapter extends ArrayAdapter<Account> implements OnClickList
 		final AccountListItemViews tagView = (AccountListItemViews) v.getTag();
 		v.setClickable(true);
 
-		Account account = getItem(position);
+		SipProfile account = getItem(position);
 		// Log.d(THIS_FILE, "has account");
 		if (account != null) {
 			AccountStatusDisplay accountStatusDisplay = null;
@@ -117,14 +119,14 @@ public class AccountAdapter extends ArrayAdapter<Account> implements OnClickList
 			if(!accountStatusDisplay.availableForCalls || forNumber == null || db == null) {
 				tagView.statusView.setText(accountStatusDisplay.statusLabel);
 			}else {
-				tagView.statusView.setText(context.getString(R.string.outgoing_call_chooser_call_text)+" : "+account.rewritePhoneNumber(forNumber, db));
+				tagView.statusView.setText(context.getString(R.string.outgoing_call_chooser_call_text)+" : "+Filter.rewritePhoneNumber(account, forNumber, db));
 			}
 			tagView.labelView.setTextColor(accountStatusDisplay.statusColor);
 			v.setClickable(!accountStatusDisplay.availableForCalls);
 			tagView.refreshView.setVisibility(accountStatusDisplay.availableForCalls?View.GONE:View.VISIBLE);
 
 			// Update account image
-			tagView.iconImage.setImageResource(account.getIconResource());
+			tagView.iconImage.setImageResource(WizardUtils.getWizardIconRes(account));
 			tagView.refreshView.setTag(account.id);
 		}
 	}

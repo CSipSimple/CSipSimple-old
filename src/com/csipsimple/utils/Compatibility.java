@@ -139,9 +139,9 @@ public class Compatibility {
 			return true;
 		}
 		//All htc except....
-		if(android.os.Build.BRAND.toLowerCase().startsWith("htc") 
-				|| android.os.Build.BRAND.toLowerCase().startsWith("telstra_wwe") /*First cause : bravo (desire)*/
-				|| android.os.Build.BRAND.toLowerCase().equalsIgnoreCase("verizon_wwe") /* First cause inc (incredible)*/ ) {
+		if(android.os.Build.PRODUCT.toLowerCase().startsWith("htc") 
+				|| android.os.Build.BRAND.toLowerCase().startsWith("htc") 
+				|| android.os.Build.PRODUCT.toLowerCase().equalsIgnoreCase("inc") /* For Incredible */ ) {
 			if(android.os.Build.DEVICE.equalsIgnoreCase("hero") /* HTC HERO */ 
 					|| android.os.Build.DEVICE.equalsIgnoreCase("magic") /* Magic Aka Dev G2 */
 					|| android.os.Build.DEVICE.equalsIgnoreCase("tatoo") /* Tatoo */
@@ -154,11 +154,19 @@ public class Compatibility {
 			return true;
 		}
 		//Dell streak
-		if(android.os.Build.BRAND.toLowerCase().equalsIgnoreCase("dell") &&
+		if(android.os.Build.BRAND.toLowerCase().startsWith("dell") &&
 				android.os.Build.DEVICE.equalsIgnoreCase("streak")) {
 			return true;
 		}
 		
+		return false;
+	}
+	
+
+	private static boolean needToneWorkaround(PreferencesWrapper prefWrapper) {
+		if(android.os.Build.PRODUCT.toLowerCase().startsWith("gt-i5800") ) {
+			return true;
+		}
 		return false;
 	}
 	
@@ -193,6 +201,7 @@ public class Compatibility {
 		
 		//Use routing API?
 		preferencesWrapper.setPreferenceBooleanValue(PreferencesWrapper.USE_ROUTING_API, shouldUseRoutingApi());
+		preferencesWrapper.setPreferenceBooleanValue(PreferencesWrapper.SET_AUDIO_GENERATE_TONE, needToneWorkaround(preferencesWrapper));
 	}
 
 	public static boolean useFlipAnimation() {
@@ -302,7 +311,17 @@ public class Compatibility {
 		if(lastSeenVersion < 400) {
 			prefWrapper.setCodecPriority("G729/8000/1", "0");
 		}
-		 
+		if(lastSeenVersion < 420) {
+			prefWrapper.setPreferenceStringValue(PreferencesWrapper.THREAD_COUNT, "3");
+			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.SET_AUDIO_GENERATE_TONE, needToneWorkaround(prefWrapper));
+		}
+		if(lastSeenVersion < 466) {
+			if(lastSeenVersion > 0) {
+				prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.HAS_ALREADY_SETUP_SERVICE, true);
+			}
+		}
 	}
+
+
 }
 

@@ -18,6 +18,7 @@
 package com.csipsimple.utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import android.content.SharedPreferences.Editor;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -48,8 +50,6 @@ public class PreferencesWrapper {
 	public static final String RTP_PORT = "network_rtp_port";
 	public static final String TCP_TRANSPORT_PORT = "network_tcp_transport_port";
 	public static final String UDP_TRANSPORT_PORT = "network_udp_transport_port";
-	public static final String IS_ADVANCED_USER = "is_advanced_user";
-	public static final String HAS_ALREADY_SETUP = "has_already_setup";
 	public static final String SND_AUTO_CLOSE_TIME = "snd_auto_close_time";
 	public static final String SND_CLOCK_RATE = "snd_clock_rate";
 	public static final String ECHO_CANCELLATION = "echo_cancellation";
@@ -58,7 +58,10 @@ public class PreferencesWrapper {
 	public static final String SND_SPEAKER_LEVEL = "snd_speaker_level";
 	public static final String HAS_IO_QUEUE = "has_io_queue";
 	public static final String BITS_PER_SAMPLE = "bits_per_sample";
-	
+	public static final String SET_AUDIO_GENERATE_TONE = "set_audio_generate_tone";
+	public static final String THREAD_COUNT = "thread_count";
+	public static final String ECHO_MODE = "echo_mode";
+	public static final String SND_PTIME = "snd_ptime";
 	
 	//UI
 	public static final String USE_SOFT_VOLUME = "use_soft_volume";
@@ -99,9 +102,16 @@ public class PreferencesWrapper {
 	public static final String TLS_METHOD = "tls_method";
 	public static final String USE_SRTP = "use_srtp";
 	
+	// CALLS
+	public static final String AUTO_RECORD_CALLS = "auto_record_calls";
+	public static final String DEFAULT_CALLER_ID = "default_caller_id";
+	
 	//Internal use
 	public static final String HAS_BEEN_QUIT = "has_been_quit";
 	public static final String USER_AGENT = "user_agent"; 
+	public static final String IS_ADVANCED_USER = "is_advanced_user";
+	public static final String HAS_ALREADY_SETUP = "has_already_setup";
+	public static final String HAS_ALREADY_SETUP_SERVICE = "has_already_setup_service";
 	
 	
 	private static final String THIS_FILE = "PreferencesWrapper";
@@ -125,10 +135,13 @@ public class PreferencesWrapper {
 		put(RTP_PORT, "4000");
 		put(SND_AUTO_CLOSE_TIME, "1");
 		put(ECHO_CANCELLATION_TAIL, "200");
+		put(ECHO_MODE, "2");
 		put(SND_MEDIA_QUALITY, "4");
 		put(SND_CLOCK_RATE, "16000");
+		put(SND_PTIME, "20");
 		put(BITS_PER_SAMPLE, "16");
 		put(SIP_AUDIO_MODE, "0");
+		put(THREAD_COUNT, "3");
 		
 		put(STUN_SERVER, "stun.counterpath.com");
 		put(TURN_SERVER, "");
@@ -144,6 +157,7 @@ public class PreferencesWrapper {
 		
 
 		put(GSM_INTEGRATION_TYPE, "0");
+		put(DEFAULT_CALLER_ID, "");
 		
 		
 	}};
@@ -168,6 +182,7 @@ public class PreferencesWrapper {
 		put(USE_ROUTING_API, false);
 		put(USE_MODE_API, false);
 		put(HAS_IO_QUEUE, false);
+		put(SET_AUDIO_GENERATE_TONE, true);
 		
 		put(PREVENT_SCREEN_ROTATION, true);
 		put(ICON_IN_STATUS_BAR, true);
@@ -189,6 +204,9 @@ public class PreferencesWrapper {
 		put("use_gprs_out", false);
 		put("use_edge_in", false);
 		put("use_edge_out", false);
+		
+		//Calls
+		put(AUTO_RECORD_CALLS, false);
 	}};
 	
 	private final static HashMap<String, Float> FLOAT_PREFS = new HashMap<String, Float>(){
@@ -208,6 +226,11 @@ public class PreferencesWrapper {
 	
 
 	//Public setters
+	/**
+	 * Set a preference string value
+	 * @param key the preference key to set
+	 * @param value the value for this key
+	 */
 	public void setPreferenceStringValue(String key, String value) {
 		//TODO : authorized values
 		Editor editor = prefs.edit();
@@ -215,12 +238,22 @@ public class PreferencesWrapper {
 		editor.commit();
 	}
 	
+	/**
+	 * Set a preference boolean value
+	 * @param key the preference key to set
+	 * @param value the value for this key
+	 */
 	public void setPreferenceBooleanValue(String key, boolean value) {
 		Editor editor = prefs.edit();
 		editor.putBoolean(key, value);
 		editor.commit();
 	}
 	
+	/**
+	 * Set a preference float value
+	 * @param key the preference key to set
+	 * @param value the value for this key
+	 */
 	public void setPreferenceFloatValue(String key, float value) {
 		Editor editor = prefs.edit();
 		editor.putFloat(key, value);
@@ -228,6 +261,7 @@ public class PreferencesWrapper {
 	}
 	
 	//Private static getters
+	// For string
 	private static String gPrefStringValue(SharedPreferences aPrefs, String key) {
 		if(STRING_PREFS.containsKey(key)) {
 			return aPrefs.getString(key, STRING_PREFS.get(key));
@@ -235,6 +269,7 @@ public class PreferencesWrapper {
 		return null;
 	}
 	
+	// For boolean
 	private static Boolean gPrefBooleanValue(SharedPreferences aPrefs, String key) {
 		if(BOOLEAN_PREFS.containsKey(key)) {
 			return aPrefs.getBoolean(key, BOOLEAN_PREFS.get(key));
@@ -242,6 +277,7 @@ public class PreferencesWrapper {
 		return null;
 	}
 	
+	// For float
 	private static Float gPrefFloatValue(SharedPreferences aPrefs, String key) {
 		if(FLOAT_PREFS.containsKey(key)) {
 			return aPrefs.getFloat(key, FLOAT_PREFS.get(key));
@@ -249,18 +285,64 @@ public class PreferencesWrapper {
 		return null;
 	}
 	
-	//Public getters
+	/**
+	 * Get string preference value
+	 * @param key the key preference to retrieve
+	 * @return the value
+	 */
 	public String getPreferenceStringValue(String key) {
 		return gPrefStringValue(prefs, key);
 	}
 	
+	/**
+	 * Get boolean preference value
+	 * @param key the key preference to retrieve
+	 * @return the value
+	 */
 	public Boolean getPreferenceBooleanValue(String key) {
 		return gPrefBooleanValue(prefs, key);
 	}
 	
+	/**
+	 * Get float preference value
+	 * @param key the key preference to retrieve
+	 * @return the value
+	 */
 	public Float getPreferenceFloatValue(String key) {
 		return gPrefFloatValue(prefs, key);
 	}
+	
+	/**
+	 * Get integer preference value
+	 * @param key the key preference to retrieve
+	 * @return the value
+	 */
+	public int getPreferenceIntegerValue(String key) {
+		try {
+			return Integer.parseInt(getPreferenceStringValue(key));
+		}catch(NumberFormatException e) {
+			Log.e(THIS_FILE, "Invalid "+key+" format : expect a int");
+		}
+		return Integer.parseInt(STRING_PREFS.get(key));
+	}
+	
+	/**
+	 * Set all values to default
+	 */
+	public void resetAllDefaultValues() {
+		for(String key : STRING_PREFS.keySet() ) {
+			setPreferenceStringValue(key, STRING_PREFS.get(key));
+		}
+		for(String key : BOOLEAN_PREFS.keySet() ) {
+			setPreferenceBooleanValue(key, BOOLEAN_PREFS.get(key));
+		}
+		for(String key : FLOAT_PREFS.keySet() ) {
+			setPreferenceFloatValue(key, FLOAT_PREFS.get(key));
+		}
+		Compatibility.setFirstRunParameters(this);
+	}
+	
+	
 	
 	// Network part
 	
@@ -419,13 +501,9 @@ public class PreferencesWrapper {
 	}
 	
 	private int getPrefPort(String key) {
-		try {
-			int port = Integer.parseInt(getPreferenceStringValue(key));
-			if(isValidPort(port)) {
-				return port;
-			}
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "Transport port not well formated");
+		int port = getPreferenceIntegerValue(key);
+		if(isValidPort(port)) {
+			return port;
 		}
 		return Integer.parseInt(STRING_PREFS.get(key));
 	}
@@ -478,21 +556,11 @@ public class PreferencesWrapper {
 	}
 	
 	public int getDSCPVal() {
-		try {
-			return Integer.parseInt(getPreferenceStringValue(DSCP_VAL));
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "DSCP_VAL not well formated");
-		}
-		return Integer.parseInt(STRING_PREFS.get(DSCP_VAL));
+		return getPreferenceIntegerValue(DSCP_VAL);
 	}
 	
 	public int getTLSMethod() {
-		try {
-			return Integer.parseInt(getPreferenceStringValue(TLS_METHOD));
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "TLS not well formated");
-		}
-		return Integer.parseInt(STRING_PREFS.get(TLS_METHOD));
+		return getPreferenceIntegerValue(TLS_METHOD);
 	}
 	
 	private boolean hasStunServer(String string) {
@@ -526,13 +594,7 @@ public class PreferencesWrapper {
 	 * even sometimes crash
 	 */
 	public int getAutoCloseTime() {
-		String autoCloseTime = getPreferenceStringValue(SND_AUTO_CLOSE_TIME);
-		try {
-			return Integer.parseInt(autoCloseTime);
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "Auto close time "+autoCloseTime+" not well formated");
-		}
-		return 1;
+		return getPreferenceIntegerValue(SND_AUTO_CLOSE_TIME);
 	}
 	
 	
@@ -549,13 +611,12 @@ public class PreferencesWrapper {
 		if(!hasEchoCancellation()) {
 			return 0;
 		}
-		String tailLength = getPreferenceStringValue(ECHO_CANCELLATION_TAIL);
-		try {
-			return Integer.parseInt(tailLength);
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "Tail length "+tailLength+" not well formated");
-		}
-		return 0;
+		return getPreferenceIntegerValue(ECHO_CANCELLATION_TAIL);
+	}
+	
+	public int getEchoMode() {
+		return getPreferenceIntegerValue(ECHO_MODE);
+		
 	}
 
 	/**
@@ -729,20 +790,16 @@ public class PreferencesWrapper {
 	}
 	
 	public int getAudioFramePtime() {
-		try {
-			int value = Integer.parseInt(prefs.getString("snd_ptime", "20"));
-			return value;
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "snd_ptime not well formated");
-		}
-		return 30;
+		return getPreferenceIntegerValue(SND_PTIME);
 	}
 	
 	public int getHasIOQueue() {
 		return getPreferenceBooleanValue(HAS_IO_QUEUE)?1:0;
 	}
 	
-	
+	public boolean generateForSetCall() {
+		return getPreferenceBooleanValue(SET_AUDIO_GENERATE_TONE);
+	}
 
 	public boolean useSipInfoDtmf() {
 		return getPreferenceStringValue(DTMF_MODE).equalsIgnoreCase("3");
@@ -758,15 +815,11 @@ public class PreferencesWrapper {
 
 
 	public long getThreadCount() {
-		try {
-			int value = Integer.parseInt(prefs.getString("thread_count", "1"));
-			if(value < 10) {
-				return value;
-			}
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "Thread count not well formatted");
+		int value = getPreferenceIntegerValue(THREAD_COUNT);
+		if(value < 10) {
+			return value;
 		}
-		return 1;
+		return Integer.parseInt(STRING_PREFS.get(THREAD_COUNT));
 	}
 
 	// ---- 
@@ -822,14 +875,8 @@ public class PreferencesWrapper {
 	}
 	
 	public int getLogLevel() {
-		int prefsValue = 1;
-		String logLevel = getPreferenceStringValue(LOG_LEVEL);
-		try {
-			prefsValue = Integer.parseInt(logLevel);
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "Audio quality "+logLevel+" not well formated");
-		}
-		if(prefsValue <= 5 && prefsValue >= 1) {
+		int prefsValue = getPreferenceIntegerValue(LOG_LEVEL);
+		if(prefsValue <= 6 && prefsValue >= 1) {
 			return prefsValue;
 		}
 		return 1;
@@ -880,6 +927,10 @@ public class PreferencesWrapper {
 	public boolean hasAlreadySetup() {
 		return prefs.getBoolean(HAS_ALREADY_SETUP, false);
 	}
+	
+	public boolean hasAlreadySetupService() {
+		return prefs.getBoolean(HAS_ALREADY_SETUP_SERVICE, false);
+	}
 
 	//Utils
 	
@@ -913,6 +964,38 @@ public class PreferencesWrapper {
 		return null;
 	}
 
+	private static String CONFIG_FOLDER = "configs";
+	private static String RECORDS_FOLDER = "records";
+	
+	private static File getStorageFolder() {
+		File root = Environment.getExternalStorageDirectory();
+	    if (root.canWrite()){
+			File dir = new File(root.getAbsolutePath() + File.separator + "CSipSimple");
+			dir.mkdirs();
+			Log.d(THIS_FILE, "Create directory " + dir.getAbsolutePath());
+			return dir;
+	    }
+	    return null;
+	}
+	
+	
+	private static File getSubFolder(String subFolder) {
+		File root = getStorageFolder();
+		if(root != null) {
+			File dir = new File(root.getAbsoluteFile() + File.separator + subFolder);
+			dir.mkdirs();
+			return dir;
+		}
+		return null;
+	}
+	
+	public static File getConfigFolder() {
+		return getSubFolder(CONFIG_FOLDER);
+	}
+	
+	public static File getRecordsFolder() {
+		return getSubFolder(RECORDS_FOLDER);
+	}
 
 	public boolean isAdvancedUser() {
 		return prefs.getBoolean(IS_ADVANCED_USER, false);
@@ -930,13 +1013,5 @@ public class PreferencesWrapper {
 	public void setQuit(boolean quit) {
 		setPreferenceBooleanValue(HAS_BEEN_QUIT, quit);
 	}
-
-
-
-
-	
-
-
-
 
 }

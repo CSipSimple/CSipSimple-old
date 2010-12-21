@@ -27,16 +27,17 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.csipsimple.R;
-import com.csipsimple.models.Account;
+import com.csipsimple.api.SipManager;
+import com.csipsimple.api.SipProfile;
 import com.csipsimple.service.ISipService;
 import com.csipsimple.service.SipService;
 import com.csipsimple.utils.Compatibility;
@@ -98,7 +99,7 @@ public class PickupSipUri extends Activity implements OnClickListener {
 		Log.d(THIS_FILE, "Resume pickup URI");
 		// Bind service
 		bindService(new Intent(this, SipService.class), connection, Context.BIND_AUTO_CREATE);
-		registerReceiver(registrationReceiver, new IntentFilter(SipService.ACTION_SIP_REGISTRATION_CHANGED));
+		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_REGISTRATION_CHANGED));
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class PickupSipUri extends Activity implements OnClickListener {
 			 if(result != null) {
 				 resultValue.putExtra(Intent.EXTRA_PHONE_NUMBER,
 							result.getCallee());
-				 resultValue.putExtra(Account.FIELD_ACC_ID,
+				 resultValue.putExtra(SipProfile.FIELD_ACC_ID,
 							result.getAccountId());
 				 setResult(RESULT_OK, resultValue);
 			 }else {

@@ -17,7 +17,7 @@
  */
 package com.csipsimple.wizards.impl;
 
-import com.csipsimple.models.Account;
+import com.csipsimple.api.SipProfile;
 
 public class SipSorcery extends SimpleImplementation {
 	
@@ -31,19 +31,10 @@ public class SipSorcery extends SimpleImplementation {
 		return "SIPSorcery";
 	}
 
-	
-	//Customization
-	@Override
-	public void fillLayout(Account account) {
-		super.fillLayout(account);
-	}
-	
-	
-	
-	public Account buildAccount(Account account) {
+	public SipProfile buildAccount(SipProfile account) {
 		account = super.buildAccount(account);
 		//Ensure registration timeout value
-		account.cfg.setReg_timeout(600);
+		account.reg_timeout = 600;
 		return account;
 	}
 }

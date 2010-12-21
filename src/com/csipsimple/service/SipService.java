@@ -51,9 +51,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -73,16 +70,18 @@ import android.view.KeyCharacterMap;
 import android.widget.Toast;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipManager;
+import com.csipsimple.api.SipProfile;
+import com.csipsimple.api.SipUri;
 import com.csipsimple.db.DBAdapter;
-import com.csipsimple.models.Account;
 import com.csipsimple.models.AccountInfo;
 import com.csipsimple.models.CallInfo;
 import com.csipsimple.models.CallInfo.UnavailableException;
-import com.csipsimple.models.IAccount;
+import com.csipsimple.models.PjSipAccount;
 import com.csipsimple.models.SipMessage;
+import com.csipsimple.pjsip.NativeLibManager;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
-import com.csipsimple.utils.SipUri;
 
 public class SipService extends Service {
 
@@ -97,28 +96,6 @@ public class SipService extends Service {
 	// -------
 	// Static constants
 	// -------
-	// ACTIONS
-	public static final String ACTION_SIP_CALL_UI = "com.csipsimple.phone.action.INCALL";
-	public static final String ACTION_SIP_DIALER = "com.csipsimple.phone.action.DIALER";
-	public static final String ACTION_SIP_CALLLOG = "com.csipsimple.phone.action.CALLLOG";
-	public static final String ACTION_SIP_MESSAGES = "com.csipsimple.phone.action.MESSAGES";
-	
-	// SERVICE BROADCASTS
-	public static final String ACTION_SIP_CALL_CHANGED = "com.csipsimple.service.CALL_CHANGED";
-	public static final String ACTION_SIP_REGISTRATION_CHANGED = "com.csipsimple.service.REGISTRATION_CHANGED";
-	public static final String ACTION_SIP_MEDIA_CHANGED = "com.csipsimple.service.MEDIA_CHANGED";
-	public static final String ACTION_SIP_ACCOUNT_ACTIVE_CHANGED = "com.csipsimple.service.ACCOUNT_ACTIVE_CHANGED";
-	public static final String ACTION_SIP_MESSAGE_RECEIVED = "com.csipsimple.service.MESSAGE_RECEIVED";
-	//TODO : message sent?
-	public static final String ACTION_SIP_MESSAGE_STATUS = "com.csipsimple.service.MESSAGE_STATUS";
-	
-	
-	// EXTRAS
-	public static final String EXTRA_CALL_INFO = "call_info";
-	public static final String EXTRA_ACCOUNT_ID = "acc_id";
-	public static final String EXTRA_ACTIVATE = "activate";
-
-	public static final String STACK_FILE_NAME = "libpjsipjni.so";
 
 	private static Object pjAccountsCreationLock = new Object();
 	private static Object activeAccountsLock = new Object();
@@ -206,7 +183,7 @@ public class SipService extends Service {
 
 		@Override
 		public void setAccountRegistration(int accountId, int renew) throws RemoteException {
-			Account account;
+			SipProfile account;
 			synchronized (db) {
 				db.open();
 				account = db.getAccount(accountId);
@@ -399,7 +376,6 @@ public class SipService extends Service {
 		public void startRecording(int callId) throws RemoteException {
 			if (created && userAgentReceiver != null) {
 				userAgentReceiver.startRecording(callId);
-				//TODO : broadcast it
 			}
 		}
 
@@ -432,7 +408,7 @@ public class SipService extends Service {
 	private final ISipConfiguration.Stub binderConfiguration = new ISipConfiguration.Stub() {
 
 		@Override
-		public long addOrUpdateAccount(IAccount acc) throws RemoteException {
+		public long addOrUpdateAccount(SipProfile acc) throws RemoteException {
 			Log.d(THIS_FILE, ">>> addOrUpdateAccount from service");
 			long finalId = -1;
 			if (!hasSipStack) {
@@ -441,14 +417,13 @@ public class SipService extends Service {
 			}
 
 			if (hasSipStack) {
-				Account account = new Account(acc);
 				synchronized (db) {
 					db.open();
-					if (account.id == null) {
-						finalId = db.insertAccount(account);
+					if (acc.id == SipProfile.INVALID_ID) {
+						finalId = db.insertAccount(acc);
 					} else {
-						db.updateAccount(account);
-						finalId = account.id;
+						db.updateAccount(acc);
+						finalId = acc.id;
 					}
 					db.close();
 				}
@@ -457,8 +432,8 @@ public class SipService extends Service {
 		}
 
 		@Override
-		public IAccount getAccount(long accId) throws RemoteException {
-			IAccount result = null;
+		public SipProfile getAccount(long accId) throws RemoteException {
+			SipProfile result = null;
 
 			if (!hasSipStack) {
 				Log.d(THIS_FILE, "TRY TO LOAD SIP STACK");
@@ -466,14 +441,10 @@ public class SipService extends Service {
 			}
 
 			if (hasSipStack) {
-				Account account;
 				synchronized (db) {
 					db.open();
-					account = db.getAccount(accId);
+					result = db.getAccount(accId);
 					db.close();
-				}
-				if (account != null) {
-					result = account.getIAccount();
 				}
 			}
 			return result;
@@ -569,12 +540,12 @@ public class SipService extends Service {
 					}
 				};
 				t.start();
-			}else if(action.equals(ACTION_SIP_ACCOUNT_ACTIVE_CHANGED)) {
-				final long accountId = intent.getLongExtra(EXTRA_ACCOUNT_ID, -1);
-				final boolean active = intent.getBooleanExtra(EXTRA_ACTIVATE, false);
+			}else if(action.equals(SipManager.ACTION_SIP_ACCOUNT_ACTIVE_CHANGED)) {
+				final long accountId = intent.getLongExtra(SipManager.EXTRA_ACCOUNT_ID, -1);
+				final boolean active = intent.getBooleanExtra(SipManager.EXTRA_ACTIVATE, false);
 				//Should that be threaded?
-				if(accountId != -1) {
-					Account account;
+				if(accountId != SipProfile.INVALID_ID) {
+					SipProfile account;
 					synchronized (db) {
 						db.open();
 						account = db.getAccount(accountId);
@@ -652,6 +623,13 @@ public class SipService extends Service {
 		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		notificationManager = new SipNotifications(this);
+		
+		
+		
+		if(!prefsWrapper.hasAlreadySetupService()) {
+			prefsWrapper.resetAllDefaultValues();
+			prefsWrapper.setPreferenceBooleanValue(PreferencesWrapper.HAS_ALREADY_SETUP_SERVICE, true);
+		}
 
 		// Check connectivity, else just finish itself
 		if (!prefsWrapper.isValidConnectionForOutgoing() && !prefsWrapper.isValidConnectionForIncoming()) {
@@ -729,7 +707,7 @@ public class SipService extends Service {
 			if (deviceStateReceiver == null) {
 				IntentFilter intentfilter = new IntentFilter();
 				intentfilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-				intentfilter.addAction(ACTION_SIP_ACCOUNT_ACTIVE_CHANGED);
+				intentfilter.addAction(SipManager.ACTION_SIP_ACCOUNT_ACTIVE_CHANGED);
 				deviceStateReceiver = new ServiceDeviceStateReceiver();
 				registerReceiver(deviceStateReceiver, intentfilter);
 			}
@@ -744,7 +722,7 @@ public class SipService extends Service {
 	}
 
 	private void tryToLoadStack() {
-		File stackFile = getStackLibFile(this);
+		File stackFile = NativeLibManager.getStackLibFile(this);
 		if (stackFile != null && !sipStackIsCorrupted) {
 			try {
 				// Try to load the stack
@@ -798,11 +776,27 @@ public class SipService extends Service {
 			return;
 		}
 
+		//The connection is valid?
 		if (!prefsWrapper.isValidConnectionForIncoming() && !prefsWrapper.isValidConnectionForOutgoing()) {
 			ToastHandler.sendMessage(ToastHandler.obtainMessage(0, R.string.connection_not_valid, 0));
 			Log.e(THIS_FILE, "Not able to start sip stack");
 			return;
 		}
+		
+		//There is some active accounts?
+		/*
+		List<SipProfile> accs;
+		synchronized (db) {
+			db.open();
+			accs = db.getListAccounts(true);
+			db.close();
+		}
+		
+		if(accs == null || accs.size() <= 0) {
+			Log.w(THIS_FILE, "Useless to start since no account");
+			return;
+		}
+		*/
 
 		Log.i(THIS_FILE, "Will start sip : " + (!created /* && !creating */));
 		synchronized (creatingSipStack) {
@@ -831,6 +825,7 @@ public class SipService extends Service {
 					if (mediaManager == null) {
 						mediaManager = new MediaManager(SipService.this);
 					}
+					
 					mediaManager.startService();
 					
 					pjsua.setCallbackObject(userAgentReceiver);
@@ -864,7 +859,7 @@ public class SipService extends Service {
 						pj_str_t[] stunServers = cfg.getStun_srv();
 						int i = 0;
 						for(String server : servers) {
-							Log.d(THIS_FILE, "add server "+server.trim() );
+							Log.d(THIS_FILE, "add server " + server.trim());
 							stunServers[i] = pjsua.pj_str_copy(server.trim());
 							i++;
 						}
@@ -890,7 +885,7 @@ public class SipService extends Service {
 					mediaCfg.setSnd_auto_close_time(prefsWrapper.getAutoCloseTime());
 					// Echo cancellation
 					mediaCfg.setEc_tail_len(prefsWrapper.getEchoCancellationTail());
-					mediaCfg.setEc_options(2); // ECHO SIMPLE : TODO -> setting that
+					mediaCfg.setEc_options(prefsWrapper.getEchoMode());
 					mediaCfg.setNo_vad(prefsWrapper.getNoVad());
 					mediaCfg.setQuality(prefsWrapper.getMediaQuality());
 					mediaCfg.setClock_rate(prefsWrapper.getClockRate());
@@ -1133,8 +1128,8 @@ public class SipService extends Service {
 
 		status = pjsua.transport_create(type, cfg, tId);
 		if (status != pjsuaConstants.PJ_SUCCESS) {
-
-			String msg = "Fail to create transport "+ pjsua.get_error_message(status).getPtr();
+			String errorMsg = pjsua.get_error_message(status).getPtr();
+			String msg = "Fail to create transport " + errorMsg +" ("+status+")";
 			Log.e(THIS_FILE, msg);
 			if(status == 120098) { /* Already binded */
 				msg = getString(R.string.another_application_use_sip_port);
@@ -1152,14 +1147,14 @@ public class SipService extends Service {
 		Log.d(THIS_FILE, "We are adding all accounts right now....");
 
 		boolean hasSomeSuccess = false;
-		List<Account> accountList;
+		List<SipProfile> accountList;
 		synchronized (db) {
 			db.open();
 			accountList = db.getListAccounts();
 			db.close();
 		}
 
-		for (Account account : accountList) {
+		for (SipProfile account : accountList) {
 			if (account.active) {
 				if (addAccount(account) == pjsuaConstants.PJ_SUCCESS) {
 					hasSomeSuccess = true;
@@ -1177,14 +1172,17 @@ public class SipService extends Service {
 		}
 	}
 
-	private int addAccount(Account account) {
+	private int addAccount(SipProfile profile) {
 		int status = pjsuaConstants.PJ_FALSE;
 		synchronized (pjAccountsCreationLock) {
 			if (!created) {
 				Log.e(THIS_FILE, "PJSIP is not started here, nothing can be done");
 				return status;
+				
 			}
-			account.applyExtraParams();
+			PjSipAccount account = new PjSipAccount(profile);
+			
+			account.applyExtraParams(this);
 
 			Integer currentAccountId = null;
 			synchronized (activeAccountsLock) {
@@ -1193,17 +1191,17 @@ public class SipService extends Service {
 
 			// Force the use of a transport
 			switch (account.transport) {
-			case Account.TRANSPORT_UDP:
+			case SipProfile.TRANSPORT_UDP:
 				if(udpTranportId != null) {
 					account.cfg.setTransport_id(udpTranportId);
 				}
 				break;
-			case Account.TRANSPORT_TCP:
+			case SipProfile.TRANSPORT_TCP:
 				if(tcpTranportId != null) {
 			//		account.cfg.setTransport_id(tcpTranportId);
 				}
 				break;
-			case Account.TRANSPORT_TLS:
+			case SipProfile.TRANSPORT_TLS:
 				if(tlsTransportId != null) {
 				//	account.cfg.setTransport_id(tlsTransportId);
 				}
@@ -1248,7 +1246,7 @@ public class SipService extends Service {
 		return status;
 	}
 
-	private int setAccountRegistration(Account account, int renew) {
+	private int setAccountRegistration(SipProfile account, int renew) {
 		int status = pjsuaConstants.PJ_FALSE;
 		synchronized (pjAccountsCreationLock) {
 			if (!created || account == null) {
@@ -1281,10 +1279,12 @@ public class SipService extends Service {
 		}
 		// Send a broadcast message that for an account
 		// registration state has changed
-		Intent regStateChangedIntent = new Intent(ACTION_SIP_REGISTRATION_CHANGED);
+		Intent regStateChangedIntent = new Intent(SipManager.ACTION_SIP_REGISTRATION_CHANGED);
 		sendBroadcast(regStateChangedIntent);
 
 		updateRegistrationsState();
+		
+		
 		return status;
 	}
 
@@ -1300,14 +1300,14 @@ public class SipService extends Service {
 
 		synchronized (pjAccountsCreationLock) {
 			Log.d(THIS_FILE, "Remove all accounts");
-			List<Account> accountList;
+			List<SipProfile> accountList;
 			synchronized (db) {
 				db.open();
 				accountList = db.getListAccounts();
 				db.close();
 			}
 
-			for (Account account : accountList) {
+			for (SipProfile account : accountList) {
 				setAccountRegistration(account, 0);
 			}
 
@@ -1338,7 +1338,7 @@ public class SipService extends Service {
 				activeAccountPjsuaId = activeAccounts.get(accountDbId);
 			}
 		}
-		Account account;
+		SipProfile account;
 		synchronized (db) {
 			db.open();
 			account = db.getAccount(accountDbId);
@@ -1367,12 +1367,12 @@ public class SipService extends Service {
 		return accountInfo;
 	}
 
-	protected Account getAccountForPjsipId(int accId) {
+	protected SipProfile getAccountForPjsipId(int accId) {
 		return getAccountForPjsipId(accId, db);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static Account getAccountForPjsipId(int accId, DBAdapter database) {
+	public static SipProfile getAccountForPjsipId(int accId, DBAdapter database) {
 		Set<Entry<Integer, Integer>> activeAccountsClone;
 		synchronized (activeAccountsLock) {
 			activeAccountsClone = ((HashMap<Integer, Integer>) activeAccounts.clone()).entrySet();
@@ -1386,7 +1386,7 @@ public class SipService extends Service {
 			if (entry.getValue().equals(accId)) {
 				synchronized (database) {
 					database.open();
-					Account account = database.getAccount(entry.getKey());
+					SipProfile account = database.getAccount(entry.getKey());
 					database.close();
 					return account;
 				}
@@ -1427,6 +1427,8 @@ public class SipService extends Service {
 			notificationManager.cancelRegisters();
 			releaseResources();
 		}
+		
+		
 	}
 	
 	 
@@ -1650,70 +1652,6 @@ public class SipService extends Service {
 	
 
 
-	/**
-	 * Get the native library file First search in local files of the app
-	 * (previously downloaded from the network) Then search in lib (bundlized
-	 * method)
-	 * 
-	 * @param context
-	 *            the context of the app that what to get it back
-	 * @return the file if any, null else
-	 */
-	public static File getStackLibFile(Context context) {
-		// Standard case
-		File standardOut = getGuessedStackLibFile(context);
-		//If production .so file exists and app is not in debuggable mode 
-		//if debuggable we have to get the file from bundle dir
-		if (standardOut.exists() && !isDebuggableApp(context)) {
-			return standardOut;
-		}
-
-		// Have a look if it's not a dev build
-		// TODO : find a clean way to access the libPath for one shot builds
-		File targetForBuild = new File(context.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
-		Log.d(THIS_FILE, "Search for " + targetForBuild.getAbsolutePath());
-		if (targetForBuild.exists()) {
-			return targetForBuild;
-		}
-
-		//Oups none exists.... reset version history
-		PreferencesWrapper prefs = new PreferencesWrapper(context);
-		prefs.setPreferenceStringValue(DownloadLibService.CURRENT_STACK_VERSION, "0.00-00");
-		prefs.setPreferenceStringValue(DownloadLibService.CURRENT_STACK_ID, "");
-		prefs.setPreferenceStringValue(DownloadLibService.CURRENT_STACK_URI, "");
-		return null;
-		
-	}
-
-	public static boolean hasBundleStack(Context ctx) {
-		File targetForBuild = new File(ctx.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
-		Log.d(THIS_FILE, "Search for " + targetForBuild.getAbsolutePath());
-		return targetForBuild.exists();
-	}
-
-	public static boolean hasStackLibFile(Context ctx) {
-		File guessedFile = getStackLibFile(ctx);
-		if (guessedFile == null) {
-			return false;
-		}
-		return guessedFile.exists();
-	}
-
-	public static File getGuessedStackLibFile(Context ctx) {
-		return ctx.getFileStreamPath(SipService.STACK_FILE_NAME);
-	}
-	
-	public static boolean isDebuggableApp(Context ctx) {
-		try {
-			PackageInfo pinfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-			return ( (pinfo.applicationInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
-		} catch (NameNotFoundException e) {
-			// Should not happen....or something is wrong with android...
-			Log.e(THIS_FILE, "Not possible to find self name", e);
-		}
-		return false;
-	}
-
 	public static ArrayList<String> codecs;
 
 	private void initCodecs() {
@@ -1807,7 +1745,7 @@ public class SipService extends Service {
 			
 			Log.d("Sent", callee + " " + message + " " + toCall.getPjsipAccountId());
 			SipMessage msg = new SipMessage(SipMessage.SELF, 
-					SipUri.getCanonicalSipUri(toCall.getCallee()), SipUri.getCanonicalSipUri(toCall.getCallee()), 
+					SipUri.getCanonicalSipContact(toCall.getCallee()), SipUri.getCanonicalSipContact(toCall.getCallee()), 
 					message, "text/plain", System.currentTimeMillis(), 
 					SipMessage.MESSAGE_TYPE_QUEUED);
 			msg.setRead(true);
@@ -1981,10 +1919,10 @@ public class SipService extends Service {
 	private ToCall sanitizeSipUri(String callee, int accountId) {
 		//accountId is the id in term of csipsimple database
 		//pjsipAccountId is the account id in term of pjsip adding
-		int pjsipAccountId = Account.INVALID_ID;
+		int pjsipAccountId = SipProfile.INVALID_ID;
 
 		// If this is an invalid account id
-		if (accountId == Account.INVALID_ID || !activeAccounts.containsKey(accountId)) {
+		if (accountId == SipProfile.INVALID_ID || !activeAccounts.containsKey(accountId)) {
 			int defaultPjsipAccount = pjsua.acc_get_default();
 
 			// If default account is not active
@@ -2012,7 +1950,7 @@ public class SipService extends Service {
 			pjsipAccountId = activeAccounts.get(accountId);
 		}
 
-		if (pjsipAccountId == Account.INVALID_ID) {
+		if (pjsipAccountId == SipProfile.INVALID_ID) {
 			Log.e(THIS_FILE, "Unable to find a valid account for this call");
 			return null;
 		}
@@ -2025,7 +1963,7 @@ public class SipService extends Service {
 		if (!m.matches()) {
 			// Assume this is a direct call using digit dialer
 			Log.d(THIS_FILE, "default acc : " + accountId);
-			Account account;
+			SipProfile account;
 			synchronized (db) {
 				db.open();
 				account = db.getAccount(accountId);
@@ -2048,7 +1986,7 @@ public class SipService extends Service {
 		Log.d(THIS_FILE, "will call " + callee);
 		if (pjsua.verify_sip_url(callee) == 0) {
 			//In worse worse case, find back the account id for uri.. but probably useless case
-			if(pjsipAccountId == Account.INVALID_ID) {
+			if(pjsipAccountId == SipProfile.INVALID_ID) {
 				pjsipAccountId = pjsua.acc_find_for_outgoing(pjsua.pj_str_copy(callee));
 			}
 			return new ToCall(pjsipAccountId, callee);
