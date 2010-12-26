@@ -452,9 +452,16 @@ public class SipHome extends TabActivity {
 					@Override
 					public void onTrigger(String number) {
                         //NOTE: See comments in PickupSipUri.java!
-                        number = PhoneNumberUtils.convertKeypadLettersToDigits(number);
-                        number = PhoneNumberUtils.stripSeparators(number);
-						startActivity(new Intent(Intent.ACTION_CALL, Uri.fromParts("sip", number, null)));
+					    //TODO - Handle skype and email.
+					    if (number.startsWith("sip:")) {
+					        startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(number)));
+					    } /*else if (number.startsWith("skype:")) {
+					        startActivity(new Intent(Intent.ACTION_CALL, Uri.fromParts("sip", number, null)));
+					    }*/ else {
+                            number = PhoneNumberUtils.convertKeypadLettersToDigits(number);
+                            number = PhoneNumberUtils.stripSeparators(number);
+                            startActivity(new Intent(Intent.ACTION_CALL, Uri.fromParts("sip", number, null)));
+					    }
 					}
 				});
 				return;
