@@ -59,36 +59,20 @@ public class ContactsUtils5 extends ContactsWrapper {
  		} 
  		pCur.close();
 
- 		/*TODO
-        pCur = ctxt.getContentResolver().query(
-                ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
-                null, 
-                ContactsContract.CommonDataKinds.Email.CONTACT_ID +" = ?", 
-                new String[]{id}, null);
-        while (pCur.moveToNext()) {
-            phones.add(new Phone(pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)), "email"));
- 
-        } 
-        pCur.close();
-        */
-
+ 		// Add any custom IM named 'sip' and set its type to 'sip'
         pCur = ctxt.getContentResolver().query(
                 ContactsContract.Data.CONTENT_URI, 
                 null, 
                 ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
                 new String[]{id, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE}, null);
         while (pCur.moveToNext()) {
-            int protocol = pCur.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Im.PROTOCOL));
-            String tag = "";
-            if (protocol == ContactsContract.CommonDataKinds.Im.PROTOCOL_CUSTOM) {
-                if (pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Im.CUSTOM_PROTOCOL)).equalsIgnoreCase("sip"))
-                    tag = "sip";
-            }/* else if (protocol == ContactsContract.CommonDataKinds.Im.PROTOCOL_SKYPE) {
-                tag = "skype";
-            }*/
-            
-            if (!tag.equals(""))
-                phones.add(new Phone(pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)), tag));
+            // Could also use some other IM type but may be confusing. Are there phones with no 'custom' IM type?
+            if (pCur.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Im.PROTOCOL)) == ContactsContract.CommonDataKinds.Im.PROTOCOL_CUSTOM) {
+                if (pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Im.CUSTOM_PROTOCOL)).equalsIgnoreCase("sip")) {
+                    phones.add(new Phone(pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)), "sip"));
+                }
+            }
+                
         } 
         pCur.close();
 

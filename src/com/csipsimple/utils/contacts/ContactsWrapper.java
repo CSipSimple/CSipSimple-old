@@ -137,10 +137,6 @@ public abstract class ContactsWrapper {
 	{
 	    if (type.equals("sip")) {
 	        return "sip:" + number;
-	    } else if (type.equals("skype")) {
-	        return "skype:" + number;
-	    } else if (type.equals("email")) {
-	        return "email:" + number;
 	    } else {
 	        return number;
 	    }
