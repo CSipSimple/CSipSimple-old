@@ -53,6 +53,7 @@ import com.csipsimple.wizards.impl.Local;
 import com.csipsimple.wizards.impl.Mondotalk;
 import com.csipsimple.wizards.impl.NexGenTel;
 import com.csipsimple.wizards.impl.OnSip;
+import com.csipsimple.wizards.impl.Ovh;
 import com.csipsimple.wizards.impl.Pbxes;
 import com.csipsimple.wizards.impl.Pennytel;
 import com.csipsimple.wizards.impl.Phonzo;
@@ -65,6 +66,7 @@ import com.csipsimple.wizards.impl.Sipgate;
 import com.csipsimple.wizards.impl.Speakezi;
 import com.csipsimple.wizards.impl.UkrTelecom;
 import com.csipsimple.wizards.impl.VPhone;
+import com.csipsimple.wizards.impl.Vono;
 
 
 public class WizardUtils {
@@ -181,6 +183,11 @@ public class WizardUtils {
 					R.drawable.ic_wizard_ittelenet, 10, 
 					new Locale[]{}, false, true, 
 					ITTelenet.class));
+			WIZARDS_DICT.put("OVH", new WizardInfo("OVH", "Ovh", 
+					R.drawable.ic_wizard_ovh, 30, 
+					new Locale[]{}, false, true, 
+					Ovh.class));
+			
 			
 			//Locales
 			WIZARDS_DICT.put("CALLCENTRIC", new WizardInfo("CALLCENTRIC", "Callcentric", 
@@ -284,7 +291,10 @@ public class WizardUtils {
 						new Locale("NL", "be"),
 						new Locale("NL", "nl"),
 					}, false, false, Scarlet.class));
-			
+			WIZARDS_DICT.put("VONO", new WizardInfo("VONO", "vono", 
+					R.drawable.ic_wizard_vono, 10, 
+					new Locale[] {new Locale("PT", "br")}, false, false, 
+					Vono.class));
 		}else {
 			WizardInfo info = CustomDistribution.getCustomDistributionWizard();
 			WIZARDS_DICT.put(info.id, info);
