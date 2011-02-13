@@ -15,7 +15,6 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include \
 		    $(LOCAL_PATH)/../../../pjlib-util/include \
 		    $(LOCAL_PATH)/../../../pjmedia/include  \
 		    $(LOCAL_PATH)/../../openssl/include 
-			
 
 LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 PJLIB_SRC_DIR := 
@@ -29,6 +28,15 @@ LOCAL_SRC_FILES := crypto/openssl/AesSrtp.cpp \
     crypto/openssl/hmac384.cpp \
     crypto/openssl/sha384.cpp \
     crypto/openssl/AesCFB.cpp
+
+#skeinmac 
+LOCAL_SRC_FILES += crypto/skein.c crypto/skein_block.c crypto/skeinApi.c \
+	crypto/macSkein.cpp
+
+#twofish 
+LOCAL_SRC_FILES += crypto/twofish.c \
+	crypto/twofish_cfb.c \
+	crypto/TwoCFB.cpp
 
 # zrtpobj
 LOCAL_SRC_FILES += zrtp/ZrtpCallbackWrapper.cpp \

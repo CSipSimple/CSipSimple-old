@@ -17,8 +17,17 @@ LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 
 JNI_SRC_DIR := src/
 
-LOCAL_SRC_FILES := $(JNI_SRC_DIR)/pjsua_wrap.cpp $(JNI_SRC_DIR)/pjsua_jni_addons.cpp \
-	$(JNI_SRC_DIR)/android_jni_dev.cpp
+LOCAL_SRC_FILES := $(JNI_SRC_DIR)/pjsua_wrap.cpp $(JNI_SRC_DIR)/pjsua_jni_addons.c $(JNI_SRC_DIR)/zrtp_android.c
+
+
+
+	
+ifeq ($(MY_ANDROID_DEV),1)
+LOCAL_SRC_FILES += $(JNI_SRC_DIR)/android_jni_dev.cpp
+endif
+ifeq ($(MY_ANDROID_DEV),2)
+LOCAL_SRC_FILES += $(JNI_SRC_DIR)/opensl_dev.cpp
+endif
 
 LOCAL_LDLIBS := -llog
 
@@ -26,6 +35,12 @@ ifeq ($(MY_USE_TLS),1)
 LOCAL_LDLIBS += -ldl 
 endif
 
+ifeq ($(MY_ANDROID_DEV),2)
+LOCAL_LDLIBS += -lOpenSLES
+endif
+
+
+#LOCAL_LDFLAGS := -Wl,-Map=moblox.map,--cref,--gc-section 
 
 LOCAL_STATIC_LIBRARIES := pjsip pjmedia pjnath pjlib-util pjlib resample srtp 
 ifeq ($(MY_USE_ILBC),1)
@@ -43,11 +58,11 @@ endif
 ifeq ($(MY_USE_SILK),1)
 	LOCAL_STATIC_LIBRARIES += silk
 endif
-ifeq ($(MY_USE_TLS),1)
-	LOCAL_STATIC_LIBRARIES += ssl crypto
+ifeq ($(MY_USE_CODEC2),1)
+	LOCAL_STATIC_LIBRARIES += codec2
 endif
-ifeq ($(MY_USE_ZRTP),1)
-	LOCAL_STATIC_LIBRARIES += zrtp4pj crypto 
+ifeq ($(MY_USE_TLS),1)
+	LOCAL_STATIC_LIBRARIES += ssl zrtp4pj crypto 
 endif
 
 

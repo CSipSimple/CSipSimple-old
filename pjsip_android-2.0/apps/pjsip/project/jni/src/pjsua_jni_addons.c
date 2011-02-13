@@ -16,10 +16,22 @@
  */
 
 
-#include <pjsua_jni_addons.h>
+#include "pjsua_jni_addons.h"
+
+
+#if defined(PJMEDIA_HAS_ZRTP) && PJMEDIA_HAS_ZRTP!=0
+#include "zrtp_android.h"
+#endif
+
+#if PJ_ANDROID_DEVICE==1
+#include "android_dev.h"
+#endif
+
+#if PJ_ANDROID_DEVICE==2
+#include "opensl_dev.h"
+#endif
 
 #define THIS_FILE		"pjsua_jni_addons.c"
-
 
 
 /**
@@ -340,161 +352,20 @@ PJ_DECL(pj_bool_t) is_call_secure(pjsua_call_id call_id){
 }
 
 
-/*
- * ZRTP stuff
- */
 
-#if defined(PJMEDIA_HAS_ZRTP) && PJMEDIA_HAS_ZRTP!=0
+static pj_bool_t on_rx_request_tcp_hack(pjsip_rx_data *rdata) {
+	 PJ_LOG(3,(THIS_FILE, "CB TCP HACK"));
+	if (strstr(pj_strbuf(&rdata->msg_info.msg->line.req.method.name), "INVITE")) {
+		 PJ_LOG(3,(THIS_FILE, "We have an invite here"));
 
-const char* InfoCodes[] =
-{
-    "EMPTY",
-    "Hello received, preparing a Commit",
-    "Commit: Generated a public DH key",
-    "Responder: Commit received, preparing DHPart1",
-    "DH1Part: Generated a public DH key",
-    "Initiator: DHPart1 received, preparing DHPart2",
-    "Responder: DHPart2 received, preparing Confirm1",
-    "Initiator: Confirm1 received, preparing Confirm2",
-    "Responder: Confirm2 received, preparing Conf2Ack",
-    "At least one retained secrets matches - security OK",
-    "Entered secure state",
-    "No more security for this session"
-};
+	}
 
-/**
- * Sub-codes for Warning
- */
-const char* WarningCodes [] =
-{
-    "EMPTY",
-    "Commit contains an AES256 cipher but does not offer a Diffie-Helman 4096",
-    "Received a GoClear message",
-    "Hello offers an AES256 cipher but does not offer a Diffie-Helman 4096",
-    "No retained shared secrets available - must verify SAS",
-    "Internal ZRTP packet checksum mismatch - packet dropped",
-    "Dropping packet because SRTP authentication failed!",
-    "Dropping packet because SRTP replay check failed!",
-    "Valid retained shared secrets availabe but no matches found - must verify SAS"
-};
+	return PJ_FALSE;
 
-/**
- * Sub-codes for Severe
- */
-const char* SevereCodes[] =
-{
-    "EMPTY",
-    "Hash HMAC check of Hello failed!",
-    "Hash HMAC check of Commit failed!",
-    "Hash HMAC check of DHPart1 failed!",
-    "Hash HMAC check of DHPart2 failed!",
-    "Cannot send data - connection or peer down?",
-    "Internal protocol error occured!",
-    "Cannot start a timer - internal resources exhausted?",
-    "Too much retries during ZRTP negotiation - connection or peer down?"
-};
-
-static void secureOn(void* data, char* cipher)
-{
-    PJ_LOG(3,(THIS_FILE, "Security enabled, cipher: %s", cipher));
-}
-static void secureOff(void* data)
-{
-    PJ_LOG(3,(THIS_FILE, "Security disabled"));
-}
-static void showSAS(void* data, char* sas, int32_t verified)
-{
-    PJ_LOG(3,(THIS_FILE, "SAS data: %s, verified: %d", sas, verified));
-}
-static void confirmGoClear(void* data)
-{
-    PJ_LOG(3,(THIS_FILE, "GoClear????????"));
-}
-static void showMessage(void* data, int32_t sev, int32_t subCode)
-{
-    switch (sev)
-    {
-    case zrtp_Info:
-        PJ_LOG(3,(THIS_FILE, "ZRTP info message: %s", InfoCodes[subCode]));
-        break;
-
-    case zrtp_Warning:
-        PJ_LOG(3,(THIS_FILE, "ZRTP warning message: %s", WarningCodes[subCode]));
-        break;
-
-    case zrtp_Severe:
-        PJ_LOG(3,(THIS_FILE, "ZRTP severe message: %s", SevereCodes[subCode]));
-        break;
-
-    case zrtp_ZrtpError:
-        PJ_LOG(3,(THIS_FILE, "ZRTP Error: severity: %d, subcode: %x", sev, subCode));
-        break;
-    }
-}
-static void zrtpNegotiationFailed(void* data, int32_t severity, int32_t subCode)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP failed: %d, subcode: %d", severity, subCode));
-}
-static void zrtpNotSuppOther(void* data)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP not supported by other peer"));
-}
-static void zrtpAskEnrollment(void* data, char* info)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP - Ask PBX enrollment"));
-}
-static void zrtpInformEnrollment(void* data, char* info)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP - Inform PBX enrollement"));
-}
-static void signSAS(void* data, char* sas)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP - sign SAS"));
-}
-static int32_t checkSASSignature(void* data, char* sas)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP - check SAS signature"));
 }
 
 
-static zrtp_UserCallbacks usercb =
-{
-    &secureOn,
-    &secureOff,
-    &showSAS,
-    &confirmGoClear,
-    &showMessage,
-    &zrtpNegotiationFailed,
-    &zrtpNotSuppOther,
-    &zrtpAskEnrollment,
-    &zrtpInformEnrollment,
-    &signSAS,
-    &checkSASSignature,
-    NULL
-};
 
-/* Initialize the ZRTP transport and the user callbacks */
-pj_status_t on_zrtp_transport_created(pjmedia_transport *tp, pjsua_call_id call_id)
-{
-    PJ_LOG(3,(THIS_FILE, "ZRTP transport created"));
-    usercb.userData = tp;
-
-    /* this is optional but highly recommended to enable the application
-     * to report status information to the user, such as verfication status,
-     * SAS code, etc
-     */
-    pjmedia_transport_zrtp_setUserCallback(tp, &usercb);
-
-    /*
-     * Initialize the transport. Just the filename of the ZID file that holds
-     * our partners ZID, shared data etc. If the files does not exists it will
-     * be created an initialized. The ZRTP configuration is not yet implemented
-     * thus the parameter is NULL.
-     */
-    pjmedia_transport_zrtp_initialize(tp, "/sdcard/simple.zid", PJ_TRUE);
-    return PJ_SUCCESS;
-}
-#endif
 
 
 static char errmsg[PJ_ERR_MSG_SIZE];
@@ -520,10 +391,29 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 	if(result == PJ_SUCCESS){
 		init_ringback_tone();
 #if PJMEDIA_AUDIO_DEV_HAS_ANDROID
+#if PJ_ANDROID_DEVICE==1
 		pjmedia_aud_register_factory(&pjmedia_android_factory);
 #endif
+#if PJ_ANDROID_DEVICE==2
+		pjmedia_aud_register_factory(&pjmedia_opensl_factory);
+#endif
+#endif
+
+
+	    // Registering module for tcp hack
+	    static pjsip_module tcp_hack_mod; // cannot be a stack variable
+
+	    memset(&tcp_hack_mod, 0, sizeof(tcp_hack_mod));
+	    tcp_hack_mod.id = -1;
+	    tcp_hack_mod.priority = PJSIP_MOD_PRIORITY_UA_PROXY_LAYER - 1;
+	    tcp_hack_mod.on_rx_response = &on_rx_request_tcp_hack;
+	    tcp_hack_mod.name = pj_str("TCP-Hack");
+
+	    result = pjsip_endpt_register_module(pjsip_ua_get_endpt(pjsip_ua_instance()), &tcp_hack_mod);
+
 
 	}
+
 
 
 
@@ -534,6 +424,46 @@ PJ_DECL(pj_status_t) csipsimple_destroy(void){
 	destroy_ringback_tone();
 	return (pj_status_t) pjsua_destroy();
 }
+
+
+
+// Manage keep alive
+PJ_DECL(pj_status_t) send_keep_alive(int acc_id) {
+	pjsua_acc *acc;
+	pjsip_tpselector tp_sel;
+	pj_status_t status = PJ_SUCCESS;
+
+
+	PJSUA_LOCK();
+
+	acc = &pjsua_var.acc[acc_id];
+
+	if( acc != NULL && acc->ka_transport != NULL ){
+		/* Select the transport to send the packet */
+		pj_bzero(&tp_sel, sizeof(tp_sel));
+		tp_sel.type = PJSIP_TPSELECTOR_TRANSPORT;
+		tp_sel.u.transport = acc->ka_transport;
+
+		PJ_LOG(5,(THIS_FILE,
+			  "Sending %d bytes keep-alive packet for acc %d",
+			  acc->cfg.ka_data.slen, acc->index));
+
+		/* Send raw packet */
+		status = pjsip_tpmgr_send_raw(pjsip_endpt_get_tpmgr(pjsua_var.endpt),
+					  PJSIP_TRANSPORT_UDP, &tp_sel,
+					  NULL, acc->cfg.ka_data.ptr,
+					  acc->cfg.ka_data.slen,
+					  &acc->ka_target, acc->ka_target_len,
+					  NULL, NULL);
+	}
+
+	PJSUA_UNLOCK();
+	return status;
+}
+
+
+
+
 
 
 // Android app glue
@@ -609,7 +539,7 @@ void init_ringback_tone(){
 	pjmedia_tone_desc tone[RINGBACK_CNT];
 	unsigned i;
 
-	app_config.pool = pjsua_pool_create("pjsua-app", 1000, 1000);
+	app_config.pool = pjsua_pool_create("pjsua-jni", 1000, 1000);
 	app_config.ringback_slot=PJSUA_INVALID_ID;
 	app_config.ringback_on = PJ_FALSE;
 	app_config.ringback_cnt = 0;
@@ -656,6 +586,11 @@ void destroy_ringback_tone(){
 		pjmedia_port_destroy(app_config.ringback_port);
 		app_config.ringback_port = NULL;
 	}
+
+    if (app_config.pool) {
+	pj_pool_release(app_config.pool);
+	app_config.pool = NULL;
+    }
 }
 
 void app_on_call_state(pjsua_call_id call_id, pjsip_event *e) {
@@ -705,4 +640,15 @@ void app_on_call_state(pjsua_call_id call_id, pjsip_event *e) {
 }
 
 
+
+PJ_DECL(pj_status_t) set_turn_cfg(pjsua_media_config *media_cfg, pj_str_t username, pj_str_t data){
+	media_cfg->turn_auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
+	media_cfg->turn_auth_cred.data.static_cred.realm = pj_str("*");
+	media_cfg->turn_auth_cred.data.static_cred.username = username;
+
+	 if (data.slen) {
+		 media_cfg->turn_auth_cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
+		 media_cfg->turn_auth_cred.data.static_cred.data = data;
+	 }
+}
 

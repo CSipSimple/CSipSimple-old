@@ -43,16 +43,11 @@
 // extern void initializeOpenSSL();
 
 
-void aesCfbEncrypt(unsigned char *key,
-            unsigned int keyLength,
-            unsigned char* IV,
-            unsigned char *data,
-            unsigned int dataLength)
+void aesCfbEncrypt(uint8_t* key, int32_t keyLength, uint8_t* IV, uint8_t *data,
+                   int32_t dataLength)
 {
     AES_KEY aesKey;
     int usedBytes = 0;
-
-//    initializeOpenSSL();
 
     memset(&aesKey, 0, sizeof( AES_KEY ) );
     if (keyLength == 16) {
@@ -69,16 +64,11 @@ void aesCfbEncrypt(unsigned char *key,
 }
 
 
-void aesCfbDecrypt(unsigned char *key,
-            unsigned int keyLength,
-            unsigned char* IV,
-            unsigned char *data,
-            unsigned int dataLength)
+void aesCfbDecrypt(uint8_t* key, int32_t keyLength, const uint8_t* IV, uint8_t *data,
+                   int32_t dataLength)
 {
     AES_KEY aesKey;
     int usedBytes = 0;
-
-//    initializeOpenSSL();
 
     memset(&aesKey, 0, sizeof( AES_KEY ) );
     if (keyLength == 16) {
@@ -91,5 +81,5 @@ void aesCfbDecrypt(unsigned char *key,
         return;
     }
     AES_cfb128_encrypt(data, data, dataLength, &aesKey,
-                       IV, &usedBytes, AES_DECRYPT);
+                       (unsigned char*)IV, &usedBytes, AES_DECRYPT);
 }

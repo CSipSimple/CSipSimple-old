@@ -26,6 +26,14 @@
 #include <libzrtpcpp/ZrtpConfigure.h>
 
 /**
+ * @file ZrtpDH.h
+ * @brief Class that implemets Diffie-Helman key agreement for ZRTP
+ * 
+ * @ingroup GNU_ZRTP
+ * @{
+ */
+
+/**
  * Generates a number of random bytes.
  *
  * @param buf
@@ -36,6 +44,11 @@
  *    Number of random bytes to produce.
  */
 void randomZRTP(uint8_t *buf, int32_t length);
+
+const int32_t DH2K = 0;
+const int32_t DH3K = 1;
+const int32_t EC25 = 2;
+const int32_t EC38 = 3;
 
 
 /**
@@ -52,11 +65,18 @@ void randomZRTP(uint8_t *buf, int32_t length);
 class ZrtpDH {
 
 private:
-    void* ctx;
-    int pkType;
+    void* ctx;      ///< Context the DH
+    int pkType;     ///< Which type of DH to use
 
 public:
+    /**
+     * Create a Diffie-Helman key agreement algorithm
+     * 
+     * @param type
+     *     Name of the DH algorithm to use
+     */
     ZrtpDH(const char* type);
+    
     ~ZrtpDH();
 
     /**
@@ -124,10 +144,20 @@ public:
      */
     int32_t checkPubKey(uint8_t* pubKeyBytes) const;
 
+    /**
+     * Get type of DH algorithm.
+     * 
+     * @return
+     *     Pointer to DH algorithm name
+     */
     const char* getDHtype();
 };
 
 #endif // ZRTPDH_H
+
+/**
+ * @}
+ */
 
 /** EMACS **
  * Local variables:

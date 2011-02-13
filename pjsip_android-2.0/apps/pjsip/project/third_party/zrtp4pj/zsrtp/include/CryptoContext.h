@@ -21,18 +21,30 @@
 #ifndef CRYPTOCONTEXT_H
 #define CRYPTOCONTEXT_H
 
+/**
+ * @file CryptoContext.h
+ * @brief The C++ SRTP implementation
+ * @ingroup Z_SRTP
+ * @{
+ */
+
 #include <stdint.h>
-#include <crypto/AesSrtp.h>
 
 #define REPLAY_WINDOW_SIZE 64
 
-const int SrtpAuthenticationNull     = 0;
-const int SrtpAuthenticationSha1Hmac = 1;
+const int SrtpAuthenticationNull      = 0;
+const int SrtpAuthenticationSha1Hmac  = 1;
+const int SrtpAuthenticationSkeinHmac = 2;
 
 const int SrtpEncryptionNull  = 0;
 const int SrtpEncryptionAESCM = 1;
 const int SrtpEncryptionAESF8 = 2;
+const int SrtpEncryptionTWOCM = 3;
+const int SrtpEncryptionTWOF8 = 4;
 
+#include <crypto/AesSrtp.h>
+
+class AesSrtp;
 
 /**
  * The implementation for a SRTP cryptographic context.
@@ -374,18 +386,23 @@ private:
     int32_t  n_s;
     uint8_t* k_s;
 
-    uint8_t ealg;
-    uint8_t aalg;
-    uint8_t ekeyl;
-    uint8_t akeyl;
-    uint8_t skeyl;
-    uint8_t tagLength;
+    int32_t ealg;
+    int32_t aalg;
+    int32_t ekeyl;
+    int32_t akeyl;
+    int32_t skeyl;
+    int32_t tagLength;
     bool  seqNumSet;
 
-    AesSrtp* aesCipher;
-    AesSrtp* f8AesCipher;
+    void*   macCtx;
+    
+    AesSrtp* cipher;
+    AesSrtp* f8Cipher;
 };
 
+/**
+ * @}
+ */
 #endif
 
 /** EMACS **

@@ -175,7 +175,7 @@ static int PJ_THREAD_FUNC AndroidRecorderCallback(void* userData){
 
 
 	//start recording
-	setpriority(PRIO_PROCESS, 0, ANDROID_PRIORITY_AUDIO);
+	setpriority(PRIO_PROCESS, 0, -19 /*ANDROID_PRIORITY_AUDIO*/);
 
 	buf = jni_env->GetByteArrayElements(inputBuffer, 0);
 
@@ -335,7 +335,7 @@ static int PJ_THREAD_FUNC AndroidTrackCallback(void* userData){
 
 	buf = jni_env->GetByteArrayElements(outputBuffer, 0);
 
-	setpriority(PRIO_PROCESS, 0, ANDROID_PRIORITY_AUDIO);
+	setpriority(PRIO_PROCESS, 0, -19 /*ANDROID_PRIORITY_AUDIO*/);
 
 	//start playing
 	jni_env->CallVoidMethod(stream->track, play_method);
@@ -387,7 +387,8 @@ static int PJ_THREAD_FUNC AndroidTrackCallback(void* userData){
 
 		if(status < 0){
 			PJ_LOG(1, (THIS_FILE, "Error while writing %d ", status));
-			goto on_finish;
+			//goto on_finish;
+			continue;
 		}else if(size != status){
 			PJ_LOG(2, (THIS_FILE, "Not everything written"));
 		}
@@ -866,13 +867,6 @@ static pj_status_t strm_start(pjmedia_aud_stream *s)
 
 	JNIEnv *jni_env = 0;
 	ATTACH_JVM(jni_env);
-	/*
-	jint attachResult = stream->jvm->AttachCurrentThread(&jni_env,NULL);
-	if (attachResult != 0) {
-		PJ_LOG(1, (THIS_FILE, "Not able to attach the jvm"));
-		return PJ_ENOMEM;
-	}
-	*/
 
 	//Set media in call
 	/*

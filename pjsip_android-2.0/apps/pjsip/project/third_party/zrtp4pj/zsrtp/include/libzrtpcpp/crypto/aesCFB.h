@@ -22,6 +22,15 @@
 #ifndef _AESCFB_H__
 #define _AESCFB_H__
 
+#include <stdint.h>
+
+/**
+ * @file aesCFB.h
+ * @brief Function that provide AES CFB mode support
+ * 
+ * @ingroup GNU_ZRTP
+ * @{
+ */
 
 #ifndef AES_BLOCK_SIZE
 #define AES_BLOCK_SIZE 16
@@ -47,11 +56,8 @@
  *    Length of the data in bytes
  */
 
-void aesCfbEncrypt(unsigned char *key,
-            unsigned int keyLength,
-            unsigned char* IV,
-            unsigned char *data,
-            unsigned int dataLength);
+void aesCfbEncrypt(uint8_t* key, int32_t keyLength, uint8_t* IV, uint8_t *data,
+                   int32_t dataLength);
 
 /**
  * Decrypt data with AES CFB mode, full block feedback size.
@@ -73,9 +79,9 @@ void aesCfbEncrypt(unsigned char *key,
  *    Length of the data in bytes
  */
 
-void aesCfbDecrypt(unsigned char *key,
-            unsigned int keyLength,
-            unsigned char* IV,
-            unsigned char *data,
-            unsigned int dataLength);
+void aesCfbDecrypt(uint8_t* key, int32_t keyLength, const uint8_t* IV, uint8_t *data,
+                   int32_t dataLength);
+/**
+ * @}
+ */
 #endif

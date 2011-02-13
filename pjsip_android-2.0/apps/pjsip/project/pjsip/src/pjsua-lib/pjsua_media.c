@@ -200,6 +200,16 @@ pj_status_t pjsua_media_subsys_init(const pjsua_media_config *cfg)
     }
 #endif /* PJMEDIA_HAS_SILK_CODEC */
 
+#if PJMEDIA_HAS_CODEC2_CODEC
+    /* Register SILK */
+    status = pjmedia_codec_codec2_init(pjsua_var.med_endpt);
+    if (status != PJ_SUCCESS) {
+	pjsua_perror(THIS_FILE, "Error initializing Codec2 codec",
+		     status);
+	return status;
+    }
+#endif /* PJMEDIA_HAS_CODEC2_CODEC */
+
 #if PJMEDIA_HAS_INTEL_IPP
     /* Register IPP codecs */
     status = pjmedia_codec_ipp_init(pjsua_var.med_endpt);
@@ -752,6 +762,10 @@ pj_status_t pjsua_media_subsys_destroy(void)
 	    pjmedia_codec_silk_deinit();
 #	endif /* PJMEDIA_HAS_SILK_CODEC */
 
+#	if PJMEDIA_HAS_CODEC2_CODEC
+	    pjmedia_codec_codec2_deinit();
+#	endif /* PJMEDIA_HAS_CODEC2_CODEC */
+
 #	if PJMEDIA_HAS_L16_CODEC
 	    pjmedia_codec_l16_deinit();
 #	endif	/* PJMEDIA_HAS_L16_CODEC */
@@ -1276,7 +1290,7 @@ pj_status_t pjsua_media_channel_init(pjsua_call_id call_id,
     if ((acc->cfg.use_srtp != PJMEDIA_SRTP_DISABLED) && (acc->cfg.use_zrtp != PJMEDIA_NO_ZRTP)) {
         return PJSIP_ESESSIONINSECURE;
     }
-    //if (acc->cfg.use_zrtp == PJMEDIA_CREATE_ZRTP) {
+    if (acc->cfg.use_zrtp == PJMEDIA_CREATE_ZRTP) {
     status = pjmedia_transport_zrtp_create(pjsua_var.med_endpt, NULL, 
                                            call->med_tp,
                                            &zrtp, PJ_FALSE);
@@ -1291,7 +1305,7 @@ pj_status_t pjsua_media_channel_init(pjsua_call_id call_id,
     /* Set SRTP as current media transport */
     call->med_orig = call->med_tp;
     call->med_tp = zrtp;
-    //}
+    }
 #else
     call->med_orig = call->med_tp;
 #endif

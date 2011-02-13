@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2004 Erik Eliasson, Johan Bilien
+  Copyright (C) 2005, 2004, 2010 Erik Eliasson, Johan Bilien, Werner Dittmann
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,32 @@
  * files in the program, then also delete it here.
 */
 
+
+
+#ifndef AESSRTP_H
+#define AESSRTP_H
+
+/**
+ * @file AesSrtp.h
+ * @brief Class which implements SRTP AES cryptographic functions
+ * 
+ * @ingroup GNU_ZRTP
+ * @{
+ */
+
+#include <stdint.h>
+#include <CryptoContext.h>
+
+#ifndef SRTP_BLOCK_SIZE
+#define SRTP_BLOCK_SIZE 16
+#endif
+
+typedef struct _f8_ctx {
+    unsigned char *S;           ///< Intermetiade buffer
+    unsigned char *ivAccent;    ///< second IV
+    uint32_t J;                 ///< Counter
+} F8_CIPHER_CTX;
+
 /**
  * Implments the SRTP encryption modes as defined in RFC3711
  *
@@ -48,28 +74,20 @@
  * @author Johan Bilien <jobi@via.ecp.fr>
  * @author Werner Dittmann <Werner.Dittmann@t-online.de>
  */
-
-
-#ifndef AESSRTP_H
-#define AESSRTP_H
-
-#include <stdint.h>
-
-#ifndef AES_BLOCK_SIZE
-#define AES_BLOCK_SIZE 16
-#endif
-
-typedef struct _f8_ctx {
-    unsigned char *S;
-    unsigned char *ivAccent;
-    uint32_t J;
-} F8_CIPHER_CTX;
-
-
 class AesSrtp {
 public:
-    AesSrtp();
-    AesSrtp(uint8_t* key, int32_t key_length);
+    AesSrtp(int algo = SrtpEncryptionAESCM);
+    
+    /**
+     * Constructor that initializes key data
+     * 
+     * @param key
+     *     Pointer to key bytes.
+     * @param key_length
+     *     Number of key bytes.
+     */
+    AesSrtp(uint8_t* key, int32_t key_length, int algo = SrtpEncryptionAESCM);
+    
     ~AesSrtp();
 
     /**
@@ -148,7 +166,7 @@ public:
      *    Pointer to input and output block, must be <code>dataLen</code>
      *    bytes.
      *
-     * @param dataLen
+     * @param data_length
      *    Number of bytes to process.
      *
      * @param iv
@@ -231,6 +249,9 @@ public:
      *
      * @param saltLen
      *    The length in bytes of the computed SRTP session salt.
+     * 
+     * @param f8Cipher
+     *   An AES cipher context used for intermediate f8 AES encryption.
      */
     void f8_encrypt(const uint8_t* data,
 		    uint32_t dataLen,
@@ -249,7 +270,12 @@ private:
 		     int32_t length,
 		     uint8_t* out);
     void* key;
+    int32_t algorithm;
 };
+
+/**
+ * @}
+ */
 
 #endif
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2006-2009 Werner Dittmann
+  Copyright (C) 2006-2010 Werner Dittmann
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,12 @@
 
 #ifndef _ZRTP_H_
 #define _ZRTP_H_
+/**
+ * @file ZRtp.h
+ * @brief The ZRTP main engine
+ * @defgroup GNU_ZRTP The GNU ZRTP C++ implementation
+ * @{
+ */
 
 #include <cstdlib>
 
@@ -427,7 +433,7 @@ private:
     /**
      * Length off public key
      */
-    int32_t pubKeyLen;
+//    int32_t pubKeyLen;
     /**
      * My Role in the game
      */
@@ -1132,5 +1138,8 @@ private:
      void setClientId(std::string id);
 };
 
+/**
+ * @}
+ */
 #endif // ZRTP
 

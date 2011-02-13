@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2009 Werner Dittmann
+  Copyright (C) 2009 - 2010 Werner Dittmann
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,13 @@
 #ifndef _ZRTPCONFIGURE_H_
 #define _ZRTPCONFIGURE_H_
 
+/**
+ * @file ZrtpConfigure.h
+ * @brief The ZRTP configure functions
+ * @ingroup GNU_ZRTP
+ * @{
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <list>
@@ -29,51 +36,207 @@
 #include <vector>
 #include <string.h>
 
+#include <libzrtpcpp/ZrtpCallback.h>
+
 /**
  * This enumerations list all configurable algorithm types.
  */
 
 enum AlgoTypes {
-    HashAlgorithm = 1, CipherAlgorithm, PubKeyAlgorithm, SasType, AuthLength
+    Invalid = 0, HashAlgorithm = 1, CipherAlgorithm, PubKeyAlgorithm, SasType, AuthLength
 };
 
+typedef void(*encrypt_t)(uint8_t*, int32_t, uint8_t*, uint8_t*, int32_t);
+typedef void(*decrypt_t)(uint8_t*, int32_t, const uint8_t*, uint8_t*, int32_t);
+            
 /**
  * The algorithm enumration class.
  *
  * This simple class is just a container of an algorithm's name and
  * its associated algorithm type. We use this class together with the
  * EnumBase class to implement a Java-like enum class functionality
- * (not fully, but OK for our use case at hand).
+ * (not fully, but OK for our use case).
+ * 
+ * An application shall use the get / check methods to retrieve information.
  */
 class AlgorithmEnum {
 public:
-    AlgorithmEnum(const int type, const char* name);
+    /**
+     * Create an AlgorithmEnum object.
+     * 
+     * @param type
+     *    Defines the algorithm type 
+     * @param name
+     *    Set the names of the algorithm. The name is copied
+     *    and the call may reuse the space.
+     * 
+     * @see AlgoTypes
+     */
+    AlgorithmEnum(const AlgoTypes type, const char* name, int32_t klen, 
+                  const char* ra, encrypt_t en, decrypt_t de, SrtpAlgorithms alId);
+    
+    /**
+     * AlgorithmEnum destructor
+     */
     ~AlgorithmEnum();
+    
+    /**
+     * Get the algorihm's name
+     * 
+     * @returns
+     *    Algorithm's name as null terminated C-string. The
+     *    application must not free this memory.
+     */
     const char* getName();
-    int getAlgoType();
+    
+    /**
+     * Get the algorihm's readable name
+     * 
+     * @returns
+     *    Algorithm's readable name as null terminated C-string. The
+     *    application must not free this memory.
+     */
+    const char* getReadable();
+    
+    /**
+     * Get the algorihm's key length.
+     * 
+     * @returns
+     *    An integer definig the key length in bytes.
+     */
+    int getKeylen();
+    
+    /**
+     * Get the algorihm's integer id.
+     * 
+     * @returns
+     *    An integer that defines the algorithm.
+     */
+    SrtpAlgorithms getAlgoId();
+    /**
+     * Get the algorihm's key length.
+     * 
+     * @returns
+     *    An integer definig the key length in bytes.
+     */
+    encrypt_t getEncrypt();
+
+    /**
+     * Get the algorihm's key length.
+     * 
+     * @returns
+     *    An integer definig the key length in bytes.
+     */
+    decrypt_t getDecrypt();
+
+    /**
+     * Get the algorithm type of this AlgorithmEnum object.
+     * 
+     * @returns
+     *     The algorithm type.
+     * 
+     * @see AlgoTypes
+     */
+    AlgoTypes getAlgoType();
+    
+    /**
+     * Check if this AlgorithmEnum object is valid
+     * 
+     * @returns
+     *    @c true if the object is valid, @c false otherwise
+     */
     bool isValid();
 
 private:
-    int algoType;
+    AlgoTypes algoType;
     std::string algoName;
+    int32_t   keyLen;
+    std::string readable;
+    encrypt_t encrypt;
+    decrypt_t decrypt;
+    SrtpAlgorithms   algoId;
 };
 
 /**
- * EnumBase provides methods to access the algorithm enumerations.
+ * EnumBase provides methods to store and access algorithm enumerations of
+ * a specific algorithm type.
+ * 
+ * An application shall use the get / check methods to retrieve information
+ * from the preset Algorithm Enumerations.
+ *
+ * @see AlgoTypes
+ * @see zrtpHashes
+ * @see zrtpSymCiphers
+ * @see zrtpPubKeys
+ * @see zrtpSasTypes
+ * @see zrtpAuthLengths
  */
 class EnumBase {
 public:
+    /**
+     * Get an AlgorithmEnum by its name
+     * 
+     * @param name
+     *    The name of the AlgorithmEnum to search.
+     * @returns
+     *    The AlgorithmEnum if found or an invalid AlgorithmEnum if the name
+     *    was not found
+     */
     AlgorithmEnum& getByName(const char* name);
+    
+    /**
+     * Return all names of all currently stored AlgorithmEnums
+     * 
+     * @return
+     *    A C++ std::list of C++ std::strings that contain the names.
+     */
     std::list<std::string>* getAllNames();
+    
+    /**
+     * Get the number of currently stored AlgorithmEnums
+     * 
+     * @return
+     *    The number of currently stored AlgorithmEnums
+     */
     int getSize();
+    
+    /**
+     * Get the AlgoTypes to which this EnumBase belongs.
+     * 
+     * @return
+     *     The AlgoTypes of this EnumBase.
+     * @see AlgoTypes.
+     */
     AlgoTypes getAlgoType();
+    
+    /**
+     * Return the AlgorithmEnum by its ordinal number
+     * 
+     * @param ord
+     *     The ordinal number of the AlgorithmEnum.
+     * @return
+     *     The AlgorithmEnum if found, an invalid Algorithm otherwise.
+     */
     AlgorithmEnum& getByOrdinal(int ord);
+    
+    /**
+     * Get the ordinal number of an AlgorithmEnum
+     * 
+     * @param algo
+     *     Return toe ordinal numer of this AlgorithmEnum.
+     * 
+     * @return
+     *    Return the ordinal number of this AlgorithmEnum if found,
+     *    -1 otherwise.
+     */
     int getOrdinal(AlgorithmEnum& algo);
 
 protected:
     EnumBase(AlgoTypes algo);
     ~EnumBase();
     void insert(const char* name);
+    void insert(const char* name, int32_t klen, 
+                const char* ra, encrypt_t en, decrypt_t de, SrtpAlgorithms alId);
 
 private:
     AlgoTypes algoType;
@@ -316,6 +479,7 @@ public:
      */
     bool isSasSignature();
     
+    /// Helper function to print some internal data
     void printConfiguredAlgos(AlgoTypes algoTyp);
 
   private:
@@ -343,10 +507,9 @@ public:
   public:
 };
 
-
-
-
-
+/**
+ * @}
+ */
 #endif
 
 /** EMACS **
