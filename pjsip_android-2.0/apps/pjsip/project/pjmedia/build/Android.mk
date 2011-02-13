@@ -13,7 +13,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)../pjlib/include/ $(LOCAL_PATH)../pjlib-util/in
 	$(LOCAL_PATH)../third_party/srtp/crypto/include $(LOCAL_PATH)../third_party/build/srtp/ \
 	$(LOCAL_PATH)../third_party/build/speex/  $(LOCAL_PATH)../third_party/speex/include \
 	$(LOCAL_PATH)../third_party/g729/include $(LOCAL_PATH)../third_party/silk/interface/ \
-	$(LOCAL_PATH)../third_party/codec2/src
+	$(LOCAL_PATH)../third_party/codec2/src $(LOCAL_PATH)../third_party/ffmpeg
 
 LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 PJLIB_SRC_DIR := src/pjmedia
@@ -47,6 +47,7 @@ LOCAL_SRC_FILES := $(PJLIB_SRC_DIR)/alaw_ulaw.c $(PJLIB_SRC_DIR)/alaw_ulaw_table
 	$(PJMEDIADEV_SRC_DIR)/audiodev.c $(PJMEDIADEV_SRC_DIR)/audiotest.c $(PJMEDIADEV_SRC_DIR)/errno.c  \
 	$(PJMEDIAVDEV_SRC_DIR)/videodev.c $(PJMEDIAVDEV_SRC_DIR)/ffmpeg_dev.c $(PJMEDIAVDEV_SRC_DIR)/colorbar_dev.c \
 	$(PJMEDIAVDEV_SRC_DIR)/v4l2_dev.c
+
 
 ifeq ($(MY_USE_G729),1)
 	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/g729.c

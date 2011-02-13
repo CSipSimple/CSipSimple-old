@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 
-//This file is a port for android devices
-// It's deeply inspired from port audio
-
 #include "opensl_dev.h"
 
 #define PJMEDIA_AUDIO_DEV_HAS_OPENSL 1

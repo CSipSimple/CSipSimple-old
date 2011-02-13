@@ -29,6 +29,10 @@ ifeq ($(MY_ANDROID_DEV),2)
 LOCAL_SRC_FILES += $(JNI_SRC_DIR)/opensl_dev.cpp
 endif
 
+ifeq ($(MY_USE_VIDEO),1)
+LOCAL_SRC_FILES += $(JNI_SRC_DIR)/android_video_dev.c
+endif
+
 LOCAL_LDLIBS := -llog
 
 ifeq ($(MY_USE_TLS),1)
@@ -63,6 +67,9 @@ ifeq ($(MY_USE_CODEC2),1)
 endif
 ifeq ($(MY_USE_TLS),1)
 	LOCAL_STATIC_LIBRARIES += ssl zrtp4pj crypto 
+endif
+ifeq ($(MY_USE_VIDEO),1)
+	LOCAL_STATIC_LIBRARIES += ffmpeg
 endif
 
 

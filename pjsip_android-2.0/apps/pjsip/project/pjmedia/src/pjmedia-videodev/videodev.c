@@ -372,6 +372,7 @@ pjmedia_vid_register_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
 {
     pj_status_t status;
 
+	PJ_LOG(1,(THIS_FILE,"called %d ", vid_subsys.init_count));
     if (vid_subsys.init_count == 0)
 	return PJMEDIA_EVID_INIT;
 
@@ -380,6 +381,7 @@ pjmedia_vid_register_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
     if (status == PJ_SUCCESS) {
 	vid_subsys.drv_cnt++;
     } else {
+    	PJ_LOG(1,(THIS_FILE,"ARG!!"));
 	deinit_driver(vid_subsys.drv_cnt);
     }
 

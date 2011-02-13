@@ -130,6 +130,11 @@ PJ_DEF(pj_status_t) pjmedia_endpt_create(pj_pool_factory *pf,
     if (status != PJ_SUCCESS)
 	goto on_error;
 
+    /* Video */
+    status = pjmedia_vid_subsys_init(pf);
+    if (status != PJ_SUCCESS)
+	goto on_error;
+
     /* Init codec manager. */
     status = pjmedia_codec_mgr_init(&endpt->codec_mgr, endpt->pf);
     if (status != PJ_SUCCESS)

@@ -31,6 +31,9 @@
 #include "opensl_dev.h"
 #endif
 
+
+#include "android_video_dev.h"
+
 #define THIS_FILE		"pjsua_jni_addons.c"
 
 
@@ -399,6 +402,8 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 #endif
 #endif
 
+		pjmedia_vid_register_factory(&pjmedia_android_video_dev_factory);
+		PJ_LOG(4,(THIS_FILE, "Video dev registered" ));
 
 	    // Registering module for tcp hack
 	    static pjsip_module tcp_hack_mod; // cannot be a stack variable
