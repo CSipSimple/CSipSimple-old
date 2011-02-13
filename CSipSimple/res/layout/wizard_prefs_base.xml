@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copyright (C) 2010 Regis Montoya (aka r3gis - www.r3gis.fr) 
+
+	This file is part of CSipSimple.
+    CSipSimple is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CSipSimple is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CSipSimple.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical">
+	
+	<LinearLayout android:layout_weight="1"
+		android:orientation="vertical" 
+		android:layout_height="fill_parent" android:layout_width="fill_parent">
+		<LinearLayout android:layout_height="?android:attr/listPreferredItemHeight"
+			android:layout_width="fill_parent"
+			android:id="@+id/custom_wizard_row"
+			android:background="@android:drawable/list_selector_background"
+			android:orientation="vertical"
+			android:visibility="gone">
+			<TextView android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/custom_wizard_text"
+				android:textAppearance="?android:attr/textAppearanceLarge" 
+				android:textColor="@android:color/white" android:paddingLeft="12dip" android:paddingRight="12dip" android:gravity="center" android:layout_weight="1"/>
+			<ImageView android:layout_width="fill_parent"
+				android:background="@android:drawable/divider_horizontal_dark"
+				android:layout_height="1px"/>
+		</LinearLayout>
+		<ListView android:id="@android:id/list" 
+			android:layoutAnimation="@anim/layout_slide_right"
+			android:persistentDrawingCache="animation|scrolling"
+			android:drawSelectorOnTop="false"
+			android:layout_width="fill_parent" android:layout_height="fill_parent">
+		</ListView>
+	</LinearLayout>
+
+	<LinearLayout
+		android:orientation="horizontal" style="@android:style/ButtonBar"
+		android:layout_height="wrap_content" android:layout_width="fill_parent"
+		android:layout_weight="0">
+		<Button android:layout_height="wrap_content" android:text="@string/save"
+			android:layout_weight="0.5"
+			android:layout_width="fill_parent" android:id="@+id/save_bt"></Button>
+			
+		<Button android:layout_height="wrap_content" android:text="@string/cancel"
+			android:layout_weight="0.5"
+			android:layout_width="fill_parent" android:id="@+id/cancel_bt"></Button>
+	</LinearLayout>
+
+
+</LinearLayout>
+
+
+
+

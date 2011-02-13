@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Copyright (C) 2010 Regis Montoya (aka r3gis - www.r3gis.fr)
+
+	This file is part of CSipSimple. 
+	CSipSimple is free software: you can
+	redistribute it and/or modify it under the terms of the GNU General
+	Public License as published by the Free Software Foundation, either
+	version 3 of the License, or (at your option) any later version.
+
+	CSipSimple is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+	General Public License for more details. You should have received a
+	copy of the GNU General Public License along with CSipSimple. If not,
+	see <http://www.gnu.org/licenses/>.
+	
+	
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+		<PreferenceCategory android:title="@string/audio_quality" android:key="audio_quality">
+			<CheckBoxPreference android:summary="@string/echo_cancellation_desc"
+				android:title="@string/echo_cancellation" android:key="echo_cancellation"
+				android:defaultValue="false"></CheckBoxPreference>
+			<EditTextPreference android:title="@string/echo_cancellation_tail" android:key="echo_cancellation_tail"
+				android:summary="@string/echo_cancellation_tail_desc"
+				android:defaultValue="200"
+				android:numeric="signed"></EditTextPreference>
+			<ListPreference android:title="@string/echo_mode" android:key="echo_mode"
+				android:summary="@string/echo_mode_desc"
+				android:defaultValue="2"
+				android:entryValues="@array/echo_mode_values" android:entries="@array/echo_mode_choices"/>
+			
+			
+			<CheckBoxPreference android:summary="@string/enable_vad_desc"
+				android:title="@string/enable_vad" android:key="enable_vad"
+				android:defaultValue="false"></CheckBoxPreference>
+				
+			<EditTextPreference android:key="snd_media_quality"
+				android:title="@string/snd_media_quality"
+				android:numeric="signed"
+				android:summary="@string/snd_media_quality_desc"
+				android:defaultValue="4"></EditTextPreference>
+				
+			<ListPreference android:title="@string/snd_clock_rate" android:key="snd_clock_rate"
+				android:summary="@string/snd_clock_rate_desc"
+				android:defaultValue="8000"
+				android:entryValues="@array/clock_rate_values" android:entries="@array/clock_rate_choices"/>
+				
+			<EditTextPreference android:title="@string/snd_ptime" android:key="snd_ptime"
+				android:summary="@string/snd_ptime_desc"
+				android:defaultValue="20"
+				android:numeric="signed"/>
+				
+			<CheckBoxPreference android:summary="@string/has_io_queue_desc"
+				android:title="@string/has_io_queue" android:key="has_io_queue"
+				android:defaultValue="false"/>
+
+		</PreferenceCategory>
+		
+		<PreferenceScreen android:title="@string/codecs" android:summary="@string/codecs_availability_text" android:key="codecs_list"/>
+		
+		<PreferenceScreen android:key="band_types" android:title="@string/codecs_band_types">
+			<ListPreference android:title="@string/band_for_wifi" android:entries="@array/band_types_name" android:entryValues="@array/band_types" android:key="band_for_wifi"/>
+			<ListPreference android:title="@string/band_for_3g" android:entries="@array/band_types_name" android:entryValues="@array/band_types" android:key="band_for_3g"/>
+			<ListPreference android:title="@string/band_for_gprs" android:entries="@array/band_types_name" android:entryValues="@array/band_types" android:key="band_for_gprs"/>
+			<ListPreference android:title="@string/band_for_edge" android:entries="@array/band_types_name" android:entryValues="@array/band_types" android:key="band_for_edge"/>
+			<ListPreference android:title="@string/band_for_other" android:entries="@array/band_types_name" android:entryValues="@array/band_types" android:key="band_for_other"/>
+		</PreferenceScreen>
+		
+		<PreferenceCategory android:key="audio_volume" android:title="@string/audio_volume">
+			
+			<com.csipsimple.widgets.SeekBarPreference android:key="snd_mic_level"
+				android:title="@string/snd_mic_level"
+				android:summary="@string/snd_mic_level_desc" 
+				android:defaultValue="1.0" android:max="10"></com.csipsimple.widgets.SeekBarPreference>
+			<com.csipsimple.widgets.SeekBarPreference android:key="snd_speaker_level"
+				android:title="@string/snd_speaker_level"
+				android:summary="@string/snd_speaker_level_desc" 
+				android:defaultValue="1.0" android:max="10"></com.csipsimple.widgets.SeekBarPreference>
+			
+			<com.csipsimple.widgets.SeekBarPreference android:key="snd_stream_level"
+				android:title="@string/snd_stream_level"
+				android:summary="@string/snd_stream_level_desc" 
+				android:defaultValue="8.0" android:max="10"></com.csipsimple.widgets.SeekBarPreference>
+			<CheckBoxPreference android:title="@string/use_soft_volume" android:key="use_soft_volume"
+				android:summary="@string/use_soft_volume_desc"
+				android:defaultValue="false"></CheckBoxPreference>
+		</PreferenceCategory>
+		
+		
+		<PreferenceCategory android:title="@string/perfs" android:key="perfs">
+			<EditTextPreference android:title="Thread count" android:key="thread_count"
+				android:summary="Number of thread allocated for the native stack"
+				android:defaultValue="3"
+				android:numeric="signed"></EditTextPreference>
+				
+		</PreferenceCategory>
+		<PreferenceCategory android:title="@string/misc" android:key="misc">
+			<ListPreference android:title="@string/sip_dtmf" android:key="dtmf_mode"
+				android:summary="@string/sip_dtmf_desc"
+				android:defaultValue="0"
+				android:entryValues="@array/dtmf_mode_values" android:entries="@array/dtmf_mode_choices"></ListPreference>
+			
+				
+			<EditTextPreference android:key="snd_auto_close_time"
+				android:title="@string/snd_auto_close_time"
+				android:numeric="signed"
+				android:summary="@string/snd_auto_close_time_desc"
+				android:defaultValue="1"></EditTextPreference>
+				
+				
+			<CheckBoxPreference android:summary="@string/use_routing_api_desc"
+				android:title="@string/use_routing_api" android:key="use_routing_api"
+				android:defaultValue="false"></CheckBoxPreference>
+				
+			<CheckBoxPreference android:summary="@string/use_mode_api_desc"
+				android:title="@string/use_mode_api" android:key="use_mode_api"
+				android:defaultValue="false"></CheckBoxPreference>
+			
+			<CheckBoxPreference android:summary="@string/set_audio_generate_tone_desc"
+				android:title="@string/set_audio_generate_tone" android:key="set_audio_generate_tone"
+				android:defaultValue="false"></CheckBoxPreference>	
+				
+				
+			<ListPreference android:title="@string/sip_audio_mode" android:key="sip_audio_mode"
+				android:summary="@string/sip_audio_mode_desc"
+				android:defaultValue="0"
+				android:entryValues="@array/sip_audio_mode_values" android:entries="@array/sip_audio_mode_choices"></ListPreference>
+		</PreferenceCategory>
+</PreferenceScreen>

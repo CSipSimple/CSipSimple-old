@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copyright (C) 2010 Regis Montoya (aka r3gis - www.r3gis.fr) 
+	
+	This file is part of CSipSimple.
+    CSipSimple is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CSipSimple is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CSipSimple.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+ <LinearLayout 
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:orientation="vertical"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+<ScrollView 
+  android:layout_width="fill_parent" android:layout_height="fill_parent"
+  android:layout_weight="1"
+  android:fadingEdge="vertical"
+  android:scrollbars="vertical">
+<LinearLayout
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+  
+  <!-- Integration -->
+  	<LinearLayout android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:id="@+id/row_glob_integrate"
+		android:clickable="true" android:focusable="true" android:orientation="horizontal"
+		android:background="@android:drawable/list_selector_background"
+		android:padding="5dip">
+			
+		<LinearLayout android:layout_weight="1" 
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_gravity="center_vertical">
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:text="@string/android_integration" />
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceSmall"
+				android:textColor="?android:attr/textColorSecondary" android:text="@string/android_integration_desc" />
+		</LinearLayout>
+				
+		<CheckBox android:layout_gravity="center_vertical"
+			android:id="@+id/glob_integrate"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:layout_margin="6dip" />
+	</LinearLayout>
+	<TextView android:text="@string/availability_profile"
+		style="?android:attr/listSeparatorTextViewStyle"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"/>
+	<!-- Battery profile -->
+	<LinearLayout android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:id="@+id/row_glob_profile_always"
+		android:clickable="true" android:focusable="true" android:orientation="horizontal"
+		android:background="@android:drawable/list_selector_background"
+		android:padding="5dip">
+			
+		<LinearLayout android:layout_weight="1" 
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_gravity="center_vertical">
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:text="@string/always_available" />
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceSmall"
+				android:textColor="?android:attr/textColorSecondary" android:text="@string/always_available_desc" />
+		</LinearLayout>
+				
+		<RadioButton android:layout_gravity="center_vertical"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:id="@+id/glob_profile_always"
+			android:layout_margin="6dip" />
+	</LinearLayout>
+	<ImageView android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:scaleType="fitXY"
+		android:gravity="fill_horizontal" android:src="@android:drawable/divider_horizontal_dark" />
+  	<LinearLayout android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:id="@+id/row_glob_profile_wifi"
+		android:clickable="true" android:focusable="true" android:orientation="horizontal"
+		android:background="@android:drawable/list_selector_background"
+		android:padding="5dip">
+			
+		<LinearLayout android:layout_weight="1" 
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_gravity="center_vertical">
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:text="@string/wifi_available" />
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceSmall"
+				android:ellipsize="marquee"
+				android:textColor="?android:attr/textColorSecondary" android:text="@string/wifi_available_desc" />
+		</LinearLayout>
+				
+		<RadioButton android:layout_gravity="center_vertical"
+		android:id="@+id/glob_profile_wifi"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:layout_margin="6dip" />
+	</LinearLayout>
+	<ImageView android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:scaleType="fitXY"
+		android:gravity="fill_horizontal" android:src="@android:drawable/divider_horizontal_dark" />
+  	<LinearLayout android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:id="@+id/row_glob_profile_never"
+		android:clickable="true" android:focusable="true" android:orientation="horizontal"
+		android:background="@android:drawable/list_selector_background"
+		android:padding="5dip">
+			
+		<LinearLayout android:layout_weight="1" 
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_gravity="center_vertical">
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:text="@string/never_available" />
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceSmall"
+				android:ellipsize="marquee"
+				android:textColor="?android:attr/textColorSecondary" android:text="@string/never_available_desc" />
+		</LinearLayout>
+				
+		<RadioButton android:layout_gravity="center_vertical"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:id="@+id/glob_profile_never"
+			android:layout_margin="6dip" />
+	</LinearLayout>
+	<!-- 3G -->
+	<TextView android:text="@string/availability_tg" 
+		style="?android:attr/listSeparatorTextViewStyle"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"/>
+		
+	<LinearLayout android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:id="@+id/row_glob_tg"
+		android:clickable="true" android:focusable="true" android:orientation="horizontal"
+		android:background="@android:drawable/list_selector_background"
+		android:padding="5dip">
+			
+		<LinearLayout android:layout_weight="1" 
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_gravity="center_vertical">
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:text="@string/tg_allowed" />
+			<TextView android:layout_height="wrap_content"
+				android:layout_width="fill_parent"
+				android:textAppearance="?android:attr/textAppearanceSmall"
+				android:textColor="?android:attr/textColorSecondary" android:text="@string/tg_allowed_desc" />
+		</LinearLayout>
+				
+		<CheckBox android:layout_gravity="center_vertical"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:id="@+id/glob_tg"
+			android:layout_margin="6dip" />
+	</LinearLayout>
+</LinearLayout>
+</ScrollView>
+<Button android:text="@string/save" android:id="@+id/save_bt" 
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:layout_weight="0"/>
+</LinearLayout>
