@@ -18,13 +18,18 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)../pjlib/include/ $(LOCAL_PATH)../pjlib-util/in
 LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 PJLIB_SRC_DIR := src/pjmedia
 PJMEDIADEV_SRC_DIR := src/pjmedia-audiodev
+PJMEDIAVDEV_SRC_DIR := src/pjmedia-videodev
 PJMEDIACODEC_SRC_DIR := src/pjmedia-codec
 
 LOCAL_SRC_FILES := $(PJLIB_SRC_DIR)/alaw_ulaw.c $(PJLIB_SRC_DIR)/alaw_ulaw_table.c \
+	$(PJLIB_SRC_DIR)/avi_player.c \
 	$(PJLIB_SRC_DIR)/bidirectional.c \
 	$(PJLIB_SRC_DIR)/clock_thread.c $(PJLIB_SRC_DIR)/codec.c \
-	$(PJLIB_SRC_DIR)/conference.c $(PJLIB_SRC_DIR)/conf_switch.c $(PJLIB_SRC_DIR)/delaybuf.c $(PJLIB_SRC_DIR)/echo_common.c \
+	$(PJLIB_SRC_DIR)/conference.c $(PJLIB_SRC_DIR)/conf_switch.c \
+	$(PJLIB_SRC_DIR)/converter.c $(PJLIB_SRC_DIR)/converter_libswscale.c \
+	$(PJLIB_SRC_DIR)/delaybuf.c $(PJLIB_SRC_DIR)/echo_common.c \
 	$(PJLIB_SRC_DIR)/echo_speex.c $(PJLIB_SRC_DIR)/echo_port.c $(PJLIB_SRC_DIR)/echo_suppress.c $(PJLIB_SRC_DIR)/endpoint.c $(PJLIB_SRC_DIR)/errno.c \
+	$(PJLIB_SRC_DIR)/format.c $(PJLIB_SRC_DIR)/ffmpeg_util.c \
 	$(PJLIB_SRC_DIR)/g711.c $(PJLIB_SRC_DIR)/jbuf.c $(PJLIB_SRC_DIR)/master_port.c \
 	$(PJLIB_SRC_DIR)/mem_capture.c $(PJLIB_SRC_DIR)/mem_player.c \
 	$(PJLIB_SRC_DIR)/null_port.c $(PJLIB_SRC_DIR)/plc_common.c $(PJLIB_SRC_DIR)/port.c $(PJLIB_SRC_DIR)/splitcomb.c \
@@ -36,9 +41,12 @@ LOCAL_SRC_FILES := $(PJLIB_SRC_DIR)/alaw_ulaw.c $(PJLIB_SRC_DIR)/alaw_ulaw_table
 	$(PJLIB_SRC_DIR)/stream.c $(PJLIB_SRC_DIR)/tonegen.c $(PJLIB_SRC_DIR)/transport_adapter_sample.c \
 	$(PJLIB_SRC_DIR)/transport_ice.c $(PJLIB_SRC_DIR)/transport_loop.c \
 	$(PJLIB_SRC_DIR)/transport_srtp.c $(PJLIB_SRC_DIR)/transport_udp.c \
+	$(PJLIB_SRC_DIR)/vid_codec.c $(PJLIB_SRC_DIR)/videoport.c \
 	$(PJLIB_SRC_DIR)/wav_player.c $(PJLIB_SRC_DIR)/wav_playlist.c $(PJLIB_SRC_DIR)/wav_writer.c $(PJLIB_SRC_DIR)/wave.c \
 	$(PJLIB_SRC_DIR)/wsola.c \
-	$(PJMEDIADEV_SRC_DIR)/audiodev.c $(PJMEDIADEV_SRC_DIR)/audiotest.c $(PJMEDIADEV_SRC_DIR)/errno.c 
+	$(PJMEDIADEV_SRC_DIR)/audiodev.c $(PJMEDIADEV_SRC_DIR)/audiotest.c $(PJMEDIADEV_SRC_DIR)/errno.c  \
+	$(PJMEDIAVDEV_SRC_DIR)/videodev.c $(PJMEDIAVDEV_SRC_DIR)/ffmpeg_dev.c $(PJMEDIAVDEV_SRC_DIR)/colorbar_dev.c \
+	$(PJMEDIAVDEV_SRC_DIR)/v4l2_dev.c
 
 ifeq ($(MY_USE_G729),1)
 	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/g729.c
@@ -61,6 +69,10 @@ endif
 ifeq ($(MY_USE_CODEC2),1)
 	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/codec2.c 
 endif
+ifeq ($(MY_USE_VIDEO),1)
+	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/ffmpeg_codecs.c 
+endif
+
 
 
 include $(BUILD_STATIC_LIBRARY)

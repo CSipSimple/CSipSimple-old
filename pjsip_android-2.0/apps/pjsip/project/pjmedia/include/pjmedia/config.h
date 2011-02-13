@@ -1,4 +1,4 @@
-/* $Id: config.h 3387 2010-12-06 04:25:44Z bennylp $ */
+/* $Id: config.h 3402 2010-12-30 16:31:16Z ming $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -877,6 +877,119 @@
  */
 #ifndef PJMEDIA_STREAM_KA_INTERVAL
 #	define PJMEDIA_STREAM_KA_INTERVAL	    5
+#endif
+
+
+/*
+ * .... new stuffs ...
+ */
+
+/**
+ * Specify if FFMPEG is available. The value here will be used as the default
+ * value for other FFMPEG settings below.
+ *
+ * Default: 0
+ */
+#ifndef PJMEDIA_HAS_FFMPEG
+#   define PJMEDIA_HAS_FFMPEG				0
+#endif
+
+/**
+ * Specify if FFMPEG libavformat is available.
+ *
+ * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
+ */
+#ifndef PJMEDIA_HAS_LIBAVFORMAT
+#   define PJMEDIA_HAS_LIBAVFORMAT			PJMEDIA_HAS_FFMPEG
+#endif
+
+/**
+ * Specify if FFMPEG libavformat is available.
+ *
+ * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
+ */
+#ifndef PJMEDIA_HAS_LIBAVCODEC
+#   define PJMEDIA_HAS_LIBAVCODEC			PJMEDIA_HAS_FFMPEG
+#endif
+
+/**
+ * Specify if FFMPEG libavutil is available.
+ *
+ * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
+ */
+#ifndef PJMEDIA_HAS_LIBAVUTIL
+#   define PJMEDIA_HAS_LIBAVUTIL			PJMEDIA_HAS_FFMPEG
+#endif
+
+/**
+ * Specify if FFMPEG libswscale is available.
+ *
+ * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
+ */
+#ifndef PJMEDIA_HAS_LIBSWSCALE
+#   define PJMEDIA_HAS_LIBSWSCALE			PJMEDIA_HAS_FFMPEG
+#endif
+
+/**
+ * Specify if FFMPEG libavdevice is available.
+ *
+ * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
+ */
+#ifndef PJMEDIA_HAS_LIBAVDEVICE
+#   define PJMEDIA_HAS_LIBAVDEVICE			PJMEDIA_HAS_FFMPEG
+#endif
+
+/**
+ * Specify if FFMPEG libavcore is available.
+ *
+ * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
+ */
+#ifndef PJMEDIA_HAS_LIBAVCORE
+#   define PJMEDIA_HAS_LIBAVCORE			PJMEDIA_HAS_FFMPEG
+#endif
+
+/**
+ * Maximum video planes.
+ *
+ * Default: 4
+ */
+#ifndef PJMEDIA_MAX_VIDEO_PLANES
+#   define PJMEDIA_MAX_VIDEO_PLANES			4
+#endif
+
+/**
+ * Maximum number of video formats.
+ *
+ * Default: 32
+ */
+#ifndef PJMEDIA_MAX_VIDEO_FORMATS
+#   define PJMEDIA_MAX_VIDEO_FORMATS			32
+#endif
+
+/**
+ * Specify the maximum time difference (in ms) for synchronization between
+ * two medias. If the synchronization media source is ahead of time
+ * greater than this duration, it is considered to make a very large jump
+ * and the synchronization will be reset.
+ *
+ * Default: 20000
+ */
+#ifndef PJMEDIA_CLOCK_SYNC_MAX_SYNC_MSEC
+#   define PJMEDIA_CLOCK_SYNC_MAX_SYNC_MSEC         20000
+#endif
+
+/**
+ * Specify the maximum duration (in ms) for resynchronization. When a media
+ * is late to another media it is supposed to be synchronized to, it is
+ * guaranteed to be synchronized again after this duration. While if the
+ * media is ahead/early by t ms, it is guaranteed to be synchronized after
+ * t + this duration. This timing only applies if there is no additional
+ * resynchronization required during the specified duration.
+ *
+ * Default: 2000
+ */
+#ifndef PJMEDIA_CLOCK_SYNC_MAX_RESYNC_DURATION
+#   define PJMEDIA_CLOCK_SYNC_MAX_RESYNC_DURATION 2000
 #endif
 
 

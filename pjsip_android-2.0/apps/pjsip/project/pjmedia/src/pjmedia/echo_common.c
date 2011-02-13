@@ -1,4 +1,4 @@
-/* $Id: echo_common.c 3115 2010-03-03 14:47:35Z nanang $ */
+/* $Id: echo_common.c 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -20,6 +20,7 @@
 
 #include <pjmedia/echo.h>
 #include <pjmedia/delaybuf.h>
+#include <pjmedia/frame.h>
 #include <pjmedia/errno.h>
 #include <pj/assert.h>
 #include <pj/list.h>

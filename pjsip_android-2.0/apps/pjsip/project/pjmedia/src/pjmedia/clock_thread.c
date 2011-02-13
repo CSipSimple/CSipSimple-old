@@ -1,4 +1,4 @@
-/* $Id: clock_thread.c 2515 2009-03-16 18:57:06Z nanang $ */
+/* $Id: clock_thread.c 3402 2010-12-30 16:31:16Z ming $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -23,6 +23,84 @@
 #include <pj/lock.h>
 #include <pj/os.h>
 #include <pj/pool.h>
+#include <pj/string.h>
+#include <pj/compat/high_precision.h>
+
+/* API: Init clock source */
+PJ_DEF(pj_status_t) pjmedia_clock_src_init( pjmedia_clock_src *clocksrc,
+                                            pjmedia_type media_type,
+                                            unsigned clock_rate,
+                                            unsigned ptime_usec )
+{
+    PJ_ASSERT_RETURN(clocksrc, PJ_EINVAL);
+
+    clocksrc->media_type = media_type;
+    clocksrc->clock_rate = clock_rate;
+    clocksrc->ptime_usec = ptime_usec;
+    pj_set_timestamp32(&clocksrc->timestamp, 0, 0);
+    pj_get_timestamp(&clocksrc->last_update);
+
+    return PJ_SUCCESS;
+}
+
+/* API: Update clock source */
+PJ_DECL(pj_status_t) pjmedia_clock_src_update( pjmedia_clock_src *clocksrc,
+                                               const pj_timestamp *timestamp )
+{
+    PJ_ASSERT_RETURN(clocksrc, PJ_EINVAL);
+
+    if (timestamp)
+        pj_memcpy(&clocksrc->timestamp, timestamp, sizeof(pj_timestamp));
+    pj_get_timestamp(&clocksrc->last_update);
+
+    return PJ_SUCCESS;
+}
+
+/* API: Get clock source's current timestamp */
+PJ_DEF(pj_status_t)
+pjmedia_clock_src_get_current_timestamp( const pjmedia_clock_src *clocksrc,
+                                         pj_timestamp *timestamp)
+{
+    pj_timestamp now;
+    unsigned elapsed_ms;
+    
+    PJ_ASSERT_RETURN(clocksrc && timestamp, PJ_EINVAL);
+
+    pj_get_timestamp(&now);
+    elapsed_ms = pj_elapsed_msec(&clocksrc->last_update, &now);
+    pj_memcpy(timestamp, &clocksrc->timestamp, sizeof(pj_timestamp));
+    pj_add_timestamp32(timestamp, elapsed_ms * clocksrc->clock_rate / 1000);
+
+    return PJ_SUCCESS;
+}
+
+/* API: Get clock source's time (in ms) */
+PJ_DEF(pj_uint32_t)
+pjmedia_clock_src_get_time_msec( const pjmedia_clock_src *clocksrc )
+{
+    pj_timestamp ts;
+
+    pjmedia_clock_src_get_current_timestamp(clocksrc, &ts);
+
+#if PJ_HAS_INT64
+    if (ts.u64 > 0x3FFFFFFFFFFFFFUL)
+        return (pj_uint32_t)(ts.u64 / clocksrc->clock_rate * 1000);
+    else
+        return (pj_uint32_t)(ts.u64 * 1000 / clocksrc->clock_rate);
+#elif PJ_HAS_FLOATING_POINT
+    return (pj_uint32_t)((1.0 * ts.u32.hi * 0xFFFFFFFFUL + ts.u32.lo)
+                         * 1000.0 / clocksrc->clock_rate);
+#else
+    if (ts.u32.lo > 0x3FFFFFUL)
+        return (pj_uint32_t)(0xFFFFFFFFUL / clocksrc->clock_rate * ts.u32.hi 
+                             * 1000UL + ts.u32.lo / clocksrc->clock_rate *
+                             1000UL);
+    else
+        return (pj_uint32_t)(0xFFFFFFFFUL / clocksrc->clock_rate * ts.u32.hi 
+                             * 1000UL + ts.u32.lo * 1000UL /
+                             clocksrc->clock_rate);
+#endif
+}
 
 
 /*
@@ -50,6 +128,7 @@ struct pjmedia_clock
 static int clock_thread(void *arg);
 
 #define MAX_JUMP_MSEC	500
+#define USEC_IN_SEC	(pj_uint64_t)1000000
 
 /*
  * Create media clock.
@@ -63,25 +142,38 @@ PJ_DEF(pj_status_t) pjmedia_clock_create( pj_pool_t *pool,
 					  void *user_data,
 					  pjmedia_clock **p_clock)
 {
+    return pjmedia_clock_create2(pool,
+			         (unsigned)(samples_per_frame * USEC_IN_SEC /
+					    channel_count / clock_rate),
+				 clock_rate, options, cb, user_data, p_clock);
+}
+
+PJ_DEF(pj_status_t) pjmedia_clock_create2(pj_pool_t *pool,
+				          unsigned usec_interval,
+				          unsigned clock_rate,
+				          unsigned options,
+				          pjmedia_clock_callback *cb,
+				          void *user_data,
+				          pjmedia_clock **p_clock)
+{
     pjmedia_clock *clock;
     pj_status_t status;
 
-    PJ_ASSERT_RETURN(pool && clock_rate && samples_per_frame && p_clock,
+    PJ_ASSERT_RETURN(pool && usec_interval && clock_rate && p_clock,
 		     PJ_EINVAL);
 
     clock = PJ_POOL_ALLOC_T(pool, pjmedia_clock);
-
     
     status = pj_get_timestamp_freq(&clock->freq);
     if (status != PJ_SUCCESS)
 	return status;
 
-    clock->interval.u64 = samples_per_frame * clock->freq.u64 / 
-			  channel_count / clock_rate;
+    clock->interval.u64 = usec_interval * clock->freq.u64 / USEC_IN_SEC;
     clock->next_tick.u64 = 0;
     clock->timestamp.u64 = 0;
     clock->max_jump = MAX_JUMP_MSEC * clock->freq.u64 / 1000;
-    clock->timestamp_inc = samples_per_frame / channel_count;
+    clock->timestamp_inc = (unsigned)(usec_interval * clock_rate /
+				      USEC_IN_SEC);
     clock->options = options;
     clock->cb = cb;
     clock->user_data = user_data;
@@ -108,6 +200,7 @@ PJ_DEF(pj_status_t) pjmedia_clock_create( pj_pool_t *pool,
 
     return PJ_SUCCESS;
 }
+
 
 
 /*

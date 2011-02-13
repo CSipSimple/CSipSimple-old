@@ -1,4 +1,4 @@
-/* $Id: wav_player.c 3407 2011-01-21 01:30:37Z ming $ */
+/* $Id: wav_player.c 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -67,8 +67,6 @@ struct file_reader_port
 
     pj_off_t	     fsize;
     unsigned	     start_data;
-    unsigned         data_len;
-    unsigned         data_left;
     pj_off_t	     fpos;
     pj_oshandle_t    fd;
 
@@ -128,41 +126,24 @@ static pj_status_t fill_buffer(struct file_reader_port *fport)
 	    return PJ_ECANCELLED;
 	}
 
-        if (size > (pj_ssize_t)fport->data_left) {
-            /* We passed the end of the data chunk,
-             * only count the portion read from the data chunk.
-             */
-            size = (pj_ssize_t)fport->data_left;
-        }
-
 	size_left -= size;
-        fport->data_left -= size;
 	fport->fpos += size;
 
 	/* If size is less than size_to_read, it indicates that we've
 	 * encountered EOF. Rewind the file.
 	 */
-        if (size < (pj_ssize_t)size_to_read) {
-            fport->eof = PJ_TRUE;
-            fport->eofpos = fport->buf + fport->bufsize - size_left;
-
-            if (fport->options & PJMEDIA_FILE_NO_LOOP) {
-                /* Zero remaining buffer */
-                if (fport->fmt_tag == PJMEDIA_WAVE_FMT_TAG_PCM) {
-                    pj_bzero(fport->eofpos, size_left);
-                } else if (fport->fmt_tag == PJMEDIA_WAVE_FMT_TAG_ULAW) {
-                    int val = pjmedia_linear2ulaw(0);
-                    pj_memset(fport->eofpos, val, size_left);
-                } else if (fport->fmt_tag == PJMEDIA_WAVE_FMT_TAG_ALAW) {
-                    int val = pjmedia_linear2alaw(0);
-                    pj_memset(fport->eofpos, val, size_left);
-                }
-            }
+	if (size < (pj_ssize_t)size_to_read) {
+	    fport->eof = PJ_TRUE;
+	    fport->eofpos = fport->buf + fport->bufsize - size_left;
+	    
+	    if (fport->options & PJMEDIA_FILE_NO_LOOP) {
+		/* Zero remaining buffer */
+		pj_bzero(fport->eofpos, size_left);
+	    }
 
 	    /* Rewind file */
 	    fport->fpos = fport->start_data;
 	    pj_file_setpos( fport->fd, fport->fpos, PJ_SEEK_SET);
-            fport->data_left = fport->data_len;
 	}
     }
 
@@ -187,7 +168,10 @@ PJ_DEF(pj_status_t) pjmedia_wav_player_port_create( pj_pool_t *pool,
     pjmedia_wave_hdr wave_hdr;
     pj_ssize_t size_to_read, size_read;
     struct file_reader_port *fport;
+    pjmedia_audio_format_detail *ad;
     pj_off_t pos;
+    pj_str_t name;
+    unsigned samples_per_frame;
     pj_status_t status = PJ_SUCCESS;
 
 
@@ -331,11 +315,9 @@ PJ_DEF(pj_status_t) pjmedia_wav_player_port_create( pj_pool_t *pool,
     /* Current file position now points to start of data */
     status = pj_file_getpos(fport->fd, &pos);
     fport->start_data = (unsigned)pos;
-    fport->data_len = wave_hdr.data_hdr.len;
-    fport->data_left = wave_hdr.data_hdr.len;
 
     /* Validate length. */
-    if (wave_hdr.data_hdr.len > fport->fsize - fport->start_data) {
+    if (wave_hdr.data_hdr.len != fport->fsize - fport->start_data) {
 	pj_file_close(fport->fd);
 	return PJMEDIA_EWAVEUNSUPP;
     }
@@ -352,17 +334,15 @@ PJ_DEF(pj_status_t) pjmedia_wav_player_port_create( pj_pool_t *pool,
     fport->options = options;
 
     /* Update port info. */
-    fport->base.info.channel_count = wave_hdr.fmt_hdr.nchan;
-    fport->base.info.clock_rate = wave_hdr.fmt_hdr.sample_rate;
-    fport->base.info.bits_per_sample = BITS_PER_SAMPLE;
-    fport->base.info.samples_per_frame = fport->base.info.clock_rate *
-					 wave_hdr.fmt_hdr.nchan *
-					 ptime / 1000;
-    fport->base.info.bytes_per_frame = 
-	fport->base.info.samples_per_frame * 
-	fport->base.info.bits_per_sample / 8;
-
-    pj_strdup2(pool, &fport->base.info.name, filename);
+    ad = pjmedia_format_get_audio_format_detail(&fport->base.info.fmt, 1);
+    pj_strdup2(pool, &name, filename);
+    samples_per_frame = ptime * wave_hdr.fmt_hdr.sample_rate *
+		        wave_hdr.fmt_hdr.nchan / 1000;
+    pjmedia_port_info_init(&fport->base.info, &name, SIGNATURE,
+			   wave_hdr.fmt_hdr.sample_rate,
+			   wave_hdr.fmt_hdr.nchan,
+			   BITS_PER_SAMPLE,
+			   samples_per_frame);
 
     /* If file is shorter than buffer size, adjust buffer size to file
      * size. Otherwise EOF callback will be called multiple times when
@@ -379,9 +359,7 @@ PJ_DEF(pj_status_t) pjmedia_wav_player_port_create( pj_pool_t *pool,
     /* samples_per_frame must be smaller than bufsize (because get_frame()
      * doesn't handle this case).
      */
-    if (fport->base.info.samples_per_frame * fport->bytes_per_sample >=
-	fport->bufsize)
-    {
+    if (samples_per_frame * fport->bytes_per_sample >= fport->bufsize) {
 	pj_file_close(fport->fd);
 	return PJ_EINVAL;
     }
@@ -415,8 +393,8 @@ PJ_DEF(pj_status_t) pjmedia_wav_player_port_create( pj_pool_t *pool,
 	      "filesize=%luKB",
 	      (int)fport->base.info.name.slen,
 	      fport->base.info.name.ptr,
-	      fport->base.info.clock_rate,
-	      fport->base.info.channel_count,
+	      ad->clock_rate,
+	      ad->channel_count,
 	      fport->bufsize / 1000,
 	      (unsigned long)(fport->fsize / 1000)));
 
@@ -612,19 +590,7 @@ static pj_status_t file_get_frame(pjmedia_port *this_port,
 	/* End Of Buffer and EOF and NO LOOP */
 	if (fport->eof && (fport->options & PJMEDIA_FILE_NO_LOOP)) {
 	    fport->readpos += endread;
-
-            if (fport->fmt_tag == PJMEDIA_WAVE_FMT_TAG_PCM) {
-                pj_bzero((char*)frame->buf + endread, frame_size - endread);
-            } else if (fport->fmt_tag == PJMEDIA_WAVE_FMT_TAG_ULAW) {
-                int val = pjmedia_linear2ulaw(0);
-                pj_memset((char*)frame->buf + endread, val,
-                          frame_size - endread);
-            } else if (fport->fmt_tag == PJMEDIA_WAVE_FMT_TAG_ALAW) {
-                int val = pjmedia_linear2alaw(0);
-                pj_memset((char*)frame->buf + endread, val,
-                          frame_size - endread);
-            }
-
+	    pj_bzero((char*)frame->buf + endread, frame_size - endread);
 	    return PJ_SUCCESS;
 	}
 

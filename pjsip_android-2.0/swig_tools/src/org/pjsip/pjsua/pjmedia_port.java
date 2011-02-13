@@ -45,13 +45,13 @@ public class pjmedia_port {
     return (cPtr == 0) ? null : new pjmedia_port_info(cPtr, false);
   }
 
-  public void setPut_frame(SWIGTYPE_p_f_p_pjmedia_port_p_q_const__pjmedia_frame__int value) {
-    pjsuaJNI.pjmedia_port_put_frame_set(swigCPtr, this, SWIGTYPE_p_f_p_pjmedia_port_p_q_const__pjmedia_frame__int.getCPtr(value));
+  public void setPut_frame(SWIGTYPE_p_f_p_pjmedia_port_p_pjmedia_frame__int value) {
+    pjsuaJNI.pjmedia_port_put_frame_set(swigCPtr, this, SWIGTYPE_p_f_p_pjmedia_port_p_pjmedia_frame__int.getCPtr(value));
   }
 
-  public SWIGTYPE_p_f_p_pjmedia_port_p_q_const__pjmedia_frame__int getPut_frame() {
+  public SWIGTYPE_p_f_p_pjmedia_port_p_pjmedia_frame__int getPut_frame() {
     long cPtr = pjsuaJNI.pjmedia_port_put_frame_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_f_p_pjmedia_port_p_q_const__pjmedia_frame__int(cPtr, false);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_f_p_pjmedia_port_p_pjmedia_frame__int(cPtr, false);
   }
 
   public void setGet_frame(SWIGTYPE_p_f_p_pjmedia_port_p_pjmedia_frame__int value) {

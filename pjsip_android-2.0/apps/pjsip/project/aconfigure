@@ -695,6 +695,10 @@ ac_external_pa
 ac_pa_cflags
 ac_pa_use_alsa
 ac_pa_use_oss
+ac_pjmedia_video
+ac_ios_cflags
+ac_pjmedia_video_has_qt
+ac_qt_cflags
 ac_no_small_filter
 ac_no_large_filter
 ac_no_speex_aec
@@ -705,6 +709,13 @@ ac_no_g722_codec
 ac_no_g7221_codec
 ac_no_speex_codec
 ac_no_ilbc_codec
+ac_sdl_cflags
+ac_sdl_ldflags
+ac_has_ffmpeg
+ac_ffmpeg_cflags
+ac_ffmpeg_ldflags
+ac_v4l2_cflags
+ac_v4l2_ldflags
 ac_no_ssl
 openssl_h_present
 libssl_present
@@ -1308,7 +1319,6 @@ Optional Features:
   --enable-epoll          Use /dev/epoll ioqueue on Linux (experimental)
   --disable-sound         Exclude sound (i.e. use null sound)
   --disable-oss           Disable OSS audio (default: not disabled)
-
   --enable-ext-sound      PJMEDIA will not provide any sound device backend
   --disable-small-filter  Exclude small filter in resampling
   --disable-large-filter  Exclude large filter in resampling
@@ -1322,6 +1332,9 @@ Optional Features:
   --disable-ilbc-codec    Exclude iLBC codec in the build
   --enable-libsamplerate  Link with libsamplerate when available. Note that
                           PJMEDIA_RESAMPLE_IMP must also be configured
+  --disable-sdl           Disable SDL (default: not disabled)
+  --disable-ffmpeg        Disable ffmpeg (default: not disabled)
+  --disable-v4l2          Disable Video4Linux2 (default: not disabled)
   --enable-ipp            Enable Intel IPP support. Specify the Intel IPP
                           package and samples location using IPPROOT and
                           IPPSAMPLES env var or with --with-ipp and
@@ -11383,6 +11396,82 @@ fi
  esac
 fi
 
+
+if test "$enable_video" = "no"; then
+  true;
+else
+ case $target in
+  arm-apple-darwin*)
+	ac_pjmedia_video=iphone_os
+
+	ac_ios_cflags="-DPJMEDIA_VIDEO_DEV_HAS_IOS=1"
+	LIBS="$LIBS -framework AVFoundation -framework UIKit -framework CoreGraphics -framework QuartzCore -framework CoreVideo -framework CoreMedia"
+	{ echo "$as_me:$LINENO: result: Checking video device backend... AVFoundation" >&5
+echo "${ECHO_T}Checking video device backend... AVFoundation" >&6; }
+	;;
+  *darwin*)
+	ac_pjmedia_video=mac_os
+
+
+	SAVED_LIBS="$LIBS"
+	LIBS="-framework QTKit"
+	cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_pjmedia_video_has_qt=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_pjmedia_video_has_qt=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+	LIBS="$SAVED_LIBS"
+	if test "$ac_pjmedia_video_has_qt" = "yes"; then
+	  ac_qt_cflags="-DPJMEDIA_VIDEO_DEV_HAS_QT=1"
+	  LIBS="$LIBS -framework QTKit -framework Foundation -framework AppKit -framework QuartzCore"
+	  { echo "$as_me:$LINENO: result: Checking if QTKit framework is available... yes" >&5
+echo "${ECHO_T}Checking if QTKit framework is available... yes" >&6; }
+	else
+	  { echo "$as_me:$LINENO: result: Checking if QTKit framework is available... no" >&5
+echo "${ECHO_T}Checking if QTKit framework is available... no" >&6; }
+	fi
+	;;
+ esac
+fi
+
 # Check whether --enable-ext_sound was given.
 if test "${enable_ext_sound+set}" = set; then
   enableval=$enable_ext_sound; if test "$enable_ext_sound" = "yes"; then
@@ -11643,6 +11732,544 @@ echo "${ECHO_T}Skipping libsamplerate detection" >&6; }
 
 fi
 
+
+# Check whether --enable-sdl was given.
+if test "${enable_sdl+set}" = set; then
+  enableval=$enable_sdl;
+		if test "$enable_sdl" = "no"; then
+		  { echo "$as_me:$LINENO: result: Checking if SDL is disabled... yes" >&5
+echo "${ECHO_T}Checking if SDL is disabled... yes" >&6; }
+		fi
+
+else
+
+		  { echo "$as_me:$LINENO: checking SDL availability.." >&5
+echo $ECHO_N "checking SDL availability..... $ECHO_C" >&6; }
+		  if sdl-config --version; then
+
+
+			  ac_sdl_cflags=`sdl-config --cflags`
+			  ac_sdl_cflags="-DPJMEDIA_VIDEO_DEV_HAS_SDL=1 $ac_sdl_cflags"
+			  ac_sdl_ldflags=`sdl-config --libs`
+			  LIBS="$LIBS $ac_sdl_ldflags"
+		   fi
+
+fi
+
+
+
+# Check whether --enable-ffmpeg was given.
+if test "${enable_ffmpeg+set}" = set; then
+  enableval=$enable_ffmpeg;
+	        ac_has_ffmpeg=0
+
+		if test "$enable_ffmpeg" = "no"; then
+			{ echo "$as_me:$LINENO: result: Checking if ffmpeg is disabled... yes" >&5
+echo "${ECHO_T}Checking if ffmpeg is disabled... yes" >&6; }
+		fi
+
+else
+
+
+
+
+		{ echo "$as_me:$LINENO: checking for avdevice_version in -lavdevice" >&5
+echo $ECHO_N "checking for avdevice_version in -lavdevice... $ECHO_C" >&6; }
+if test "${ac_cv_lib_avdevice_avdevice_version+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavdevice  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char avdevice_version ();
+int
+main ()
+{
+return avdevice_version ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_avdevice_avdevice_version=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_avdevice_avdevice_version=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_avdevice_avdevice_version" >&5
+echo "${ECHO_T}$ac_cv_lib_avdevice_avdevice_version" >&6; }
+if test $ac_cv_lib_avdevice_avdevice_version = yes; then
+  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_HAS_LIBAVDEVICE=1"
+			      ac_ffmpeg_ldflags="$ac_ffmpeg_ldflags -lavdevice"
+
+
+fi
+
+		{ echo "$as_me:$LINENO: checking for av_register_all in -lavformat" >&5
+echo $ECHO_N "checking for av_register_all in -lavformat... $ECHO_C" >&6; }
+if test "${ac_cv_lib_avformat_av_register_all+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavformat  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char av_register_all ();
+int
+main ()
+{
+return av_register_all ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_avformat_av_register_all=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_avformat_av_register_all=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_av_register_all" >&5
+echo "${ECHO_T}$ac_cv_lib_avformat_av_register_all" >&6; }
+if test $ac_cv_lib_avformat_av_register_all = yes; then
+  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_HAS_LIBAVFORMAT=1"
+			      ac_ffmpeg_ldflags="$ac_ffmpeg_ldflags -lavformat"
+
+
+fi
+
+		{ echo "$as_me:$LINENO: checking for avcodec_init in -lavcodec" >&5
+echo $ECHO_N "checking for avcodec_init in -lavcodec... $ECHO_C" >&6; }
+if test "${ac_cv_lib_avcodec_avcodec_init+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavcodec  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char avcodec_init ();
+int
+main ()
+{
+return avcodec_init ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_avcodec_avcodec_init=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_avcodec_avcodec_init=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_avcodec_avcodec_init" >&5
+echo "${ECHO_T}$ac_cv_lib_avcodec_avcodec_init" >&6; }
+if test $ac_cv_lib_avcodec_avcodec_init = yes; then
+  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_HAS_LIBAVCODEC=1"
+			      ac_ffmpeg_ldflags="$ac_ffmpeg_ldflags -lavcodec"
+
+
+fi
+
+		{ echo "$as_me:$LINENO: checking for sws_scale in -lswscale" >&5
+echo $ECHO_N "checking for sws_scale in -lswscale... $ECHO_C" >&6; }
+if test "${ac_cv_lib_swscale_sws_scale+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lswscale  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sws_scale ();
+int
+main ()
+{
+return sws_scale ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_swscale_sws_scale=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_swscale_sws_scale=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_swscale_sws_scale" >&5
+echo "${ECHO_T}$ac_cv_lib_swscale_sws_scale" >&6; }
+if test $ac_cv_lib_swscale_sws_scale = yes; then
+  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_HAS_LIBSWSCALE=1"
+			      ac_ffmpeg_ldflags="$ac_ffmpeg_ldflags -lswscale"
+
+
+fi
+
+		{ echo "$as_me:$LINENO: checking for av_malloc in -lavutil" >&5
+echo $ECHO_N "checking for av_malloc in -lavutil... $ECHO_C" >&6; }
+if test "${ac_cv_lib_avutil_av_malloc+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavutil  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char av_malloc ();
+int
+main ()
+{
+return av_malloc ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_avutil_av_malloc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_avutil_av_malloc=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_avutil_av_malloc" >&5
+echo "${ECHO_T}$ac_cv_lib_avutil_av_malloc" >&6; }
+if test $ac_cv_lib_avutil_av_malloc = yes; then
+  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_HAS_LIBAVUTIL=1"
+			      ac_ffmpeg_ldflags="$ac_ffmpeg_ldflags -lavutil"
+
+
+fi
+
+		{ echo "$as_me:$LINENO: checking for avcore_version in -lavcore" >&5
+echo $ECHO_N "checking for avcore_version in -lavcore... $ECHO_C" >&6; }
+if test "${ac_cv_lib_avcore_avcore_version+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavcore  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char avcore_version ();
+int
+main ()
+{
+return avcore_version ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_avcore_avcore_version=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_avcore_avcore_version=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_avcore_avcore_version" >&5
+echo "${ECHO_T}$ac_cv_lib_avcore_avcore_version" >&6; }
+if test $ac_cv_lib_avcore_avcore_version = yes; then
+  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_HAS_LIBAVCORE=1"
+			      ac_ffmpeg_ldflags="$ac_ffmpeg_ldflags -lavcore"
+
+
+fi
+
+		LIBS="$LIBS $ac_ffmpeg_ldflags"
+
+
+fi
+
+
+# Check whether --enable-v4l2 was given.
+if test "${enable_v4l2+set}" = set; then
+  enableval=$enable_v4l2;
+		if test "$enable_v4l2" = "no"; then
+		  { echo "$as_me:$LINENO: result: Checking if V4L2 is disabled... yes" >&5
+echo "${ECHO_T}Checking if V4L2 is disabled... yes" >&6; }
+		fi
+
+else
+
+
+
+		{ echo "$as_me:$LINENO: checking for v4l2_open in -lv4l2" >&5
+echo $ECHO_N "checking for v4l2_open in -lv4l2... $ECHO_C" >&6; }
+if test "${ac_cv_lib_v4l2_v4l2_open+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lv4l2  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char v4l2_open ();
+int
+main ()
+{
+return v4l2_open ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_v4l2_v4l2_open=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_v4l2_v4l2_open=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_v4l2_v4l2_open" >&5
+echo "${ECHO_T}$ac_cv_lib_v4l2_v4l2_open" >&6; }
+if test $ac_cv_lib_v4l2_v4l2_open = yes; then
+  ac_v4l2_cflags="-DPJMEDIA_VIDEO_DEV_HAS_V4L2=1"
+			      ac_v4l2_ldflags="-lv4l2"
+			      LIBS="$LIBS -lv4l2"
+
+
+fi
+
+
+fi
 
 
 # Check whether --enable-ipp was given.
@@ -13119,6 +13746,10 @@ ac_external_pa!$ac_external_pa$ac_delim
 ac_pa_cflags!$ac_pa_cflags$ac_delim
 ac_pa_use_alsa!$ac_pa_use_alsa$ac_delim
 ac_pa_use_oss!$ac_pa_use_oss$ac_delim
+ac_pjmedia_video!$ac_pjmedia_video$ac_delim
+ac_ios_cflags!$ac_ios_cflags$ac_delim
+ac_pjmedia_video_has_qt!$ac_pjmedia_video_has_qt$ac_delim
+ac_qt_cflags!$ac_qt_cflags$ac_delim
 ac_no_small_filter!$ac_no_small_filter$ac_delim
 ac_no_large_filter!$ac_no_large_filter$ac_delim
 ac_no_speex_aec!$ac_no_speex_aec$ac_delim
@@ -13129,10 +13760,6 @@ ac_no_g722_codec!$ac_no_g722_codec$ac_delim
 ac_no_g7221_codec!$ac_no_g7221_codec$ac_delim
 ac_no_speex_codec!$ac_no_speex_codec$ac_delim
 ac_no_ilbc_codec!$ac_no_ilbc_codec$ac_delim
-ac_no_ssl!$ac_no_ssl$ac_delim
-openssl_h_present!$openssl_h_present$ac_delim
-libssl_present!$libssl_present$ac_delim
-libcrypto_present!$libcrypto_present$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -13174,6 +13801,17 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+ac_sdl_cflags!$ac_sdl_cflags$ac_delim
+ac_sdl_ldflags!$ac_sdl_ldflags$ac_delim
+ac_has_ffmpeg!$ac_has_ffmpeg$ac_delim
+ac_ffmpeg_cflags!$ac_ffmpeg_cflags$ac_delim
+ac_ffmpeg_ldflags!$ac_ffmpeg_ldflags$ac_delim
+ac_v4l2_cflags!$ac_v4l2_cflags$ac_delim
+ac_v4l2_ldflags!$ac_v4l2_ldflags$ac_delim
+ac_no_ssl!$ac_no_ssl$ac_delim
+openssl_h_present!$openssl_h_present$ac_delim
+libssl_present!$libssl_present$ac_delim
+libcrypto_present!$libcrypto_present$ac_delim
 ac_cross_compile!$ac_cross_compile$ac_delim
 ac_linux_poll!$ac_linux_poll$ac_delim
 ac_host!$ac_host$ac_delim
@@ -13182,7 +13820,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 6; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 17; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

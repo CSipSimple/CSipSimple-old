@@ -1,4 +1,4 @@
-/* $Id: circbuf.h 2394 2008-12-23 17:27:53Z bennylp $ */
+/* $Id: circbuf.h 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -29,6 +29,7 @@
 #include <pj/assert.h>
 #include <pj/errno.h>
 #include <pj/pool.h>
+#include <pjmedia/frame.h>
 
 /**
  * @defgroup PJMED_CIRCBUF Circular Buffer

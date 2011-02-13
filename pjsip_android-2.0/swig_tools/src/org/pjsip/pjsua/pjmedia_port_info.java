@@ -52,85 +52,20 @@ public class pjmedia_port_info {
     return pjsuaJNI.pjmedia_port_info_signature_get(swigCPtr, this);
   }
 
-  public void setType(SWIGTYPE_p_pjmedia_type value) {
-    pjsuaJNI.pjmedia_port_info_type_set(swigCPtr, this, SWIGTYPE_p_pjmedia_type.getCPtr(value));
+  public void setDir(pjmedia_dir value) {
+    pjsuaJNI.pjmedia_port_info_dir_set(swigCPtr, this, value.swigValue());
   }
 
-  public SWIGTYPE_p_pjmedia_type getType() {
-    return new SWIGTYPE_p_pjmedia_type(pjsuaJNI.pjmedia_port_info_type_get(swigCPtr, this), true);
+  public pjmedia_dir getDir() {
+    return pjmedia_dir.swigToEnum(pjsuaJNI.pjmedia_port_info_dir_get(swigCPtr, this));
   }
 
-  public void setHas_info(int value) {
-    pjsuaJNI.pjmedia_port_info_has_info_set(swigCPtr, this, value);
+  public void setFmt(SWIGTYPE_p_pjmedia_format value) {
+    pjsuaJNI.pjmedia_port_info_fmt_set(swigCPtr, this, SWIGTYPE_p_pjmedia_format.getCPtr(value));
   }
 
-  public int getHas_info() {
-    return pjsuaJNI.pjmedia_port_info_has_info_get(swigCPtr, this);
-  }
-
-  public void setNeed_info(int value) {
-    pjsuaJNI.pjmedia_port_info_need_info_set(swigCPtr, this, value);
-  }
-
-  public int getNeed_info() {
-    return pjsuaJNI.pjmedia_port_info_need_info_get(swigCPtr, this);
-  }
-
-  public void setPt(long value) {
-    pjsuaJNI.pjmedia_port_info_pt_set(swigCPtr, this, value);
-  }
-
-  public long getPt() {
-    return pjsuaJNI.pjmedia_port_info_pt_get(swigCPtr, this);
-  }
-
-  public void setEncoding_name(pj_str_t value) {
-    pjsuaJNI.pjmedia_port_info_encoding_name_set(swigCPtr, this, pj_str_t.getCPtr(value), value);
-  }
-
-  public pj_str_t getEncoding_name() {
-    long cPtr = pjsuaJNI.pjmedia_port_info_encoding_name_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new pj_str_t(cPtr, false);
-  }
-
-  public void setClock_rate(long value) {
-    pjsuaJNI.pjmedia_port_info_clock_rate_set(swigCPtr, this, value);
-  }
-
-  public long getClock_rate() {
-    return pjsuaJNI.pjmedia_port_info_clock_rate_get(swigCPtr, this);
-  }
-
-  public void setChannel_count(long value) {
-    pjsuaJNI.pjmedia_port_info_channel_count_set(swigCPtr, this, value);
-  }
-
-  public long getChannel_count() {
-    return pjsuaJNI.pjmedia_port_info_channel_count_get(swigCPtr, this);
-  }
-
-  public void setBits_per_sample(long value) {
-    pjsuaJNI.pjmedia_port_info_bits_per_sample_set(swigCPtr, this, value);
-  }
-
-  public long getBits_per_sample() {
-    return pjsuaJNI.pjmedia_port_info_bits_per_sample_get(swigCPtr, this);
-  }
-
-  public void setSamples_per_frame(long value) {
-    pjsuaJNI.pjmedia_port_info_samples_per_frame_set(swigCPtr, this, value);
-  }
-
-  public long getSamples_per_frame() {
-    return pjsuaJNI.pjmedia_port_info_samples_per_frame_get(swigCPtr, this);
-  }
-
-  public void setBytes_per_frame(long value) {
-    pjsuaJNI.pjmedia_port_info_bytes_per_frame_set(swigCPtr, this, value);
-  }
-
-  public long getBytes_per_frame() {
-    return pjsuaJNI.pjmedia_port_info_bytes_per_frame_get(swigCPtr, this);
+  public SWIGTYPE_p_pjmedia_format getFmt() {
+    return new SWIGTYPE_p_pjmedia_format(pjsuaJNI.pjmedia_port_info_fmt_get(swigCPtr, this), true);
   }
 
   public pjmedia_port_info() {

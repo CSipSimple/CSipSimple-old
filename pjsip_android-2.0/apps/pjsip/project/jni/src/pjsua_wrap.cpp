@@ -3131,13 +3131,13 @@ SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1get(
 
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1put_1frame_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   pjmedia_port *arg1 = (pjmedia_port *) 0 ;
-  pj_status_t (*arg2)(pjmedia_port *,pjmedia_frame const *) = (pj_status_t (*)(pjmedia_port *,pjmedia_frame const *)) 0 ;
+  pj_status_t (*arg2)(pjmedia_port *,pjmedia_frame *) = (pj_status_t (*)(pjmedia_port *,pjmedia_frame *)) 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjmedia_port **)&jarg1; 
-  arg2 = *(pj_status_t (**)(pjmedia_port *,pjmedia_frame const *))&jarg2; 
+  arg2 = *(pj_status_t (**)(pjmedia_port *,pjmedia_frame *))&jarg2; 
   if (arg1) (arg1)->put_frame = arg2;
 }
 
@@ -3145,14 +3145,14 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1put_1frame_
 SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1put_1frame_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   pjmedia_port *arg1 = (pjmedia_port *) 0 ;
-  pj_status_t (*result)(pjmedia_port *,pjmedia_frame const *) = 0 ;
+  pj_status_t (*result)(pjmedia_port *,pjmedia_frame *) = 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjmedia_port **)&jarg1; 
-  result = (pj_status_t (*)(pjmedia_port *,pjmedia_frame const *)) ((arg1)->put_frame);
-  *(pj_status_t (**)(pjmedia_port *,pjmedia_frame const *))&jresult = result; 
+  result = (pj_status_t (*)(pjmedia_port *,pjmedia_frame *)) ((arg1)->put_frame);
+  *(pj_status_t (**)(pjmedia_port *,pjmedia_frame *))&jresult = result; 
   return jresult;
 }
 
@@ -3318,289 +3318,64 @@ SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1sign
 }
 
 
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1type_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1dir_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pjmedia_type arg2 ;
-  pjmedia_type *argp2 ;
+  pjmedia_dir arg2 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjmedia_port_info **)&jarg1; 
-  argp2 = *(pjmedia_type **)&jarg2; 
+  arg2 = (pjmedia_dir)jarg2; 
+  if (arg1) (arg1)->dir = arg2;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1dir_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
+  pjmedia_dir result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjmedia_port_info **)&jarg1; 
+  result = (pjmedia_dir) ((arg1)->dir);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1fmt_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
+  pjmedia_format arg2 ;
+  pjmedia_format *argp2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjmedia_port_info **)&jarg1; 
+  argp2 = *(pjmedia_format **)&jarg2; 
   if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null pjmedia_type");
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null pjmedia_format");
     return ;
   }
   arg2 = *argp2; 
-  if (arg1) (arg1)->type = arg2;
+  if (arg1) (arg1)->fmt = arg2;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1type_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1fmt_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pjmedia_type result;
+  pjmedia_format result;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjmedia_port_info **)&jarg1; 
-  result =  ((arg1)->type);
-  *(pjmedia_type **)&jresult = new pjmedia_type((const pjmedia_type &)result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1has_1info_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pj_bool_t arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (pj_bool_t)jarg2; 
-  if (arg1) (arg1)->has_info = arg2;
-}
-
-
-SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1has_1info_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jint jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pj_bool_t result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (pj_bool_t) ((arg1)->has_info);
-  jresult = (jint)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1need_1info_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pj_bool_t arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (pj_bool_t)jarg2; 
-  if (arg1) (arg1)->need_info = arg2;
-}
-
-
-SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1need_1info_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jint jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pj_bool_t result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (pj_bool_t) ((arg1)->need_info);
-  jresult = (jint)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1pt_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (unsigned int)jarg2; 
-  if (arg1) (arg1)->pt = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1pt_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (unsigned int) ((arg1)->pt);
-  jresult = (jlong)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1encoding_1name_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pj_str_t *arg2 = (pj_str_t *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  (void)jarg2_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = *(pj_str_t **)&jarg2; 
-  if (arg1) (arg1)->encoding_name = *arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1encoding_1name_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  pj_str_t *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (pj_str_t *)& ((arg1)->encoding_name);
-  *(pj_str_t **)&jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1clock_1rate_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (unsigned int)jarg2; 
-  if (arg1) (arg1)->clock_rate = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1clock_1rate_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (unsigned int) ((arg1)->clock_rate);
-  jresult = (jlong)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1channel_1count_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (unsigned int)jarg2; 
-  if (arg1) (arg1)->channel_count = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1channel_1count_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (unsigned int) ((arg1)->channel_count);
-  jresult = (jlong)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bits_1per_1sample_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (unsigned int)jarg2; 
-  if (arg1) (arg1)->bits_per_sample = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bits_1per_1sample_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (unsigned int) ((arg1)->bits_per_sample);
-  jresult = (jlong)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1samples_1per_1frame_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (unsigned int)jarg2; 
-  if (arg1) (arg1)->samples_per_frame = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1samples_1per_1frame_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (unsigned int) ((arg1)->samples_per_frame);
-  jresult = (jlong)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bytes_1per_1frame_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  arg2 = (unsigned int)jarg2; 
-  if (arg1) (arg1)->bytes_per_frame = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bytes_1per_1frame_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  pjmedia_port_info *arg1 = (pjmedia_port_info *) 0 ;
-  unsigned int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjmedia_port_info **)&jarg1; 
-  result = (unsigned int) ((arg1)->bytes_per_frame);
-  jresult = (jlong)result; 
+  result =  ((arg1)->fmt);
+  *(pjmedia_format **)&jresult = new pjmedia_format((const pjmedia_format &)result); 
   return jresult;
 }
 
@@ -16308,26 +16083,10 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"pjmedia_port_info_name_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1name_1get},
 {"pjmedia_port_info_signature_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1signature_1set},
 {"pjmedia_port_info_signature_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1signature_1get},
-{"pjmedia_port_info_type_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1type_1set},
-{"pjmedia_port_info_type_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1type_1get},
-{"pjmedia_port_info_has_info_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1has_1info_1set},
-{"pjmedia_port_info_has_info_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1has_1info_1get},
-{"pjmedia_port_info_need_info_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1need_1info_1set},
-{"pjmedia_port_info_need_info_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1need_1info_1get},
-{"pjmedia_port_info_pt_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1pt_1set},
-{"pjmedia_port_info_pt_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1pt_1get},
-{"pjmedia_port_info_encoding_name_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;JLorg/pjsip/pjsua/pj_str_t;)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1encoding_1name_1set},
-{"pjmedia_port_info_encoding_name_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1encoding_1name_1get},
-{"pjmedia_port_info_clock_rate_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1clock_1rate_1set},
-{"pjmedia_port_info_clock_rate_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1clock_1rate_1get},
-{"pjmedia_port_info_channel_count_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1channel_1count_1set},
-{"pjmedia_port_info_channel_count_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1channel_1count_1get},
-{"pjmedia_port_info_bits_per_sample_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bits_1per_1sample_1set},
-{"pjmedia_port_info_bits_per_sample_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bits_1per_1sample_1get},
-{"pjmedia_port_info_samples_per_frame_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1samples_1per_1frame_1set},
-{"pjmedia_port_info_samples_per_frame_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1samples_1per_1frame_1get},
-{"pjmedia_port_info_bytes_per_frame_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bytes_1per_1frame_1set},
-{"pjmedia_port_info_bytes_per_frame_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1bytes_1per_1frame_1get},
+{"pjmedia_port_info_dir_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1dir_1set},
+{"pjmedia_port_info_dir_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1dir_1get},
+{"pjmedia_port_info_fmt_set", "(JLorg/pjsip/pjsua/pjmedia_port_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1fmt_1set},
+{"pjmedia_port_info_fmt_get", "(JLorg/pjsip/pjsua/pjmedia_port_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1port_1info_1fmt_1get},
 {"new_pjmedia_port_info", "()J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_new_1pjmedia_1port_1info},
 {"delete_pjmedia_port_info", "(J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_delete_1pjmedia_1port_1info},
 {"pjsip_cred_info_realm_set", "(JLorg/pjsip/pjsua/pjsip_cred_info;JLorg/pjsip/pjsua/pj_str_t;)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsip_1cred_1info_1realm_1set},

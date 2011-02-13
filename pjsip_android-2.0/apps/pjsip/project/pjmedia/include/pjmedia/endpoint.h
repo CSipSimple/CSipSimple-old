@@ -1,4 +1,4 @@
-/* $Id: endpoint.h 3360 2010-11-03 06:46:27Z bennylp $ */
+/* $Id: endpoint.h 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -39,6 +39,7 @@
 
 #include <pjmedia/codec.h>
 #include <pjmedia/sdp.h>
+#include <pjmedia/transport.h>
 
 
 PJ_BEGIN_DECL

@@ -1,4 +1,4 @@
-/* $Id: test.h 2882 2009-08-15 10:05:36Z bennylp $ */
+/* $Id: test.h 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -23,6 +23,8 @@
 #include <pjmedia.h>
 #include <pjlib.h>
 
+#define HAS_VID_DEV_TEST	1
+#define HAS_VID_CODEC_TEST	1
 #define HAS_SDP_NEG_TEST	1
 #define HAS_JBUF_TEST		1
 #define HAS_MIPS_TEST		1
@@ -35,6 +37,8 @@ int jbuf_main(void);
 int sdp_neg_test(void);
 int mips_test(void);
 int codec_test_vectors(void);
+int vid_codec_test(void);
+int vid_dev_test(void);
 
 extern pj_pool_factory *mem;
 void app_perror(pj_status_t status, const char *title);

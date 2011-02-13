@@ -1,4 +1,4 @@
-/* $Id: echo_suppress.c 2394 2008-12-23 17:27:53Z bennylp $ */
+/* $Id: echo_suppress.c 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -20,6 +20,7 @@
 #include <pjmedia/types.h>
 #include <pjmedia/alaw_ulaw.h>
 #include <pjmedia/errno.h>
+#include <pjmedia/frame.h>
 #include <pjmedia/silencedet.h>
 #include <pj/array.h>
 #include <pj/assert.h>

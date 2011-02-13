@@ -1,4 +1,4 @@
-/* $Id: test.c 2882 2009-08-15 10:05:36Z bennylp $ */
+/* $Id: test.c 3395 2010-12-14 13:03:10Z ming $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -47,14 +47,28 @@ int test_main(void)
 {
     int rc = 0;
     pj_caching_pool caching_pool;
+    pj_pool_t *pool;
 
     pj_init();
     pj_caching_pool_init(&caching_pool, &pj_pool_factory_default_policy, 0);
-
+    pool = pj_pool_create(&caching_pool.factory, "test", 1000, 512, NULL);
+    
     pj_log_set_decor(PJ_LOG_HAS_NEWLINE);
     pj_log_set_level(3);
 
     mem = &caching_pool.factory;
+
+    pjmedia_video_format_mgr_create(pool, 64, 0, NULL);
+    pjmedia_converter_mgr_create(pool, NULL);
+    pjmedia_vid_codec_mgr_create(pool, NULL);
+
+#if HAS_VID_DEV_TEST
+    DO_TEST(vid_dev_test());
+#endif
+
+#if HAS_VID_CODEC_TEST
+    DO_TEST(vid_codec_test());
+#endif
 
 #if HAS_SDP_NEG_TEST
     DO_TEST(sdp_neg_test());
@@ -81,6 +95,11 @@ on_return:
 	PJ_LOG(3,(THIS_FILE,"Looks like everything is okay!"));
     }
 
+    pjmedia_video_format_mgr_destroy(pjmedia_video_format_mgr_instance());
+    pjmedia_converter_mgr_destroy(pjmedia_converter_mgr_instance());
+    pjmedia_vid_codec_mgr_destroy(pjmedia_vid_codec_mgr_instance());
+    
+    pj_pool_release(pool);
     pj_caching_pool_destroy(&caching_pool);
 
     return rc;

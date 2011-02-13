@@ -1,4 +1,4 @@
-/* $Id: mem_capture.c 2394 2008-12-23 17:27:53Z bennylp $ */
+/* $Id: mem_capture.c 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -46,7 +46,7 @@ struct mem_rec
 
 
 static pj_status_t rec_put_frame(pjmedia_port *this_port, 
-				  const pjmedia_frame *frame);
+				 pjmedia_frame *frame);
 static pj_status_t rec_get_frame(pjmedia_port *this_port, 
 				  pjmedia_frame *frame);
 static pj_status_t rec_on_destroy(pjmedia_port *this_port);
@@ -140,7 +140,7 @@ PJ_DEF(pj_size_t) pjmedia_mem_capture_get_size(pjmedia_port *port)
 
 
 static pj_status_t rec_put_frame( pjmedia_port *this_port, 
-				  const pjmedia_frame *frame)
+				  pjmedia_frame *frame)
 {
     struct mem_rec *rec;
     char *endpos;

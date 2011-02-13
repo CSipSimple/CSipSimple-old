@@ -554,7 +554,7 @@ struct pjmedia_port
      * This should only be called by #pjmedia_port_put_frame().
      */
     pj_status_t (*put_frame)(struct pjmedia_port *this_port,
-                             const pjmedia_frame *frame);
+                             pjmedia_frame *frame);
 
     /**
      * Source interface.
@@ -588,20 +588,15 @@ enum pjmedia_dir
 };
 
 // From pjmedia/include/pjmedia/port.h:205
+/**
+ * Port info.
+ */
 struct pjmedia_port_info
 {
-    pj_str_t        name;               /**< Port name.                     */
-    pj_uint32_t     signature;          /**< Port signature.                */
-    pjmedia_type    type;               /**< Media type.                    */
-    pj_bool_t       has_info;           /**< Has info?                      */
-    pj_bool_t       need_info;          /**< Need info on connect?          */
-    unsigned        pt;                 /**< Payload type (can be dynamic). */
-    pj_str_t        encoding_name;      /**< Encoding name.                 */
-    unsigned        clock_rate;         /**< Sampling rate.                 */
-    unsigned        channel_count;      /**< Number of channels.            */
-    unsigned        bits_per_sample;    /**< Bits/sample                    */
-    unsigned        samples_per_frame;  /**< No of samples per frame.       */
-    unsigned        bytes_per_frame;    /**< No of samples per frame.       */
+    pj_str_t	    name;		/**< Port name.			    */
+    pj_uint32_t	    signature;		/**< Port signature.		    */
+    pjmedia_dir     dir;                /**< Port direction.                */
+    pjmedia_format  fmt;                /**< Format.		            */
 };
 
 

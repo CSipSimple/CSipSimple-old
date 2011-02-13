@@ -1,4 +1,4 @@
-/* $Id: config.h 3177 2010-05-17 16:10:08Z bennylp $ */
+/* $Id: config.h 3392 2010-12-10 11:04:30Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -21,8 +21,8 @@
 #define __PJMEDIA_AUDIODEV_CONFIG_H__
 
 /**
- * @file audiodev.h
- * @brief Audio device API.
+ * @file config.h
+ * @brief Audio config.
  */
 #include <pjmedia/types.h>
 #include <pj/pool.h>
