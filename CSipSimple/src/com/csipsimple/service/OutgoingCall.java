@@ -36,29 +36,20 @@ public class OutgoingCall extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context aContext, Intent intent) {
-		String action = intent.getAction();
-		String number = getResultData();
-		//String full_number = intent.getStringExtra("android.phone.extra.ORIGINAL_URI");
-
-		if (number == null) {
-			return;
-		}
-		
-		if(PhoneNumberUtils.isEmergencyNumber(number)) {
-			Log.d(THIS_FILE, "It's an emergency number ignore that");
-			ignoreNext = "";
-			setResultData(number);
-			return;
-		}
-		
-		
 		context = aContext;
 		prefsWrapper = new PreferencesWrapper(context);
+		String action = intent.getAction();
+		String number = getResultData();
+		String full_number = intent.getStringExtra("android.phone.extra.ORIGINAL_URI");
+
+		Log.d(THIS_FILE, "act=" + action + " num=" + number + " fnum=" + full_number + " ignx=" + ignoreNext);	
 		
-		//Log.d(THIS_FILE, "act=" + action + " num=" + number + " fnum=" + full_number + " ignx=" + ignoreNext);	
+		if (number == null) return;
 		
+		//Log.d(THIS_FILE, "We are trying to call " + full_number);
 		if (!prefsWrapper.useIntegrateDialer() || ignoreNext.equalsIgnoreCase(number) || action == null) {
 			Log.d(THIS_FILE, "Our selector disabled, or Mobile chosen in our selector, send to tel");
+			//Log.d(THIS_FILE, "we will force it ");
 			ignoreNext = "";
 			setResultData(number);
 			return;

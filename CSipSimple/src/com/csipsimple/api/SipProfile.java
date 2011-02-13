@@ -79,20 +79,15 @@ public class SipProfile implements Parcelable {
 	public static final String FIELD_CONTACT_URI_PARAMS = "contact_uri_params";
 	public static final String FIELD_TRANSPORT = "transport";
 	public static final String FIELD_USE_SRTP = "use_srtp";
-	public static final String FIELD_USE_ZRTP = "use_zrtp";
 	
 	// For now, assume unique proxy
 	public static final String FIELD_PROXY = "proxy";
-	public static final String FIELD_REG_USE_PROXY = "reg_use_proxy";
-	
 	// For now, assume unique credential
 	public static final String FIELD_REALM = "realm";
 	public static final String FIELD_SCHEME = "scheme";
 	public static final String FIELD_USERNAME = "username";
 	public static final String FIELD_DATATYPE = "datatype";
 	public static final String FIELD_DATA = "data";
-	
-	public static final String FIELD_SIP_STACK = "sip_stack";
 	
 	public final static String[] full_projection = {
 		FIELD_ID,
@@ -104,17 +99,15 @@ public class SipProfile implements Parcelable {
 		FIELD_MWI_ENABLED, FIELD_PUBLISH_ENABLED, FIELD_REG_TIMEOUT, FIELD_KA_INTERVAL, FIELD_PIDF_TUPLE_ID,
 		FIELD_FORCE_CONTACT, FIELD_ALLOW_CONTACT_REWRITE, FIELD_CONTACT_REWRITE_METHOD, 
 		FIELD_CONTACT_PARAMS, FIELD_CONTACT_URI_PARAMS,
-		FIELD_TRANSPORT, FIELD_USE_SRTP, FIELD_USE_ZRTP,
+		FIELD_TRANSPORT, FIELD_USE_SRTP,
 
 		// Proxy infos
-		FIELD_PROXY, FIELD_REG_USE_PROXY,
+		FIELD_PROXY,
 
 		// And now cred_info since for now only one cred info can be managed
 		// In future release a credential table should be created
 		FIELD_REALM, FIELD_SCHEME, FIELD_USERNAME, FIELD_DATATYPE,
-		FIELD_DATA, 
-		
-		FIELD_SIP_STACK };
+		FIELD_DATA };
 	public final static Class<?>[] full_projection_types = {
 		Integer.class,
 		
@@ -124,14 +117,12 @@ public class SipProfile implements Parcelable {
 		Boolean.class, Integer.class, Integer.class, Integer.class, String.class,
 		String.class, Integer.class, Integer.class,
 		String.class, String.class,
-		Integer.class, Integer.class, Integer.class,
+		Integer.class, Integer.class,
 		
-		String.class, Integer.class,
-		
-		String.class, String.class, String.class, Integer.class,
 		String.class,
 		
-		Integer.class
+		String.class, String.class, String.class, Integer.class,
+		String.class
 	};
 	
 	//Properties
@@ -146,7 +137,7 @@ public class SipProfile implements Parcelable {
 	public String reg_uri = null;
 	public int publish_enabled = 0;
 	public int reg_timeout = 300;
-	public int ka_interval = 0;
+	public int ka_interval = 40;
 	public String pidf_tuple_id = null;
 	public String force_contact = null;
 	public boolean allow_contact_rewrite = true;
@@ -158,9 +149,8 @@ public class SipProfile implements Parcelable {
 	public int datatype = 0;
 	public String data = null;
 	public int use_srtp = 0;
-	public int use_zrtp = 0;
-	public int reg_use_proxy = 3;
 	public int sip_stack = PJSIP_STACK;
+	
 	
 	public SipProfile() {
 		display_name = "";
@@ -192,8 +182,6 @@ public class SipProfile implements Parcelable {
 		allow_contact_rewrite = (in.readInt()!=0);
 		contact_rewrite_method = in.readInt();
 		sip_stack = in.readInt();
-		reg_use_proxy = in.readInt();
-		use_zrtp = in.readInt();
 	}
 
 	public static final Parcelable.Creator<SipProfile> CREATOR = new Parcelable.Creator<SipProfile>() {
@@ -243,8 +231,6 @@ public class SipProfile implements Parcelable {
 		dest.writeInt(allow_contact_rewrite?1:0);
 		dest.writeInt(contact_rewrite_method);
 		dest.writeInt(sip_stack);
-		dest.writeInt(reg_use_proxy);
-		dest.writeInt(use_zrtp);
 	}
 	
 	private String getWriteParcelableString(String str) {
@@ -263,10 +249,6 @@ public class SipProfile implements Parcelable {
 	public void createFromDb(Cursor c) {
 		ContentValues args = new ContentValues();
 		DatabaseUtils.cursorRowToContentValues(c, args);
-		createFromContentValue(args);
-	}
-	
-	public void createFromContentValue(ContentValues args) {
 		Integer tmp_i;
 		String tmp_s;
 
@@ -341,22 +323,13 @@ public class SipProfile implements Parcelable {
 		if (tmp_i != null && tmp_i >=0 ) {
 			use_srtp = tmp_i;
 		}
-		tmp_i = args.getAsInteger(FIELD_USE_ZRTP);
-		if (tmp_i != null && tmp_i >=0 ) {
-			use_zrtp = tmp_i;
-		}
 		
 		// Proxy
 		tmp_s = args.getAsString(FIELD_PROXY);
 		if (tmp_s != null) {
 			proxies = TextUtils.split(tmp_s,  Pattern.quote(PROXIES_SEPARATOR) );
 		}
-		tmp_i = args.getAsInteger(FIELD_REG_USE_PROXY);
-		if (tmp_i != null && tmp_i >=0 ) {
-			reg_use_proxy = tmp_i;
-		}
 		
-		// Auth
 		tmp_s = args.getAsString(FIELD_REALM);
 		if (tmp_s != null) {
 			realm = tmp_s;
@@ -377,13 +350,8 @@ public class SipProfile implements Parcelable {
 		if (tmp_s != null) {
 			data = tmp_s;
 		}
-		
-
-		tmp_i = args.getAsInteger(FIELD_SIP_STACK);
-		if (tmp_i != null && tmp_i >=0 ) {
-			sip_stack = tmp_i;
-		}
 	}
+	
 	
 
 	/**
@@ -416,7 +384,6 @@ public class SipProfile implements Parcelable {
 		args.put(FIELD_ALLOW_CONTACT_REWRITE, allow_contact_rewrite ? 1 : 0);
 		args.put(FIELD_CONTACT_REWRITE_METHOD, contact_rewrite_method);
 		args.put(FIELD_USE_SRTP, use_srtp);
-		args.put(FIELD_USE_SRTP, use_zrtp);
 
 		// CONTACT_PARAM and CONTACT_PARAM_URI not yet in JNI
 
@@ -425,24 +392,16 @@ public class SipProfile implements Parcelable {
 		}else {
 			args.put(FIELD_PROXY, "");
 		}
-		args.put(FIELD_REG_USE_PROXY, reg_use_proxy);
-		
 		// Assume we have an unique credential
 		args.put(FIELD_REALM, realm);
 		args.put(FIELD_SCHEME, scheme);
 		args.put(FIELD_USERNAME, username);
 		args.put(FIELD_DATATYPE, datatype);
 		args.put(FIELD_DATA, data);
-		
-		args.put(FIELD_SIP_STACK, sip_stack);
 
 		return args;
 	}
 	
-	/**
-	 * Get the default domain for this account
-	 * @return the default domain for this account
-	 */
 	public String getDefaultDomain() {
 		String regUri = reg_uri;
 		if(regUri == null) {
@@ -552,7 +511,7 @@ public class SipProfile implements Parcelable {
 	}
 	
 	/**
-	 * Gets the SIP domain when acc_id is username@domain.
+	 * Gets the SIP domain.
 	 * @return the sip domain for this account
 	 */
 	public String getSipDomain() {
@@ -570,14 +529,9 @@ public class SipProfile implements Parcelable {
 	}
 	
 	/**
-	 *  Gets the username when acc_id is username@domain.
-	 *  WARNING : this is different from username of SipProfile which is the authentication name cause of pjsip naming
+	 *  Gets the username.
 	 */
-	public String getSipUserName() {
-		ParsedSipContactInfos parsed = SipUri.parseSipContact(acc_id);
-		if(parsed.userName != null) {
-			return parsed.userName;
-		}
-		return "";
+	public String getUserName() {
+		return username;
 	}
 }

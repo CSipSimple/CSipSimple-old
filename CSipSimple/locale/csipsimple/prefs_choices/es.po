@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-01-30 00:15+0100\n"
+"POT-Creation-Date: 2010-12-30 15:22+0100\n"
 "PO-Revision-Date: 2010-11-27 23:52+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -20,11 +20,11 @@ msgstr ""
 
 msgctxt "scheme_choices:0"
 msgid "Digest"
-msgstr "Digest"
+msgstr ""
 
 msgctxt "scheme_choices:1"
 msgid "PGP"
-msgstr "PGP"
+msgstr ""
 
 msgctxt "data_type_choices:0"
 msgid "Plain password"
@@ -36,31 +36,31 @@ msgstr ""
 
 msgctxt "clock_rate_choices:0"
 msgid "8KHz"
-msgstr "8KHz"
+msgstr ""
 
 msgctxt "clock_rate_choices:1"
 msgid "16KHz"
-msgstr "16KHz"
+msgstr ""
 
 msgctxt "clock_rate_choices:2"
 msgid "32KHz"
-msgstr "32KHz"
+msgstr ""
 
 msgctxt "clock_rate_choices:3"
 msgid "44.1KHz"
-msgstr "44.1KHz"
+msgstr ""
 
 msgctxt "use_srtp_choices:0"
 msgid "Disabled"
-msgstr "Desactivado"
+msgstr ""
 
 msgctxt "use_srtp_choices:1"
 msgid "Optional"
-msgstr "Opcional"
+msgstr ""
 
 msgctxt "use_srtp_choices:2"
 msgid "Mandatory"
-msgstr "Obligatorio"
+msgstr ""
 
 msgctxt "dtmf_mode_choices:0"
 msgid "Auto"
@@ -88,39 +88,39 @@ msgstr ""
 
 msgctxt "transport_choices:0"
 msgid "Auto"
-msgstr "Auto"
+msgstr ""
 
 msgctxt "transport_choices:1"
 msgid "UDP"
-msgstr "UDP"
+msgstr ""
 
 msgctxt "transport_choices:2"
 msgid "TCP"
-msgstr "TCP"
+msgstr ""
 
 msgctxt "transport_choices:3"
 msgid "TLS"
-msgstr "TLS"
+msgstr ""
 
 msgctxt "tls_method_choices:0"
 msgid "Auto"
-msgstr "Auto"
+msgstr ""
 
 msgctxt "tls_method_choices:1"
 msgid "TLSv1"
-msgstr "TLSv1"
+msgstr ""
 
 msgctxt "tls_method_choices:2"
 msgid "SSLv2"
-msgstr "SSLv2"
+msgstr ""
 
 msgctxt "tls_method_choices:3"
 msgid "SSL3"
-msgstr "SSL3"
+msgstr ""
 
 msgctxt "tls_method_choices:4"
 msgid "SSL23"
-msgstr "SSL23"
+msgstr ""
 
 msgctxt "gsm_integration_type_choices:0"
 msgid "Auto"
@@ -156,13 +156,5 @@ msgstr ""
 
 msgctxt "dial_press_mode_choices:2"
 msgid "Prevent"
-msgstr ""
-
-msgctxt "band_types_name:0"
-msgid "Narrowband"
-msgstr ""
-
-msgctxt "band_types_name:1"
-msgid "Wideband"
 msgstr ""
 

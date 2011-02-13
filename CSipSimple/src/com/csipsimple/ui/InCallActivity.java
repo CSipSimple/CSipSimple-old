@@ -26,16 +26,13 @@ import java.util.TimerTask;
 
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.DialogInterface.OnClickListener;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -61,7 +58,6 @@ import android.widget.LinearLayout;
 
 import com.csipsimple.R;
 import com.csipsimple.api.SipCallSession;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.ISipService;
 import com.csipsimple.service.MediaManager.MediaState;
@@ -164,7 +160,6 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		//Listen to media & sip events to update the UI
 		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_SIP_CALL_CHANGED));
 		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_SIP_MEDIA_CHANGED));
-		registerReceiver(callStateReceiver, new IntentFilter("com.cipsimple.tmp.zrtp.showSAS"));
 		
 		// Sensor management
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -174,7 +169,7 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		dialFeedback = new DialingFeedback(this, true);
 		
 
-		if(!prefsWrapper.getPreferenceBooleanValue(SipConfigManager.PREVENT_SCREEN_ROTATION)) {
+		if(!prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.PREVENT_SCREEN_ROTATION)) {
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		}
 	}
@@ -184,72 +179,64 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 	protected void onStart() {
 		Log.d(THIS_FILE, "Start in call");
 		super.onStart();
-		
-		Thread t = new Thread() {
-			public void run() {
-				 if (keyguardManager == null) {
-			            keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-			            keyguardLock = keyguardManager.newKeyguardLock("com.csipsimple.inCallKeyguard");
-			        }
-			        
-			        // If this line is uncommented keyguard will be prevented only if in keyguard mode is locked 
-			        // when incoming call arrives
-			        //if(keyguardManager.inKeyguardRestrictedInputMode()) {
-			        
-			        manageKeyguard = true;
-			        keyguardLock.disableKeyguard();
-			        //}
-			        
-			        if(quitTimer == null) {
-			    		quitTimer = new Timer();
-			        }
-			        
-			        if(proximitySensor != null) {
-						WifiManager wman = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-						WifiInfo winfo = wman.getConnectionInfo();
-						if(winfo == null || !prefsWrapper.keepAwakeInCall()) {
-							// Try to use powermanager proximity sensor
-							if(powerManager != null) {
-								try {
-									Method method = powerManager.getClass().getDeclaredMethod("getSupportedWakeLockFlags");
-									int supportedFlags = (Integer) method.invoke(powerManager);
-									Log.d(THIS_FILE, ">>> Flags supported : "+supportedFlags);
-									Field f = PowerManager.class.getDeclaredField("PROXIMITY_SCREEN_OFF_WAKE_LOCK");
-									int proximityScreenOffWakeLock = (Integer) f.get(null);
-									if( (supportedFlags & proximityScreenOffWakeLock) != 0x0 ) {
-										Log.d(THIS_FILE, ">>> We can use native screen locker !!");
-										proximityWakeLock = powerManager.newWakeLock(proximityScreenOffWakeLock, "com.csipsimple.CallProximity");
-										proximityWakeLock.setReferenceCounted(false);
-									}
-									
-								} catch (Exception e) {
-									Log.d(THIS_FILE, "Impossible to get power manager supported wake lock flags");
-								} 
-								/*
-								if ((powerManager.getSupportedWakeLockFlags()  & PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK) != 0x0) {
-									mProximityWakeLock = pm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, THIS_FILE);
-								}
-								*/
-							}
+        if (keyguardManager == null) {
+            keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+            keyguardLock = keyguardManager.newKeyguardLock("com.csipsimple.inCallKeyguard");
+        }
+        
+        // If this line is uncommented keyguard will be prevented only if in keyguard mode is locked 
+        // when incoming call arrives
+        //if(keyguardManager.inKeyguardRestrictedInputMode()) {
+        
+        manageKeyguard = true;
+        keyguardLock.disableKeyguard();
+        //}
+        
+        if(quitTimer == null) {
+    		quitTimer = new Timer();
+        }
+        
+        if(proximitySensor != null) {
+			WifiManager wman = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+			WifiInfo winfo = wman.getConnectionInfo();
+			if(winfo == null || !prefsWrapper.keepAwakeInCall()) {
+				// Try to use powermanager proximity sensor
+				if(powerManager != null) {
+					try {
+						Method method = powerManager.getClass().getDeclaredMethod("getSupportedWakeLockFlags");
+						int supportedFlags = (Integer) method.invoke(powerManager);
+						Log.d(THIS_FILE, ">>> Flags supported : "+supportedFlags);
+						Field f = PowerManager.class.getDeclaredField("PROXIMITY_SCREEN_OFF_WAKE_LOCK");
+						int proximityScreenOffWakeLock = (Integer) f.get(null);
+						if( (supportedFlags & proximityScreenOffWakeLock) != 0x0 ) {
+							Log.d(THIS_FILE, ">>> We can use native screen locker !!");
+							proximityWakeLock = powerManager.newWakeLock(proximityScreenOffWakeLock, "com.csipsimple.CallProximity");
+							proximityWakeLock.setReferenceCounted(false);
 						}
 						
-						if(proximityWakeLock == null) {
-							//Fall back to manual mode
-							isFirstRun = true;
-							sensorManager.registerListener(InCallActivity.this, 
-					                proximitySensor,
-					                SensorManager.SENSOR_DELAY_NORMAL);
-							proximitySensorTracked  = true;
-						}
-						
+					} catch (Exception e) {
+						Log.d(THIS_FILE, "Impossible to get power manager supported wake lock flags");
+					} 
+					/*
+					if ((powerManager.getSupportedWakeLockFlags()  & PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK) != 0x0) {
+						mProximityWakeLock = pm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, THIS_FILE);
 					}
-			        dialFeedback.resume();
-			        handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
-			};
-		};
-		
-		t.start();
-       
+					*/
+				}
+			}
+			
+			if(proximityWakeLock == null) {
+				//Fall back to manual mode
+				isFirstRun = true;
+				sensorManager.registerListener(this, 
+		                proximitySensor,
+		                SensorManager.SENSOR_DELAY_NORMAL);
+				proximitySensorTracked  = true;
+			}
+			
+		}
+        dialFeedback.resume();
+        handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
 	}
 	
 	@Override
@@ -317,8 +304,6 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 
 	private static final int UPDATE_FROM_CALL = 1;
 	private static final int UPDATE_FROM_MEDIA = 2;
-	private static final int SHOW_SAS = 3;
-	
 	// Ui handler
 	private Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -329,8 +314,6 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 			case UPDATE_FROM_MEDIA:
 				updateUIFromMedia();
 				break;
-			case SHOW_SAS:
-				showZRTPInfo((String) msg.obj);
 			default:
 				super.handleMessage(msg);
 			}
@@ -705,8 +688,6 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 				handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
 			}else if(action.equals(SipManager.ACTION_SIP_MEDIA_CHANGED)) {
 				handler.sendMessage(handler.obtainMessage(UPDATE_FROM_MEDIA));
-			}else if(action.equals("com.cipsimple.tmp.zrtp.showSAS")) {
-				handler.sendMessage(handler.obtainMessage(SHOW_SAS, intent.getStringExtra(Intent.EXTRA_SUBJECT)));
 			}
 		}
 	};
@@ -751,11 +732,9 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		Log.d(THIS_FILE, "We have a current call : " + call);
 		if(call == null) {
 			Log.e(THIS_FILE, "Try to do an action on a null call !!!");
-			return;
 		}
 		if(call.getCallId() == SipCallSession.INVALID_CALL_ID) {
 			Log.e(THIS_FILE, "Try to do an action on an invalid call !!!");
-			return;
 		}
 		
 		//Reset proximity sensor timer
@@ -913,36 +892,5 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 			break;
 		}
 		
-	}
-	
-	
-	private void showZRTPInfo(String sasString) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("ZRTP supported by remote party");
-		builder.setMessage("Do you confirm the SAS : "+sasString);
-		builder.setPositiveButton("Yes", new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Log.d(THIS_FILE, "ZRTP confirmed");
-
-				if (service != null) {
-					try {
-						service.zrtpSASVerified();
-					} catch (RemoteException e) {
-						Log.e(THIS_FILE, "Error while calling service", e);
-					}
-					dialog.dismiss();
-				}
-			}
-		});
-		builder.setNegativeButton("No", new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-		});
-		
-		AlertDialog backupDialog = builder.create();
-		backupDialog.show();
 	}
 }

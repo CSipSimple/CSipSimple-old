@@ -82,21 +82,4 @@
 		<item>2</item> <!-- Prevent -->
 	</string-array>
 	
-	<string-array name="band_types">
-		<item>nb</item>
-		<item>wb</item>
-	</string-array>
-	
-	<string-array name="reg_use_proxy_values">
-		<item>0</item>
-		<item>1</item>
-		<item>2</item>
-		<item>3</item>
-	</string-array>
-	
-	
-	<string-array name="use_zrtp_values">
-		<item>1</item>
-		<item>2</item>
-	</string-array>
 </resources>

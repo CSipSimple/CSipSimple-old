@@ -20,7 +20,6 @@ package com.csipsimple.wizards.impl;
 import android.text.InputType;
 
 import com.csipsimple.R;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.utils.PreferencesWrapper;
 
@@ -28,7 +27,7 @@ public class Gizmo5 extends SimpleImplementation {
 	
 	@Override
 	protected String getDomain() {
-		return "proxy01.sipphone.com";
+		return "gizmo5.com";
 	}
 	
 	@Override
@@ -68,9 +67,9 @@ public class Gizmo5 extends SimpleImplementation {
 	public void setDefaultParams(PreferencesWrapper prefs) {
 		super.setDefaultParams(prefs);
 		// Add stun server
-		prefs.setPreferenceBooleanValue(SipConfigManager.ENABLE_STUN, true);
+		prefs.setPreferenceBooleanValue(PreferencesWrapper.ENABLE_STUN, true);
 		prefs.addStunServer("stun01.sipphone.com");
-		prefs.setPreferenceStringValue(SipConfigManager.DTMF_MODE, PreferencesWrapper.DTMF_MODE_INBAND);
+		prefs.setPreferenceStringValue(PreferencesWrapper.DTMF_MODE, PreferencesWrapper.DTMF_MODE_INBAND);
 	}
 	
 

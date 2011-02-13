@@ -127,7 +127,6 @@ public final class SipCallSession implements Parcelable {
 	private int mediaStatus = MediaState.NONE;
 	private boolean mediaSecure = false;
 	private long connectStart = 0;
-	private int lastStatusCode = 0;
 	
 
 	public SipCallSession(Parcel in) {
@@ -153,7 +152,6 @@ public final class SipCallSession implements Parcelable {
 		dest.writeInt(isIncoming()?1:0);
 		dest.writeInt(confPort);
 		dest.writeInt(accId);
-		dest.writeInt(lastStatusCode);
 	}
 
 	public void readFromParcel(Parcel in) {
@@ -165,7 +163,6 @@ public final class SipCallSession implements Parcelable {
 		setIncoming((in.readInt() == 1));
 		confPort = in.readInt();
 		accId = in.readInt();
-		lastStatusCode = in.readInt();
 	}
 	
 
@@ -310,37 +307,5 @@ public final class SipCallSession implements Parcelable {
 		mediaSecure = mediaSecure2;
 	}
 
-	public boolean isLocalHeld(){
-		return mediaStatus == SipCallSession.MediaState.LOCAL_HOLD;
-	}
 
-	public boolean isBeforeConfirmed() {
-		switch(callState) {
-		case InvState.CALLING :
-		case InvState.INCOMING:
-		case InvState.EARLY:
-			return true;
-		default : 
-			return false;
-		}
-	}
-	
-	public boolean isAfterEnded() {
-		switch(callState) {
-		case InvState.DISCONNECTED: 
-		case InvState.INVALID: 
-		case InvState.NULL:
-			return true;
-		default : 
-			return false;
-		}
-	}
-
-	public void setLastStatusCode(int status_code) {
-		lastStatusCode = status_code;
-	}
-	
-	public int getLastStatusCode() {
-		return lastStatusCode;
-	}
 }

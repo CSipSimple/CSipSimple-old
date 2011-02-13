@@ -20,7 +20,6 @@ package com.csipsimple.wizards.impl;
 import android.text.InputType;
 
 import com.csipsimple.R;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.utils.PreferencesWrapper;
 
@@ -49,7 +48,7 @@ public class PlanetPhone extends SimpleImplementation {
 	@Override
 	public void setDefaultParams(PreferencesWrapper prefs) {
 		super.setDefaultParams(prefs);
-		prefs.setPreferenceBooleanValue(SipConfigManager.ENABLE_VAD, true);
+		prefs.setPreferenceBooleanValue(PreferencesWrapper.ENABLE_VAD, true);
 	}
 	
 	

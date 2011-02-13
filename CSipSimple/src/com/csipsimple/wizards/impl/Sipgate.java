@@ -18,7 +18,6 @@
 package com.csipsimple.wizards.impl;
 
 import com.csipsimple.R;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.utils.PreferencesWrapper;
 
@@ -50,7 +49,7 @@ public class Sipgate extends AlternateServerImplementation {
 	public void setDefaultParams(PreferencesWrapper prefs) {
 		super.setDefaultParams(prefs);
 		// Add stun server
-		prefs.setPreferenceBooleanValue(SipConfigManager.ENABLE_STUN, true);
+		prefs.setPreferenceBooleanValue(PreferencesWrapper.ENABLE_STUN, true);
 		prefs.addStunServer("stun.sipgate.net:10000");
 	}
 	

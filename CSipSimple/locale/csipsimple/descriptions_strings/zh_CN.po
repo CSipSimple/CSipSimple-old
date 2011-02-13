@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-01-30 00:15+0100\n"
-"PO-Revision-Date: 2010-11-29 06:00+0000\n"
-"Last-Translator: Larry Li <Unknown>\n"
+"POT-Creation-Date: 2010-12-30 15:22+0100\n"
+"PO-Revision-Date: 2010-12-17 22:40+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: zh_CN <LL@li.org>\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
@@ -23,7 +24,7 @@ msgstr ""
 #. textual representation like ImageView.
 msgctxt "description_image_button_one"
 msgid "one"
-msgstr "一"
+msgstr ""
 
 #. String describing the image on ImageButton two          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -31,7 +32,7 @@ msgstr "一"
 #. textual representation like ImageView.
 msgctxt "description_image_button_two"
 msgid "two"
-msgstr "二"
+msgstr ""
 
 #. String describing the image on ImageButton three          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -39,7 +40,7 @@ msgstr "二"
 #. textual representation like ImageView.
 msgctxt "description_image_button_three"
 msgid "three"
-msgstr "三"
+msgstr ""
 
 #. String describing the image on ImageButton four          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -47,7 +48,7 @@ msgstr "三"
 #. textual representation like ImageView.
 msgctxt "description_image_button_four"
 msgid "four"
-msgstr "四"
+msgstr ""
 
 #. String describing the image on ImageButton five          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -55,7 +56,7 @@ msgstr "四"
 #. textual representation like ImageView.
 msgctxt "description_image_button_five"
 msgid "five"
-msgstr "五"
+msgstr ""
 
 #. String describing the image on ImageButton six          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -63,7 +64,7 @@ msgstr "五"
 #. textual representation like ImageView.
 msgctxt "description_image_button_six"
 msgid "six"
-msgstr "六"
+msgstr ""
 
 #. String describing the image on ImageButton seven          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -71,7 +72,7 @@ msgstr "六"
 #. textual representation like ImageView.
 msgctxt "description_image_button_seven"
 msgid "seven"
-msgstr "七"
+msgstr ""
 
 #. String describing the image on ImageButton eight          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -79,7 +80,7 @@ msgstr "七"
 #. textual representation like ImageView.
 msgctxt "description_image_button_eight"
 msgid "eight"
-msgstr "八"
+msgstr ""
 
 #. String describing the image on ImageButton nine          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -87,7 +88,7 @@ msgstr "八"
 #. textual representation like ImageView.
 msgctxt "description_image_button_nine"
 msgid "nine"
-msgstr "九"
+msgstr ""
 
 #. String describing the image on ImageButton star          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -95,7 +96,7 @@ msgstr "九"
 #. textual representation like ImageView.
 msgctxt "description_image_button_star"
 msgid "star"
-msgstr "星号"
+msgstr ""
 
 #. String describing the image on ImageButton zero          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -103,7 +104,7 @@ msgstr "星号"
 #. textual representation like ImageView.
 msgctxt "description_image_button_zero"
 msgid "zero"
-msgstr "零"
+msgstr ""
 
 #. String describing the image on ImageButton pound          Note:
 #. AccessibilityServices use this attribute to announce what the view
@@ -117,17 +118,17 @@ msgstr ""
 #. AccessibilityService to announce the purpose of the button.
 msgctxt "description_dial_button"
 msgid "dial"
-msgstr "拨号"
+msgstr ""
 
 #. String describing the Delete/Backspace ImageButton           Used by
 #. AccessibilityService to announce the purpose of the button.
 msgctxt "description_delete_button"
 msgid "backspace"
-msgstr "退格"
+msgstr ""
 
 #. String describing the digits text box containing the number to dial.
 #. Used by AccessibilityService to announce the purpose of the view.
 msgctxt "description_digits_edittext"
 msgid "number to dial"
-msgstr "拨号盘"
+msgstr ""
 

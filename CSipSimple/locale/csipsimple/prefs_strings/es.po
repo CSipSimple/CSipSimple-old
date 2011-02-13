@@ -3,11 +3,12 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-01-30 00:15+0100\n"
+"POT-Creation-Date: 2010-12-30 15:22+0100\n"
 "PO-Revision-Date: 2010-11-27 23:52+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -19,39 +20,39 @@ msgstr ""
 
 msgctxt "prefs"
 msgid "Settings"
-msgstr "Ajustes"
+msgstr ""
 
 msgctxt "prefs_fast"
 msgid "Easy configuration"
-msgstr "Configuración rápida"
+msgstr ""
 
 msgctxt "prefs_fast_desc"
 msgid "Quick options to use if you don't know how SIP works"
-msgstr "Opciones sencillas si no conoce como funciona SIP"
+msgstr ""
 
 msgctxt "prefs_network"
 msgid "Network"
-msgstr "Red"
+msgstr ""
 
 msgctxt "prefs_network_desc"
 msgid "How SIP can be connected to the network"
-msgstr "Cómo puede conectarse SIP a la red"
+msgstr ""
 
 msgctxt "prefs_media"
 msgid "Media"
-msgstr "Multimedia"
+msgstr ""
 
 msgctxt "prefs_media_desc"
 msgid "Codecs and in-call sound behavior"
-msgstr "Codecs y ajustes de sonido"
+msgstr ""
 
 msgctxt "prefs_ui"
 msgid "User interface"
-msgstr "Interfaz de usuario"
+msgstr ""
 
 msgctxt "prefs_ui_desc"
 msgid "Tweak the user interface"
-msgstr "Ajustes de la Interfaz de usuario"
+msgstr ""
 
 msgctxt "prefs_calls"
 msgid "Calls options"
@@ -64,11 +65,11 @@ msgstr ""
 #. Network
 msgctxt "for_incomings"
 msgid "For incoming calls"
-msgstr "Llamadas entrantes"
+msgstr ""
 
 msgctxt "for_outgoings"
 msgid "For outgoing calls"
-msgstr "Llamadas salientes"
+msgstr ""
 
 msgctxt "perfs"
 msgid "Performances"
@@ -76,87 +77,87 @@ msgstr ""
 
 msgctxt "transport"
 msgid "Transport"
-msgstr "Transporte"
+msgstr ""
 
 msgctxt "transport_desc"
 msgid "Force the use of a transport for this account"
-msgstr "Seleccionar el tipo de transporte para esta cuenta"
+msgstr ""
 
 msgctxt "use_wifi"
 msgid "Use WiFi"
-msgstr "Usar WiFi"
+msgstr ""
 
 msgctxt "use_wifi_in_desc"
 msgid "Use WiFi for incoming calls"
-msgstr "Usar WiFi para llamadas entrantes"
+msgstr ""
 
 msgctxt "use_wifi_out_desc"
 msgid "Use WiFi for outgoing calls"
-msgstr "Usar WiFi para llamadas salientes"
+msgstr ""
 
 msgctxt "use_other"
 msgid "Use other networks"
-msgstr "Usar otras redes"
+msgstr ""
 
 msgctxt "use_other_in_desc"
 msgid "For example WiMax for incoming calls"
-msgstr "Por ejemplo, WiMax para llamadas entrantes"
+msgstr ""
 
 msgctxt "use_other_out_desc"
 msgid "For example WiMax for outgoing calls"
-msgstr "Por ejemplo, WiMax para llamadas salientes"
+msgstr ""
 
 msgctxt "use_3g"
 msgid "Use 3G"
-msgstr "Usar 3G"
+msgstr ""
 
 msgctxt "use_3g_disclamer"
 msgid "Your carrier MUST allow you to use this option"
-msgstr "Necesita autorización de su proveedor para usar esta opción"
+msgstr ""
 
 msgctxt "use_edge"
 msgid "Use EDGE"
-msgstr "Usar EDGE"
+msgstr ""
 
 msgctxt "use_gprs"
 msgid "Use GPRS"
-msgstr "Usar GPRS"
+msgstr ""
 
 msgctxt "lock_wifi"
 msgid "Lock WiFi"
-msgstr "Fijar WiFi"
+msgstr ""
 
 msgctxt "lock_wifi_desc"
 msgid "Prevent WiFi idle when SIP is connected"
-msgstr "Prevenir desactivar WiFi cuando SIP está conectado"
+msgstr ""
 
 msgctxt "enable_tcp"
 msgid "TCP"
-msgstr "TCP"
+msgstr ""
 
 msgctxt "enable_tcp_desc"
 msgid "Enable TCP transport"
-msgstr "Habilitar transporte TCP"
+msgstr ""
 
 msgctxt "enable_tls"
 msgid "TLS"
-msgstr "TLS"
+msgstr ""
 
 msgctxt "enable_tls_desc"
 msgid "Enable TLS transport"
-msgstr "Habilitar transporte TLS"
+msgstr ""
 
 msgctxt "enable_udp"
 msgid "UDP"
-msgstr "UDP"
+msgstr ""
 
 msgctxt "enable_udp_desc"
 msgid "Enable UDP transport"
-msgstr "Activar transporte UDP"
+msgstr ""
 
 msgctxt "network_udp_transport_port"
 msgid "UDP Port"
-msgstr "Puerto UDP"
+msgstr ""
 
 msgctxt "network_udp_transport_port_desc"
 msgid "Port number to bind locally"
@@ -164,7 +165,7 @@ msgstr ""
 
 msgctxt "network_tcp_transport_port"
 msgid "TCP Port"
-msgstr "Puerto TCP"
+msgstr ""
 
 msgctxt "network_tcp_transport_port_desc"
 msgid "Port number to bind locally"
@@ -172,7 +173,7 @@ msgstr ""
 
 msgctxt "network_rtp_port"
 msgid "RTP port"
-msgstr "Puerto RTP"
+msgstr ""
 
 msgctxt "network_rtp_port_desc"
 msgid "Port for RTP ports range start"
@@ -180,63 +181,63 @@ msgstr ""
 
 msgctxt "use_ipv6"
 msgid "Use IPv6"
-msgstr "Usar IPv6"
+msgstr ""
 
 msgctxt "use_ipv6_desc"
 msgid "Switch to IPv6 mode (your network and phone must support it)"
-msgstr "Cambiar a modo IPv6 (su red y teléfono debe soportarlo)"
+msgstr ""
 
 msgctxt "enable_dns_srv"
 msgid "Resolve DNS SRV"
-msgstr "Resolver DNS SRV"
+msgstr ""
 
 msgctxt "enable_dns_srv_desc"
 msgid "Use the application resolver to resolve DNS names"
-msgstr "Usar esta aplicación para resolver nombres de DNS"
+msgstr ""
 
 msgctxt "override_nameserver"
 msgid "Use a custom DNS"
-msgstr "Usar DNS personalizado"
+msgstr ""
 
 msgctxt "override_nameserver_desc"
 msgid "Left blank to retrieve DNS from Android"
-msgstr "Dejar en blanco para obtener el DNS de Android"
+msgstr ""
 
 msgctxt "nat_traversal"
 msgid "NAT traversal"
-msgstr "NAT traversal"
+msgstr ""
 
 msgctxt "enable_ice"
 msgid "Enable ICE"
-msgstr "Usar ICE"
+msgstr ""
 
 msgctxt "enable_ice_desc"
 msgid "Turn on ICE feature"
-msgstr "Habilita la funcionalidad ICE"
+msgstr ""
 
 msgctxt "enable_turn"
 msgid "Enable TURN"
-msgstr "Usar TURN"
+msgstr ""
 
 msgctxt "enable_turn_desc"
 msgid "Turn on TURN feature"
-msgstr "Habilita la funcionalidad TURN"
+msgstr ""
 
 msgctxt "turn_server"
 msgid "Turn server"
-msgstr "Servidor TURN"
+msgstr ""
 
 msgctxt "turn_server_desc"
 msgid "TURN server (HOST:PORT)"
-msgstr "Servidor TURN (SERVIDOR:PUERTO)"
+msgstr ""
 
 msgctxt "enable_stun"
 msgid "Enable STUN"
-msgstr "Usar STUN"
+msgstr ""
 
 msgctxt "enable_stun_desc"
 msgid "Turn on STUN feature"
-msgstr "Habilitar la funcionalidad STUN"
+msgstr ""
 
 msgctxt "stun_server"
 msgid "STUN servers"
@@ -248,44 +249,32 @@ msgstr ""
 
 msgctxt "enable_qos"
 msgid "Enable QoS"
-msgstr "Usar QoS"
+msgstr ""
 
 msgctxt "enable_qos_desc"
 msgid "Enable QoS on packets"
-msgstr "Habilita la funcionalidad Qos en los paquetes"
+msgstr ""
 
 msgctxt "dscp_val"
 msgid "DSCP value"
-msgstr "Valor DSCP"
+msgstr ""
 
 msgctxt "dscp_val_desc"
 msgid "DSCP value for SIP traffic"
-msgstr "Valor DSCO para el tráfico SIP"
-
-msgctxt "keep_alive_interval_wifi"
-msgid "Wifi keep alive"
-msgstr ""
-
-msgctxt "keep_alive_interval_mobile"
-msgid "Mobile keep alive"
-msgstr ""
-
-msgctxt "keep_alive_interval_desc"
-msgid "Interval (sec) for KA packets"
 msgstr ""
 
 #. Security
 msgctxt "tls"
 msgid "TLS"
-msgstr "TLS"
+msgstr ""
 
 msgctxt "secure_transport"
 msgid "Secure transport"
-msgstr "Trasnporte seguro"
+msgstr ""
 
 msgctxt "secure_transport_desc"
 msgid "Security mechanism for SIP and RTP"
-msgstr "Mecanismo de seguridad para SIP y RTP"
+msgstr ""
 
 msgctxt "secure_media"
 msgid "Secure media"
@@ -321,23 +310,23 @@ msgstr ""
 
 msgctxt "cert_file_desc"
 msgid "For example /sdcard/CSipSimple/myCert.crt"
-msgstr "Por ejemplo: /sdcard/CSipSimple/miCertificado.crt"
+msgstr ""
 
 msgctxt "privkey_file"
 msgid "TLS private key file"
-msgstr "Fichero de la clave privada TLS"
+msgstr ""
 
 msgctxt "privkey_file_desc"
 msgid "For example /sdcard/CSipSimple/myKey.key"
-msgstr "Por ejemplo: /sdcard/CSipSimple/miClave.key"
+msgstr ""
 
 msgctxt "tls_password"
 msgid "TLS password"
-msgstr "Contraseña TLS"
+msgstr ""
 
 msgctxt "tls_password_desc"
 msgid "TLS password to private key file"
-msgstr "Contraseña del fichero de la clave privada TLS"
+msgstr ""
 
 msgctxt "verify_server"
 msgid "Check server"
@@ -357,7 +346,7 @@ msgstr ""
 
 msgctxt "tls_method"
 msgid "TLS Method"
-msgstr "Método TLS"
+msgstr ""
 
 msgctxt "tls_method_desc"
 msgid "Method for TLS transport"
@@ -437,8 +426,7 @@ msgid "Media quality"
 msgstr ""
 
 msgctxt "snd_media_quality_desc"
-msgid ""
-"Quality of the media stream (modify only if you know what you are doing)"
+msgid "Quality of the media stream (modify only if you know what you are doing)"
 msgstr ""
 
 msgctxt "snd_clock_rate"
@@ -531,38 +519,6 @@ msgstr ""
 
 msgctxt "set_audio_generate_tone_desc"
 msgid "Generate a tone before making calls"
-msgstr ""
-
-msgctxt "narrow_band"
-msgid "Narrowband"
-msgstr ""
-
-msgctxt "wide_band"
-msgid "Wideband"
-msgstr ""
-
-msgctxt "band_for_wifi"
-msgid "Band type for wifi"
-msgstr ""
-
-msgctxt "band_for_3g"
-msgid "Band type for 3G"
-msgstr ""
-
-msgctxt "band_for_gprs"
-msgid "Band type for GPRS"
-msgstr ""
-
-msgctxt "band_for_edge"
-msgid "Band type for EDGE"
-msgstr ""
-
-msgctxt "band_for_other"
-msgid "Band type for other"
-msgstr ""
-
-msgctxt "codecs_band_types"
-msgid "Connections bandwidth types for codecs"
 msgstr ""
 
 #. UI
@@ -684,14 +640,6 @@ msgctxt "gsm_integration_type_desc"
 msgid "How the application uses your mobile phone (or not)"
 msgstr ""
 
-msgctxt "invert_proximity_sensor"
-msgid "Invert proximity sensor"
-msgstr ""
-
-msgctxt "invert_proximity_sensor_desc"
-msgid "May help on some devices when manufacturer inverted near and far"
-msgstr ""
-
 #. Fast settings
 msgctxt "android_integration"
 msgid "Integrate with Android"
@@ -761,4 +709,20 @@ msgstr ""
 msgctxt "advanced_preferences"
 msgid "Advanced mode"
 msgstr ""
+
+#~ msgctxt "stun_server"
+#~ msgid "STUN server"
+#~ msgstr ""
+
+#~ msgctxt "stun_server_desc"
+#~ msgid "STUN server (HOST:PORT)"
+#~ msgstr ""
+
+#~ msgctxt "gsm_integration_type"
+#~ msgid "Integration type with GSM"
+#~ msgstr ""
+
+#~ msgctxt "gsm_integration_type_desc"
+#~ msgid "How the application use GSM (or not)"
+#~ msgstr ""
 

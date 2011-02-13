@@ -90,20 +90,4 @@
 		<item>Prevent</item>
 	</string-array>
 	
-	<string-array name="band_types_name">
-		<item>Narrowband</item>
-		<item>Wideband</item>
-	</string-array>
-	
-	<string-array name="reg_use_proxy_choices">
-		<item>No proxy</item>
-		<item>Outbound proxies</item>
-		<item>Accounts proxies</item>
-		<item>All</item>
-	</string-array>
-	
-	<string-array name="use_zrtp_choices">
-		<item>No ZRTP</item>
-		<item>Create ZRTP</item>
-	</string-array>
 </resources>

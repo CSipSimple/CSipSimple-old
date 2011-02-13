@@ -43,19 +43,7 @@
 			android:numeric="integer"
 			android:summary="@string/network_tcp_transport_port_desc"
 			android:defaultValue="5060"></EditTextPreference>
-		
-		<EditTextPreference android:key="keep_alive_interval_wifi"
-			android:title="@string/keep_alive_interval_wifi"
-			android:summary="@string/keep_alive_interval_desc"
-			android:numeric="signed"
-			android:defaultValue="100"></EditTextPreference>
-		<EditTextPreference android:key="keep_alive_interval_mobile"
-			android:title="@string/keep_alive_interval_mobile"
-			android:summary="@string/keep_alive_interval_desc"
-			android:numeric="signed"
-			android:defaultValue="40"></EditTextPreference>
-		
-		
+			
 		<EditTextPreference android:key="network_rtp_port"
 			android:title="@string/network_rtp_port"
 			android:numeric="integer"
@@ -80,8 +68,7 @@
 		<EditTextPreference android:key="dscp_val"
 			android:title="@string/dscp_val"
 			android:summary="@string/dscp_val_desc"
-				android:numeric="signed"
-			android:defaultValue="26"></EditTextPreference>
+			android:defaultValue="26"></EditTextPreference>*
 			
 		
 	</PreferenceCategory>
@@ -112,16 +99,6 @@
 			<EditTextPreference android:key="turn_server"
 				android:title="@string/turn_server"
 				android:summary="@string/turn_server_desc"
-				android:dependency="enable_turn"
-				android:defaultValue=""></EditTextPreference>
-			<EditTextPreference android:key="turn_username"
-				android:title="@string/turn_username"
-				android:summary="@string/turn_username_desc"
-				android:dependency="enable_turn"
-				android:defaultValue=""></EditTextPreference>
-			<EditTextPreference android:key="turn_password"
-				android:title="@string/turn_password"
-				android:summary="@string/turn_password_desc"
 				android:dependency="enable_turn"
 				android:defaultValue=""></EditTextPreference>
 	</PreferenceCategory>

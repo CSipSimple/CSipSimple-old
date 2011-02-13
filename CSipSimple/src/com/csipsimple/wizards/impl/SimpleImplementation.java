@@ -19,7 +19,6 @@ package com.csipsimple.wizards.impl;
 
 import java.util.HashMap;
 
-import android.net.Uri;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 
@@ -104,10 +103,10 @@ public abstract class SimpleImplementation extends BaseImplementation {
 	}
 
 	public SipProfile buildAccount(SipProfile account) {
-		account.display_name = accountDisplayName.getText().trim();
+		account.display_name = accountDisplayName.getText();
 		// TODO add an user display name
 		account.acc_id = "<sip:"
-				+ Uri.encode(accountUsername.getText().trim()) + "@"+getDomain()+">";
+				+ accountUsername.getText() + "@"+getDomain()+">";
 		
 		String regUri = "sip:"+getDomain();
 		account.reg_uri = regUri;
@@ -115,7 +114,7 @@ public abstract class SimpleImplementation extends BaseImplementation {
 
 		
 		account.realm = "*";
-		account.username = getText(accountUsername).trim();
+		account.username = getText(accountUsername);
 		account.data = getText(accountPassword);
 		account.scheme = "Digest";
 		account.datatype = SipProfile.CRED_DATA_PLAIN_PASSWD;

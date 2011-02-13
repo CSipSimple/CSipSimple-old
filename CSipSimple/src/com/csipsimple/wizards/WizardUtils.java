@@ -37,7 +37,6 @@ import com.csipsimple.wizards.impl.A1;
 import com.csipsimple.wizards.impl.Advanced;
 import com.csipsimple.wizards.impl.Basic;
 import com.csipsimple.wizards.impl.Callcentric;
-import com.csipsimple.wizards.impl.CamundaNet;
 import com.csipsimple.wizards.impl.DeltaThree;
 import com.csipsimple.wizards.impl.Ecs;
 import com.csipsimple.wizards.impl.Ekiga;
@@ -54,7 +53,6 @@ import com.csipsimple.wizards.impl.Ippi;
 import com.csipsimple.wizards.impl.Keyyo;
 import com.csipsimple.wizards.impl.Local;
 import com.csipsimple.wizards.impl.Mondotalk;
-import com.csipsimple.wizards.impl.NeufTalk;
 import com.csipsimple.wizards.impl.NexGenTel;
 import com.csipsimple.wizards.impl.OnSip;
 import com.csipsimple.wizards.impl.Ovh;
@@ -71,7 +69,6 @@ import com.csipsimple.wizards.impl.Speakezi;
 import com.csipsimple.wizards.impl.UkrTelecom;
 import com.csipsimple.wizards.impl.VPhone;
 import com.csipsimple.wizards.impl.Vono;
-import com.csipsimple.wizards.impl.WiMobile;
 
 
 public class WizardUtils {
@@ -192,10 +189,6 @@ public class WizardUtils {
 					R.drawable.ic_wizard_deltathree, 35, 
 					new Locale[]{ }, false, true, 
 					DeltaThree.class));
-			WIZARDS_DICT.put("CAMUNDANET", new WizardInfo("CAMUNDANET", "CamundaNet", 
-					R.drawable.ic_wizard_camundanet, 15, 
-					new Locale[]{}, false, true, 
-					CamundaNet.class));
 			
 			
 			//Locales
@@ -207,18 +200,10 @@ public class WizardUtils {
 					R.drawable.ic_wizard_eutelia, 30, 
 					new Locale[]{Locale.ITALY}, false, false, 
 					Eutelia.class));
-			WIZARDS_DICT.put("WIMOBILE", new WizardInfo("WIMOBILE", "WiMobile", 
-					R.drawable.ic_wizard_wimobile, 20, 
-					new Locale[]{Locale.ITALY}, false, false, 
-					WiMobile.class));
 			WIZARDS_DICT.put("FREEPHONIE", new WizardInfo("FREEPHONIE", "Freephonie", 
 					R.drawable.ic_wizard_freephonie, 30, 
 					new Locale[]{Locale.FRANCE}, false, false, 
 					Freephonie.class));
-			WIZARDS_DICT.put("NEUFTALK", new WizardInfo("NEUFTALK", "NeufTalk", 
-					R.drawable.ic_wizard_neuftalk, 2, 
-					new Locale[]{Locale.FRANCE}, false, false, 
-					NeufTalk.class));
 			WIZARDS_DICT.put("IPPI", new WizardInfo("IPPI", "ippi", 
 					R.drawable.ic_wizard_ippi, 10, 
 					new Locale[]{

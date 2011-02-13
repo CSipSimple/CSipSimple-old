@@ -46,7 +46,6 @@ import android.widget.TabHost.TabSpec;
 import android.widget.Toast;
 
 import com.csipsimple.R;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.db.DBAdapter;
@@ -100,10 +99,10 @@ public class SipHome extends TabActivity {
 		prefWrapper = new PreferencesWrapper(this);
 		super.onCreate(savedInstanceState);
 		
-		boolean useBundle = NativeLibManager.USE_BUNDLE;
+		
 		
 		// Check sip stack
-		if (!useBundle && !NativeLibManager.hasStackLibFile(this)) {
+		if (!NativeLibManager.hasStackLibFile(this)) {
 			//If not -> FIRST RUN : Just launch stack getter
 			Log.d(THIS_FILE, "Has no sip stack....");
 			Intent welcomeIntent = new Intent(this, WelcomeScreen.class);
@@ -112,7 +111,7 @@ public class SipHome extends TabActivity {
 			startActivity(welcomeIntent);
 			finish();
 			return;
-		} else if (!useBundle && !NativeLibManager.hasBundleStack(this)) {
+		} else if (!NativeLibManager.hasBundleStack(this)) {
 			// It's not the first setup and there is debug stack
 			// We have to check and save current version
 			Integer runningVersion = needUpgrade();
@@ -130,12 +129,9 @@ public class SipHome extends TabActivity {
 				return;
 			}
 		}else {
-			// DEV MODE OR BUNDLE MODE -- still upgrade settings
+			// DEV MODE -- still upgrade settings
 			Integer runningVersion = needUpgrade();
 			if(runningVersion != null) {
-				//Clean current native file downloaded if any cause useless right now
-				NativeLibManager.cleanStack(this);
-				
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				Editor editor = prefs.edit();
 				editor.putInt(SipHome.LAST_KNOWN_VERSION_PREF, runningVersion);
@@ -153,9 +149,8 @@ public class SipHome extends TabActivity {
 
 		addTab(TAB_DIALER, getString(R.string.dial_tab_name_text), R.drawable.ic_tab_selected_dialer, R.drawable.ic_tab_unselected_dialer, dialerIntent);
 		addTab(TAB_CALLLOG, getString(R.string.calllog_tab_name_text), R.drawable.ic_tab_selected_recent, R.drawable.ic_tab_unselected_recent, calllogsIntent);
-		if(CustomDistribution.supportMessaging()) {
-			addTab(TAB_MESSAGES, getString(R.string.messages_tab_name_text), R.drawable.ic_tab_selected_messages, R.drawable.ic_tab_unselected_messages, messagesIntent);
-		}
+		addTab(TAB_MESSAGES, getString(R.string.messages_tab_name_text), R.drawable.ic_tab_selected_messages, R.drawable.ic_tab_unselected_messages, messagesIntent);
+		
 		pickupContact = (ImageButton) findViewById(R.id.pickup_contacts);
 		pickupContact.setOnClickListener(new OnClickListener() {
 			@Override
@@ -167,7 +162,7 @@ public class SipHome extends TabActivity {
 		has_tried_once_to_activate_account = false;
 		
 
-		if(!prefWrapper.getPreferenceBooleanValue(SipConfigManager.PREVENT_SCREEN_ROTATION)) {
+		if(!prefWrapper.getPreferenceBooleanValue(PreferencesWrapper.PREVENT_SCREEN_ROTATION)) {
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		}
 		
@@ -214,16 +209,11 @@ public class SipHome extends TabActivity {
 	
 	private void postStartSipService() {
 		// If we have never set fast settings
-		if(CustomDistribution.showFirstSettingScreen()) {
-			if (!prefWrapper.hasAlreadySetup()) {
-				Intent prefsIntent = new Intent(this, PrefsFast.class);
-				prefsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(prefsIntent);
-				return;
-			}
-		}else {
-			prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.HAS_ALREADY_SETUP, true);
-			Compatibility.setFirstRunParameters(prefWrapper);
+		if (!prefWrapper.hasAlreadySetup()) {
+			Intent prefsIntent = new Intent(this, PrefsFast.class);
+			prefsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(prefsIntent);
+			return;
 		}
 
 		// If we have no account yet, open account panel,
@@ -323,9 +313,7 @@ public class SipHome extends TabActivity {
 			}else if(SipManager.ACTION_SIP_DIALER.equalsIgnoreCase(callAction)) {
 				getTabHost().setCurrentTab(0);
 			}else if(SipManager.ACTION_SIP_MESSAGES.equalsIgnoreCase(callAction)) {
-				if(CustomDistribution.supportMessaging()) {
-					getTabHost().setCurrentTab(2);
-				}
+				getTabHost().setCurrentTab(2);
 			}
 		}
 	}

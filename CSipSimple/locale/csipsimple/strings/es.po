@@ -3,11 +3,12 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-01-30 00:15+0100\n"
+"POT-Creation-Date: 2010-12-30 15:22+0100\n"
 "PO-Revision-Date: 2010-11-27 23:52+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -19,11 +20,11 @@ msgstr ""
 
 msgctxt "app_name"
 msgid "CSipSimple"
-msgstr "CSipSimple"
+msgstr ""
 
 msgctxt "next"
 msgid "Next"
-msgstr "Siguiente"
+msgstr ""
 
 msgctxt "init"
 msgid "Init..."
@@ -31,12 +32,12 @@ msgstr ""
 
 msgctxt "unable_to_download_file"
 msgid "Unable to download file"
-msgstr "No se pudo descargar el archivo"
+msgstr ""
 
 msgctxt "connection_not_valid"
 msgid ""
-"Selected network route not available (activate WiFi or change preferences to "
-"use 3G)"
+"Selected network route not available (activate WiFi or change preferences"
+" to use 3G)"
 msgstr ""
 
 msgctxt "invalid_sip_uri"
@@ -45,71 +46,71 @@ msgstr ""
 
 msgctxt "accounts"
 msgid "Accounts"
-msgstr "Cuentas"
+msgstr ""
 
 msgctxt "other_accounts"
 msgid "Other accounts"
-msgstr "Otras cuentas"
+msgstr ""
 
 msgctxt "save"
 msgid "Save"
-msgstr "Guardar"
+msgstr ""
 
 msgctxt "cancel"
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr ""
 
 msgctxt "activate_account"
 msgid "Activate account"
-msgstr "Activar cuenta"
+msgstr ""
 
 msgctxt "deactivate_account"
 msgid "Deactivate account"
-msgstr "Desactivar cuenta"
+msgstr ""
 
 msgctxt "delete_account"
 msgid "Delete account"
-msgstr "Eliminar cuenta"
+msgstr ""
 
 msgctxt "modify_account"
 msgid "Modify account"
-msgstr "Modificar cuenta"
+msgstr ""
 
 msgctxt "add_account"
 msgid "Add account"
-msgstr "Añadir cuenta"
+msgstr ""
 
 msgctxt "choose_wizard"
 msgid "Choose wizard"
-msgstr "Elegir asistente"
+msgstr ""
 
 msgctxt "use"
 msgid "Use :"
-msgstr "Usar:"
+msgstr ""
 
 msgctxt "use_pstn"
 msgid "Use mobile"
-msgstr "Usar móvil"
+msgstr ""
 
 msgctxt "use_skype"
 msgid "Use Skype"
-msgstr "Usar Skype"
+msgstr ""
 
 msgctxt "ongoing_call"
 msgid "Call in Progress"
-msgstr "Llamada en progreso"
+msgstr ""
 
 msgctxt "missed_call"
 msgid "Missed call"
-msgstr "Llamada perdida"
+msgstr ""
 
 msgctxt "recentCalls_empty"
 msgid "No Call Logs"
-msgstr "No hay registros de llamadas"
+msgstr ""
 
 msgctxt "filters"
 msgid "Filters"
-msgstr "Filtros"
+msgstr ""
 
 msgctxt "filters_desc"
 msgid "To apply when integration to Android is used"
@@ -125,51 +126,51 @@ msgstr ""
 
 msgctxt "delete_filter"
 msgid "Delete filter"
-msgstr "Eliminar filtro"
+msgstr ""
 
 msgctxt "callLog_delete_entry"
 msgid "Delete this call"
-msgstr "Eliminar esta llamada"
+msgstr ""
 
 msgctxt "callLog_delete_all"
 msgid "Delete all calls"
-msgstr "Eliminar todas las llamadas"
+msgstr ""
 
 msgctxt "callLog_delDialog_title"
 msgid "Delete Call Logs"
-msgstr "Eliminar registros de llamadas"
+msgstr ""
 
 msgctxt "callLog_delDialog_message"
 msgid "Are you sure you want to delete all calls from the log?"
-msgstr "¿Está seguro que quiere eliminar todas las llamadas del registro?"
+msgstr ""
 
 msgctxt "callLog_delDialog_yes"
 msgid "Yes"
-msgstr "Sí"
+msgstr ""
 
 msgctxt "callLog_delDialog_no"
 msgid "No"
-msgstr "No"
+msgstr ""
 
 msgctxt "gsm"
 msgid "Mobile"
-msgstr "Móvil"
+msgstr ""
 
 msgctxt "dial_tab_name_text"
 msgid "Dial"
-msgstr "Marcar"
+msgstr ""
 
 msgctxt "calllog_tab_name_text"
 msgid "CallLogs"
-msgstr "Registros"
+msgstr ""
 
 msgctxt "messages_tab_name_text"
 msgid "Messages"
-msgstr "Mensajes"
+msgstr ""
 
 msgctxt "menu_disconnect"
 msgid "Disconnect"
-msgstr "Desconectar"
+msgstr ""
 
 msgctxt "service_ticker_registered_text"
 msgid "SIP Registered"
@@ -177,27 +178,23 @@ msgstr ""
 
 msgctxt "outgoing_call_chooser_call_text"
 msgid "Call"
-msgstr "Llamar"
+msgstr ""
 
 msgctxt "reorder"
 msgid "Reorder"
-msgstr "Reordenar"
-
-msgctxt "backup_restore"
-msgid "Backup / Restore"
-msgstr "Respaldar / Restaurar"
+msgstr ""
 
 msgctxt "backup"
-msgid "Backup"
-msgstr "Respaldar"
+msgid "Backup / Restore"
+msgstr ""
 
 msgctxt "faq"
 msgid "FAQ"
-msgstr "Preguntas frecuentes"
+msgstr ""
 
 msgctxt "help"
 msgid "Help"
-msgstr "Ayuda"
+msgstr ""
 
 msgctxt "record_logs"
 msgid "Record logs to send it to dev team and report a bug"
@@ -213,32 +210,29 @@ msgstr ""
 
 msgctxt "ok"
 msgid "OK"
-msgstr "Aceptar"
+msgstr ""
 
 msgctxt "misc"
 msgid "Misc"
-msgstr "Varios"
+msgstr ""
 
 msgctxt "warning"
 msgid "WARNING"
-msgstr "AVISO"
+msgstr ""
 
 msgctxt "disconnect_and_incoming_explaination"
 msgid ""
-"You are configured to be available for this network !!! By clicking OK here "
-"you confirm that you don't want to be available until next start of the "
-"application"
+"You are configured to be available for this network !!! By clicking OK "
+"here you confirm that you don't want to be available until next start of "
+"the application"
 msgstr ""
-"Está configurado para estar disponible para esta red. Al pulsar en Aceptar "
-"confirma que no quiere estar disponible hasta el siguiente inicio de la "
-"aplicación"
 
 #, c-format
 msgctxt "disconnect_and_will_restart"
 msgid ""
 "Will automatically restart when : <xliff:g id=\"networks\" "
-"example=\"3G\">%s</xliff:g> will become available (change settings if you "
-"don't want)"
+"example=\"3G\">%s</xliff:g> will become available (change settings if you"
+" don't want)"
 msgstr ""
 
 msgctxt "gadget_title"
@@ -247,28 +241,27 @@ msgstr ""
 
 msgctxt "search_in_contacts"
 msgid "Search in contacts"
-msgstr "Buscar en contactos"
+msgstr ""
 
 msgctxt "pickup_sip_uri"
 msgid "Pickup SIP contact"
 msgstr ""
 
 msgctxt "display_icon_in_status_bar_desc"
-msgid ""
-"Should the application display an icon in the status bar when registered"
+msgid "Should the application display an icon in the status bar when registered"
 msgstr ""
 
 msgctxt "display_icon_in_status_bar"
 msgid "Display icon in status bar"
-msgstr "Mostrar icono en la barra de estado"
+msgstr ""
 
 msgctxt "another_application_use_sip_port"
 msgid "Another application is currently using SIP port! Can't start !!!"
-msgstr "Otra aplicación está usando el puerto SIP, no se puede iniciar."
+msgstr ""
 
 msgctxt "choose_phone"
 msgid "Choose phone"
-msgstr "Elegir teléfono"
+msgstr ""
 
 msgctxt "no_phone_found"
 msgid "No phone found for this contact"
@@ -281,9 +274,9 @@ msgstr ""
 msgctxt "this_codec_is_not_free"
 msgid ""
 "**This codec is not free !!!**\n"
-"Please ensure that somebody (your SIP provider or yourself) have purchased a "
-"license that allow you to use this codec! We (as application distributors) "
-"are not responsible for an illegal use of this codec.\n"
+"Please ensure that somebody (your SIP provider or yourself) have "
+"purchased a license that allow you to use this codec! We (as application "
+"distributors) are not responsible for an illegal use of this codec.\n"
 "It's up to you to be sure that you are authorized to use this codec.\n"
 "Purchase link :"
 msgstr ""
@@ -291,8 +284,4 @@ msgstr ""
 msgctxt "voice_mail"
 msgid "Voice mail"
 msgstr ""
-
-#~ msgctxt "backup"
-#~ msgid "Backup / Restore"
-#~ msgstr ""
 

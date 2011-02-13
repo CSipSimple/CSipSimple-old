@@ -45,10 +45,9 @@ import android.telephony.TelephonyManager;
 import android.view.KeyCharacterMap;
 
 import com.csipsimple.R;
-import com.csipsimple.api.SipCallSession;
-import com.csipsimple.api.SipConfigManager;
-import com.csipsimple.api.SipProfile;
 import com.csipsimple.api.SipProfileState;
+import com.csipsimple.api.SipCallSession;
+import com.csipsimple.api.SipProfile;
 import com.csipsimple.service.MediaManager;
 import com.csipsimple.service.SipService;
 import com.csipsimple.service.SipService.ToCall;
@@ -83,7 +82,7 @@ public class PjSipService {
 
 	private static Object pjAccountsCreationLock = new Object();
 	private static Object activeAccountsLock = new Object();
-	private static Object callActionLock = new Object();
+	private Object callActionLock = new Object();
 
 
 	// Map active account id (id for sql settings database) with acc_id (id for
@@ -91,11 +90,7 @@ public class PjSipService {
 	private static HashMap<Integer, Integer> activeAccounts = new HashMap<Integer, Integer>();
 	private static HashMap<Integer, Integer> accountsAddingStatus = new HashMap<Integer, Integer>();
 	
-	public PjSipService() {
-		
-	}
-	
-	public void setService(SipService aService) {
+	public PjSipService(SipService aService) {
 		service = aService;
 		prefsWrapper = service.prefsWrapper;
 	}
@@ -151,9 +146,25 @@ public class PjSipService {
 			Log.e(THIS_FILE, "We have no sip stack, we can't start");
 			return false;
 		}
-		
 
+		
+		//There is some active accounts?
+		/*
+		List<SipProfile> accs;
+		synchronized (db) {
+			db.open();
+			accs = db.getListAccounts(true);
+			db.close();
+		}
+		
+		if(accs == null || accs.size() <= 0) {
+			Log.w(THIS_FILE, "Useless to start since no account");
+			return;
+		}
+		*/
+		
 		try {
+
 			Log.i(THIS_FILE, "Will start sip : " + (!created /* && !creating */));
 			synchronized (creatingSipStack) {
 				// Ensure the stack is not already created or is being created
@@ -164,32 +175,28 @@ public class PjSipService {
 	
 					int status;
 					status = pjsua.create();
-
 					Log.i(THIS_FILE, "Created " + status);
 					// General config
 					{
 						pjsua_config cfg = new pjsua_config();
 						pjsua_logging_config logCfg = new pjsua_logging_config();
 						pjsua_media_config mediaCfg = new pjsua_media_config();
-
+	
 						// GLOBAL CONFIG
 						pjsua.config_default(cfg);
-						Log.d(THIS_FILE, "default cb");
 						cfg.setCb(pjsuaConstants.WRAPPER_CALLBACK_STRUCT);
-						
 						if (userAgentReceiver == null) {
-							Log.d(THIS_FILE, "create receiver....");
 							userAgentReceiver = new UAStateReceiver();
 							userAgentReceiver.initService(this);
 						}
 						if (mediaManager == null) {
 							mediaManager = new MediaManager(service);
 						}
-
+						
 						mediaManager.startService();
 						
 						pjsua.setCallbackObject(userAgentReceiver);
-		
+						
 	
 						Log.d(THIS_FILE, "Attach is done to callback");
 	
@@ -255,10 +262,6 @@ public class PjSipService {
 						if (isTurnEnabled == 1) {
 							mediaCfg.setEnable_turn(isTurnEnabled);
 							mediaCfg.setTurn_server(pjsua.pj_str_copy(prefsWrapper.getTurnServer()));
-							pjsua.set_turn_cfg(mediaCfg, 
-									pjsua.pj_str_copy(prefsWrapper.getPreferenceStringValue(SipConfigManager.TURN_USERNAME)), 
-									pjsua.pj_str_copy(prefsWrapper.getPreferenceStringValue(SipConfigManager.TURN_PASSWORD)));
-						
 						}
 	
 						// INITIALIZE
@@ -338,7 +341,7 @@ public class PjSipService {
 							pjsua_transport_config cfg = new pjsua_transport_config();
 							pjsua.transport_config_default(cfg);
 							cfg.setPort(prefsWrapper.getRTPPort());
-							if(prefsWrapper.getPreferenceBooleanValue(SipConfigManager.ENABLE_QOS)) {
+							if(prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.ENABLE_QOS)) {
 								Log.d(THIS_FILE, "Activate qos for voice packets");
 								cfg.setQos_type(pj_qos_type.PJ_QOS_TYPE_VOICE);
 							}
@@ -428,7 +431,6 @@ public class PjSipService {
 
 				if (mediaManager != null) {
 					mediaManager.stopService();
-					mediaManager = null;
 				}
 			}
 		}
@@ -477,14 +479,14 @@ public class PjSipService {
 			*/
 		
 			tlsSetting.setMethod(prefsWrapper.getTLSMethod());
-			boolean checkServer = prefsWrapper.getPreferenceBooleanValue(SipConfigManager.TLS_VERIFY_SERVER);
+			boolean checkServer = prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.TLS_VERIFY_SERVER);
 			tlsSetting.setVerify_server(checkServer ? 1 : 0);
 			
 			cfg.setTls_setting(tlsSetting);
 		}
 		
 		//else?
-		if(prefsWrapper.getPreferenceBooleanValue(SipConfigManager.ENABLE_QOS)) {
+		if(prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.ENABLE_QOS)) {
 			Log.d(THIS_FILE, "Activate qos for this transport");
 			pj_qos_params qosParam = cfg.getQos_params();
 			qosParam.setDscp_val((short) prefsWrapper.getDSCPVal());
@@ -593,8 +595,14 @@ public class PjSipService {
 		ArrayList<SipProfileState> activeAccountsInfos = new ArrayList<SipProfileState>();
 		for (int accountDbId : activeAccountsClone) {
 			info = service.getSipProfileState(accountDbId);
-			if( info != null && info.isValidForCall() ) {
-				activeAccountsInfos.add(info);
+			if( info != null ) {
+				if(info.getWizard().equalsIgnoreCase("LOCAL")) {
+					activeAccountsInfos.add(info);
+				}else {
+					if (info.getExpires() > 0 && info.getStatusCode() == SipCallSession.StatusCode.OK) {
+						activeAccountsInfos.add(info);
+					}
+				}
 			}
 		}
 		Collections.sort(activeAccountsInfos, SipProfileState.getComparator());
@@ -682,7 +690,7 @@ public class PjSipService {
 	
 	
 	// Call related
-	
+
 	/**
 	 * Answer a call
 	 * 
@@ -750,22 +758,15 @@ public class PjSipService {
 			return -1;
 		}
 		
-		final ToCall toCall = sanitizeSipUri(callee, accountId);
+		ToCall toCall = sanitizeSipUri(callee, accountId);
 		if(toCall != null) {
-			Thread t = new Thread() {
-				public void run() {
-
-					pj_str_t uri = pjsua.pj_str_copy(toCall.getCallee());
-					
-					// Nothing to do with this values
-					byte[] userData = new byte[1];
-					int[] callId = new int[1];
-					pjsua.call_make_call(toCall.getPjsipAccountId(), uri, 0, userData, null, callId);
-				};
-			};
-			t.start();
-			//Mmmm ...
-			return 0;
+		
+			pj_str_t uri = pjsua.pj_str_copy(toCall.getCallee());
+			
+			// Nothing to do with this values
+			byte[] userData = new byte[1];
+			int[] callId = new int[1];
+			return pjsua.call_make_call(toCall.getPjsipAccountId(), uri, 0, userData, null, callId);
 		}else {
 			service.notifyUserOfMessage(service.getString(R.string.invalid_sip_uri)+ " : "+callee);
 		}
@@ -1149,17 +1150,6 @@ public class PjSipService {
 				hasBeenHoldByGSM = null;
 			}
 		}
-	}
-
-	public void sendKeepAlivePackets() {
-		ArrayList<SipProfileState> accounts = getAndUpdateActiveAccounts();
-		for(SipProfileState acc : accounts) {
-			pjsua.send_keep_alive(acc.getPjsuaId());
-		}
-	}
-
-	public void zrtpSASVerified() {
-		pjsua.jzrtp_SASVerified();
 	}
 
 	

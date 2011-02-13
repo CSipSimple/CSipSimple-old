@@ -19,7 +19,6 @@ package com.csipsimple.wizards.impl;
 
 import android.text.InputType;
 
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.utils.PreferencesWrapper;
 
@@ -50,7 +49,7 @@ public class Ip2Mobile extends SimpleImplementation {
 	public void setDefaultParams(PreferencesWrapper prefs) {
 		super.setDefaultParams(prefs);
 		// Add stun server
-		prefs.setPreferenceBooleanValue(SipConfigManager.ENABLE_STUN, true);
+		prefs.setPreferenceBooleanValue(PreferencesWrapper.ENABLE_STUN, true);
 		prefs.addStunServer("stun.sip2mobile.dk");
 	}
 	

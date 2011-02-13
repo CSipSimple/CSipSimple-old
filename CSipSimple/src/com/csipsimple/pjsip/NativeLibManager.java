@@ -34,20 +34,13 @@ public class NativeLibManager {
 
 	public static final String STACK_FILE_NAME = "libpjsipjni.so";
 	
-	public static final boolean USE_BUNDLE = true;
-	
 	/**
 	 * Get the guessed stack for market version
 	 * @param ctx Context you are running in
 	 * @return File pointing to the stack file
 	 */
-	public static File getDownloadableStackLibFile(Context ctx) {
+	public static File getGuessedStackLibFile(Context ctx) {
 		return ctx.getFileStreamPath(STACK_FILE_NAME);
-	}
-	
-	private static File getBundledStackLibFile(Context ctx) {
-		// TODO : find a clean way to access the libPath for one shot builds
-		return new File(ctx.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
 	}
 	
 	/**
@@ -60,15 +53,8 @@ public class NativeLibManager {
 	 * @return the file if any, null else
 	 */
 	public static File getStackLibFile(Context context) {
-		
-		if(USE_BUNDLE) {
-			return getBundledStackLibFile(context);
-		}
-		
-		// For now this code is now dead code.
-		
 		// Standard case
-		File standardOut = getDownloadableStackLibFile(context);
+		File standardOut = getGuessedStackLibFile(context);
 		//If production .so file exists and app is not in debuggable mode 
 		//if debuggable we have to get the file from bundle dir
 		if (standardOut.exists() && !isDebuggableApp(context)) {
@@ -76,7 +62,8 @@ public class NativeLibManager {
 		}
 
 		// Have a look if it's not a dev build
-		File targetForBuild = getBundledStackLibFile(context);
+		// TODO : find a clean way to access the libPath for one shot builds
+		File targetForBuild = new File(context.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
 		Log.d(THIS_FILE, "Search for " + targetForBuild.getAbsolutePath());
 		if (targetForBuild.exists()) {
 			return targetForBuild;
@@ -92,7 +79,7 @@ public class NativeLibManager {
 	}
 
 	public static boolean hasBundleStack(Context ctx) {
-		File targetForBuild = getBundledStackLibFile(ctx);
+		File targetForBuild = new File(ctx.getFilesDir().getParent(), "lib" + File.separator + "libpjsipjni.so");
 		Log.d(THIS_FILE, "Search for " + targetForBuild.getAbsolutePath());
 		return targetForBuild.exists();
 	}
@@ -119,7 +106,7 @@ public class NativeLibManager {
 	
 	
 	public static void cleanStack(Context ctx) {
-		File file = getDownloadableStackLibFile(ctx);
+		File file = getGuessedStackLibFile(ctx);
 		if(file.exists()) {
 			file.delete();
 		}

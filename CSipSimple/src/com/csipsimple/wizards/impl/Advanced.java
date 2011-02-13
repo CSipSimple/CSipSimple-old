@@ -19,7 +19,6 @@ package com.csipsimple.wizards.impl;
 
 import java.util.HashMap;
 
-import android.net.Uri;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 
@@ -58,13 +57,7 @@ public class Advanced extends BaseImplementation {
 		
 		ParsedSipContactInfos parsedInfo = SipUri.parseSipContact(account.acc_id);
 		
-		String serverFull = account.reg_uri;
-		if (serverFull == null) {
-			serverFull = "";
-		}else {
-			serverFull = serverFull.replaceFirst("sip:", "");
-		}
-		accountServer.setText(serverFull);
+		accountServer.setText(parsedInfo.domain);
 		accountCallerId.setText(parsedInfo.displayName);
 		accountUserName.setText(parsedInfo.userName);
 		
@@ -125,15 +118,14 @@ public class Advanced extends BaseImplementation {
 
 	public SipProfile buildAccount(SipProfile account) {
 		Log.d(THIS_FILE, "begin of save ....");
-		account.display_name = accountDisplayName.getText().trim();
-		String[] serverParts = accountServer.getText().split(":");
+		account.display_name = accountDisplayName.getText();
 		account.acc_id = accountCallerId.getText().trim() + 
-			" <sip:" + Uri.encode(accountUserName.getText().trim()) + "@" + serverParts[0].trim() + ">";
+			" <sip:" + accountUserName.getText() + "@" + accountServer.getText() + ">";
 		
 		account.reg_uri = "sip:" + accountServer.getText();
 
 		account.realm = "*";
-		account.username = getText(accountUserName).trim();
+		account.username = getText(accountUserName);
 		account.data = getText(accountPassword);
 		account.scheme = "Digest";
 		account.datatype = SipProfile.CRED_DATA_PLAIN_PASSWD;
@@ -141,7 +133,7 @@ public class Advanced extends BaseImplementation {
 		account.transport = accountUseTcp.isChecked() ? SipProfile.TRANSPORT_TCP : SipProfile.TRANSPORT_AUTO;
 		
 		if (!isEmpty(accountProxy)) {
-			account.proxies = new String[] { "sip:"+accountProxy.getText().trim() };
+			account.proxies = new String[] { "sip:"+accountProxy.getText() };
 		} else {
 			account.proxies = null;
 		}

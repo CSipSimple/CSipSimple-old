@@ -99,10 +99,6 @@ public class Filter {
 		ContentValues args = new ContentValues();
 		DatabaseUtils.cursorRowToContentValues(c, args);
 		
-		createFromContentValue(args);
-	}
-
-	public void createFromContentValue(ContentValues args) {
 		Integer tmp_i;
 		String tmp_s;
 		
@@ -128,12 +124,9 @@ public class Filter {
 		if (tmp_s != null) {
 			replace_pattern = tmp_s;
 		}
-		
-		tmp_i = args.getAsInteger(FIELD_ACCOUNT);
-		if(tmp_i != null) {
-			account = tmp_i;
-		}
 	}
+
+
 
 	public ContentValues getDbContentValues() {
 		ContentValues args = new ContentValues();

@@ -19,7 +19,6 @@ package com.csipsimple.pjsip;
 
 import org.pjsip.pjsua.pj_str_t;
 import org.pjsip.pjsua.pjmedia_srtp_use;
-import org.pjsip.pjsua.pjmedia_zrtp_use;
 import org.pjsip.pjsua.pjsip_cred_info;
 import org.pjsip.pjsua.pjsua;
 import org.pjsip.pjsua.pjsuaConstants;
@@ -28,7 +27,6 @@ import org.pjsip.pjsua.pjsua_acc_config;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.api.SipUri;
 import com.csipsimple.api.SipUri.ParsedSipContactInfos;
@@ -48,7 +46,7 @@ public class PjSipAccount {
 	public Integer id;
 	public Integer transport = 0;
 	
-	private boolean hasZrtpValue = false;
+	
 
 	
 	
@@ -56,8 +54,8 @@ public class PjSipAccount {
 		cfg = new pjsua_acc_config();
 		
 		pjsua.acc_config_default(cfg);
-		// By default keep alive interval is now 0 since it's managed globally at android level
-		cfg.setKa_interval(0);
+		// Change the default ka interval to 40s
+		cfg.setKa_interval(40);
 	}
 	
 	public PjSipAccount(SipProfile profile) {
@@ -104,10 +102,6 @@ public class PjSipAccount {
 			cfg.setUse_srtp(pjmedia_srtp_use.swigToEnum(profile.use_srtp));
 			cfg.setSrtp_secure_signaling(0);
 		}
-		if(profile.use_zrtp != -1 && profile.use_zrtp > 0) {
-			cfg.setUse_zrtp(pjmedia_zrtp_use.swigToEnum(profile.use_zrtp));
-			hasZrtpValue = true;
-		}
 		
 		if(profile.proxies != null) {
 			Log.d("PjSipAccount", "Create proxy "+profile.proxies.length);
@@ -123,7 +117,6 @@ public class PjSipAccount {
 		}else {
 			cfg.setProxy_cnt(0);
 		}
-		cfg.setReg_use_proxy(profile.reg_use_proxy);
 
 		if(profile.username != null || profile.data != null) {
 			cfg.setCred_count(1);
@@ -156,14 +149,14 @@ public class PjSipAccount {
 		String argument = "";
 		switch (transport) {
 		case SipProfile.TRANSPORT_UDP:
-			argument = ";transport=udp;lr";
+			argument = ";lr;transport=UDP";
 			break;
 		case SipProfile.TRANSPORT_TCP:
-			argument = ";transport=tcp;lr";
+			argument = ";lr;transport=TCP";
 			break;
 		case SipProfile.TRANSPORT_TLS:
 			//TODO : differentiate ssl/tls ?
-			argument = ";transport=tls;lr";
+			argument = ";lr;transport=TLS";
 			break;
 		default:
 			break;
@@ -175,7 +168,7 @@ public class PjSipAccount {
 				long initialProxyCnt = cfg.getProxy_cnt();
 				pj_str_t[] proxies = cfg.getProxy();
 				
-				//TODO : remove lr and transport from uri
+				
 		//		cfg.setReg_uri(pjsua.pj_str_copy(proposed_server));
 				
 				if (initialProxyCnt == 0 || TextUtils.isEmpty(proxies[0].getPtr())) {
@@ -194,7 +187,7 @@ public class PjSipAccount {
 		
 		//Caller id
 		PreferencesWrapper prefs = new PreferencesWrapper(ctxt);
-		String defaultCallerid = prefs.getPreferenceStringValue(SipConfigManager.DEFAULT_CALLER_ID);
+		String defaultCallerid = prefs.getPreferenceStringValue(PreferencesWrapper.DEFAULT_CALLER_ID);
 		
 		
 		// If one default caller is set 
@@ -207,15 +200,6 @@ public class PjSipAccount {
 				cfg.setId(pjsua.pj_str_copy(parsedInfos.toString()));
 			}
 		}
-		
-		if(!hasZrtpValue) {
-			int useZrtp = prefs.getPreferenceIntegerValue(SipConfigManager.USE_ZRTP);
-			if(useZrtp == 1 || useZrtp == 2) {
-				cfg.setUse_zrtp(pjmedia_zrtp_use.swigToEnum(useZrtp));
-			}
-			Log.d("Pj profile", "--> added zrtp "+ useZrtp);
-		}
-		
 	}
 	
 	

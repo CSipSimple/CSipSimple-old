@@ -40,7 +40,6 @@ import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipCallSession;
 import com.csipsimple.api.SipUri;
 import com.csipsimple.models.SipMessage;
-import com.csipsimple.utils.CustomDistribution;
 import com.csipsimple.widgets.RegistrationNotification;
 
 public class SipNotifications {
@@ -143,9 +142,6 @@ public class SipNotifications {
 	}
 	
 	public void showNotificationForMessage(SipMessage msg) {
-		if(!CustomDistribution.supportMessaging()) {
-			return;
-		}
 		//CharSequence tickerText = context.getText(R.string.instance_message);
 		if(!msg.getFrom().equalsIgnoreCase(viewingRemoteFrom)) {
 			String from = SipUri.getDisplayedSimpleContact(msg.getFrom());

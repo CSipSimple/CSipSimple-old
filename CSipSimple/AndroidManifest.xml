@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.csipsimple"
 	android:installLocation="auto"
-	android:versionName="0.01-01" android:versionCode="622">
+	android:versionName="0.00-16" android:versionCode="548">
 	<supports-screens android:smallScreens="true" 
 		android:normalScreens="true"
 		android:largeScreens="true"
@@ -97,7 +97,6 @@
 			<intent-filter android:priority="-1">
 				<action android:name="android.intent.action.NEW_OUTGOING_CALL"></action>
 			</intent-filter>
-			
 		</receiver>
 		<activity android:name="com.csipsimple.ui.OutgoingCallChooser" android:theme="@style/CupcakeDialog"
 			android:configChanges="orientation"
@@ -110,12 +109,6 @@
                 <data android:scheme="sips" />
             </intent-filter>
             
-			<intent-filter android:priority="-1">
-				<action android:name="android.phone.extra.NEW_CALL_INTENT"></action>
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="sip" />
-                <data android:scheme="sips" />
-			</intent-filter>
             
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
@@ -128,13 +121,12 @@
 			 </intent-filter>
 			
 		</activity>
-		
+		<!-- 
 		 <activity-alias android:name="PrivilegedOutgoingCallBroadcaster"
 	               android:targetActivity="com.csipsimple.ui.OutgoingCallChooser" android:theme="@style/CupcakeDialog"
 				android:configChanges="orientation"
 				android:launchMode="singleInstance"
                  android:permission="android.permission.CALL_PRIVILEGED">
-                 <!--  
              <intent-filter>
                  <action android:name="android.intent.action.CALL_PRIVILEGED" />
                  <category android:name="android.intent.category.DEFAULT" />
@@ -147,41 +139,18 @@
                  <data android:mimeType="vnd.android.cursor.item/phone_v2" />
                  <data android:mimeType="vnd.android.cursor.item/person" />
              </intent-filter>
-             -->
-             <intent-filter>
-                 <action android:name="android.intent.action.CALL_PRIVILEGED" />
-                 <category android:name="android.intent.category.DEFAULT" />
-                 <data android:scheme="sip" />
-             </intent-filter>
          </activity-alias>
-		 
+		 -->
 		
 		<activity android:name="com.csipsimple.ui.InCallActivity" 
 			android:screenOrientation="portrait" 
 			android:configChanges="orientation"
 			android:allowTaskReparenting="true"
-			android:excludeFromRecents="true"
-			android:taskAffinity=""
 			android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTask">
 			<intent-filter android:priority="10">
                  <action android:name="com.csipsimple.phone.action.INCALL" />
                  <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-             
-		</activity>
-		
-		<activity android:name="com.csipsimple.ui.InCallActivity2" 
-			android:excludeFromRecents="true"
-			android:screenOrientation="portrait" 
-			android:configChanges="orientation"
-			android:allowTaskReparenting="true"
-			android:taskAffinity=""
-			android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTask">
-		<!-- 	<intent-filter android:priority="10">
-                 <action android:name="com.csipsimple.phone.action.INCALL" />
-                 <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            -->
 		</activity>
 		
 		<activity android:name="com.csipsimple.ui.PickupSipUri" android:label="@string/pickup_sip_uri" 
@@ -236,7 +205,6 @@
 	<uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
 	<uses-permission android:name="android.permission.WRITE_CONTACTS"></uses-permission>
 	<uses-permission android:name="android.permission.CALL_PHONE"></uses-permission>
-	<uses-permission android:name="android.permission.CALL_PRIVILEGED" />
 	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
 	<uses-permission android:name="android.permission.DISABLE_KEYGUARD"></uses-permission>
 	<uses-permission android:name="android.permission.VIBRATE"></uses-permission>

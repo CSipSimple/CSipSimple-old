@@ -28,8 +28,6 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -51,7 +49,6 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
@@ -59,11 +56,10 @@ import android.widget.Toast;
 import com.csipsimple.R;
 import com.csipsimple.api.ISipConfiguration;
 import com.csipsimple.api.ISipService;
+import com.csipsimple.api.SipProfileState;
 import com.csipsimple.api.SipCallSession;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipProfile;
-import com.csipsimple.api.SipProfileState;
 import com.csipsimple.api.SipUri;
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.models.Filter;
@@ -310,10 +306,7 @@ public class SipService extends Service {
 
 		@Override
 		public SipCallSession[] getCalls() throws RemoteException {
-			if(pjService != null) {
-				return pjService.getCalls();
-			}
-			return new SipCallSession[0];
+			return pjService.getCalls();
 		}
 
 		@Override
@@ -330,18 +323,20 @@ public class SipService extends Service {
 		@Override
 		public void adjustVolume(SipCallSession callInfo, int direction, int flags) throws RemoteException {
 			
-			
-    		boolean ringing = callInfo.isIncoming() && callInfo.isBeforeConfirmed();
+			int state = callInfo.getCallState();
+    		
+    		boolean ringing = ( (state == SipCallSession.InvState.INCOMING) ||
+    							(state == SipCallSession.InvState.EARLY) );
     		
         	// Mode ringing
     		if(ringing) {
 	        	pjService.adjustStreamVolume(AudioManager.STREAM_RING, direction, AudioManager.FLAG_SHOW_UI);
     		}else {
 	        	// Mode in call
-	        	if(prefsWrapper.getPreferenceBooleanValue(SipConfigManager.USE_SOFT_VOLUME)) {
+	        	if(prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.USE_SOFT_VOLUME)) {
 	        		Intent adjustVolumeIntent = new Intent(SipService.this, InCallMediaControl.class);
 	        		adjustVolumeIntent.putExtra(Intent.EXTRA_KEY_EVENT, direction);
-	        		adjustVolumeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	        		adjustVolumeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK   );
 	        		startActivity(adjustVolumeIntent);
 	        	}else {
 	        		pjService.adjustStreamVolume(Compatibility.getInCallStream(), direction, flags);
@@ -372,11 +367,6 @@ public class SipService extends Service {
 		@Override
 		public boolean canRecord(int callId) throws RemoteException {
 			return pjService.canRecord(callId);
-		}
-
-		@Override
-		public void zrtpSASVerified() throws RemoteException {
-			pjService.zrtpSASVerified();
 		}
 
 
@@ -466,7 +456,7 @@ public class SipService extends Service {
 
 	// Broadcast receiver for the service
 	private class ServiceDeviceStateReceiver extends BroadcastReceiver {
-		private Timer mTimer = null;
+		private Timer mTimer = new Timer();
 		private MyTimerTask mTask;
 
 		@Override
@@ -480,11 +470,8 @@ public class SipService extends Service {
 		}
 		
 		public void stop() {
-			if(mTimer != null) {
-				mTimer.purge();
-				mTimer.cancel();
-			}
-			mTimer = null;
+			mTimer.purge();
+			mTimer.cancel();
 		}
 
 		private void onReceiveInternal(Context context, Intent intent) {
@@ -552,9 +539,6 @@ public class SipService extends Service {
 						mTask.cancel();
 					}
 					mTask = new MyTimerTask(type, connected);
-					if(mTimer == null) {
-						mTimer = new Timer();
-					}
 					mTimer.schedule(mTask, 2 * 1000L);
 					// hold wakup lock so that we can finish changes before the
 					// device goes to sleep
@@ -703,10 +687,8 @@ public class SipService extends Service {
 		
 
 		if(pjService == null) {
-			pjService = new PjSipService();
+			pjService = new PjSipService(this);
 		}
-		
-		pjService.setService(this);
 		
 		Log.setLogLevel(prefsWrapper.getLogLevel());
 
@@ -736,14 +718,12 @@ public class SipService extends Service {
 			phoneConnectivityReceiver = null;
 		}
 		
-		
 
 		Threading.stopHandlerThread(executorThread);
 		executorThread = null;
 		mExecutor = null;
 		
-		stopSipStack();
-		
+		pjService.sipStop();
 		notificationManager.cancelAll();
 		Log.i(THIS_FILE, "--- SIP SERVICE DESTROYED ---");
 
@@ -770,9 +750,8 @@ public class SipService extends Service {
 	private boolean loadAndConnectStack() {
 		//Ensure pjService exists
 		if(pjService == null) {
-			pjService = new PjSipService();
+			pjService = new PjSipService(this);
 		}
-		pjService.setService(this);
 		
 		if (pjService.tryToLoadStack()) {
 			// Register own broadcast receiver
@@ -811,29 +790,20 @@ public class SipService extends Service {
 		return binder;
 	}
 
-	private int pendingStarts = 0;
-	private KeepAliveTimer kaAlarm;
 	public void startSipStack() {
 		if(!needToStartSip()) {
 			ToastHandler.sendMessage(ToastHandler.obtainMessage(0, R.string.connection_not_valid, 0));
 			Log.e(THIS_FILE, "Not able to start sip stack");
 			return;
 		}
-		if(pendingStarts <= 1) {
-			pendingStarts ++;
-			if(pjService.sipStart()) {
-				addAllAccounts();
-			//TODO : is that really un necessary ?
-			//	updateRegistrationsState();
-			}
-			pendingStarts --;
+		if(pjService.sipStart()) {
+			addAllAccounts();
+			updateRegistrationsState();
 		}
 	}
 	
 	public void stopSipStack() {
-		if(pjService != null) {
-			pjService.sipStop();
-		}
+		pjService.sipStop();
 		releaseResources();
 	}
 	
@@ -938,10 +908,7 @@ public class SipService extends Service {
 			account = db.getAccount(accountDbId);
 			db.close();
 		}
-		if(pjService != null) {
-			return pjService.getAccountInfo(account);
-		}
-		return null;
+		return pjService.getAccountInfo(account);
 	}
 
 	public void updateRegistrationsState() {
@@ -968,18 +935,12 @@ public class SipService extends Service {
 		return prefsWrapper;
 	}
 
-	
-	private boolean hold_resources = false;
 	/**
 	 * Ask to take the control of the wifi and the partial wake lock if
 	 * configured
 	 */
-	private synchronized void acquireResources() {
-		if(hold_resources) {
-			return;
-		}
-		
-		// Add a wake lock for CPU if necessary
+	private void acquireResources() {
+		// Add a wake lock
 		if (prefsWrapper.usePartialWakeLock()) {
 			PowerManager pman = (PowerManager) getSystemService(Context.POWER_SERVICE);
 			if (wakeLock == null) {
@@ -992,7 +953,6 @@ public class SipService extends Service {
 			}
 		}
 
-		// Add a lock for WIFI if necessary
 		WifiManager wman = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		if (wifiLock == null) {
 			wifiLock = wman.createWifiLock("com.csipsimple.SipService");
@@ -1011,31 +971,15 @@ public class SipService extends Service {
 				}
 			}
 		}
-		
-		// Add a alarm for keep alive
-		if(kaAlarm == null) {
-			kaAlarm = new KeepAliveTimer(this);
-		}
-		Log.d(THIS_FILE, "Starting kaAlarm object");
-		if(!kaAlarm.isStarted()) {
-			kaAlarm.start();
-		}
-		hold_resources = true;
 	}
 
-	private synchronized void releaseResources() {
+	private void releaseResources() {
 		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
 		}
-		if(kaAlarm != null && kaAlarm.isStarted()) {
-			kaAlarm.stop();
-			kaAlarm.destroy();
-			kaAlarm = null;
-		}
-		hold_resources = false;
 	}
 
 
@@ -1289,71 +1233,6 @@ public class SipService extends Service {
     }
 	
     
-    /**
-     * Timer that can schedule keep alives to occur even when the device is in sleep.
-     * Only used internally in this package.
-     */
-    class KeepAliveTimer extends BroadcastReceiver {
-    	private Context context;
-		private AlarmManager alarmManager;
-		private PendingIntent pendingIntent;
-		
-		private static final String KA_ACTION = "com.csipsimple.ACTION_KA";
-		
-		private int interval = 40;
-    	
-		public KeepAliveTimer(Context aContext) {
-			context = aContext;
-			alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-			interval = prefsWrapper.getKeepAliveInterval();
-			IntentFilter filter = new IntentFilter(KA_ACTION);
-			context.registerReceiver(this, filter);
-		}
-		
-		public void stop() {
-			Log.d(THIS_FILE, "KA -> stopping");
-			alarmManager.cancel(pendingIntent);
-			pendingIntent = null;
-		}
-		
-		public boolean isStarted() {
-			return (pendingIntent != null);
-		}
-		
-		public void start() {
-			Log.d(THIS_FILE, "KA -> starting");
-			if (pendingIntent != null) {
-				throw new RuntimeException("pendingIntent is not null!");
-			}
-			
-			long firstTime = SystemClock.elapsedRealtime() + /*interval * */10;
-
-			Intent intent = new Intent(KA_ACTION);
-			pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, interval * 1000, pendingIntent);
-		}
-		
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			Log.d(THIS_FILE, "KA alarm receive something "+intent.getAction());
-			if(KA_ACTION.equalsIgnoreCase(intent.getAction()) ) {
-				if(pjService != null) {
-					Log.d(THIS_FILE, "Send a keep alive packet");
-					pjService.sendKeepAlivePackets();
-				}else {
-					destroy();
-				}
-			}
-		}
-		
-		public void destroy() {
-			try {
-				context.unregisterReceiver(this);
-			} catch (IllegalArgumentException e) {
-				//Nothing to do
-			}
-		}
-    	
-    }
+	
 
 }

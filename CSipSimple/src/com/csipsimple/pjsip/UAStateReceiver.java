@@ -51,7 +51,6 @@ import android.text.format.DateFormat;
 
 import com.csipsimple.R;
 import com.csipsimple.api.SipCallSession;
-import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.api.SipUri;
@@ -76,36 +75,33 @@ public class UAStateReceiver extends Callback {
 	private PjSipService pjService;
 //	private ComponentName remoteControlResponder;
 
-	private void lockCpu(){
+	public void lockCpu(){
 		if(eventLock != null) {
 			eventLock.acquire();
 		}
 	}
-	private void unlockCpu() {
+	public void unlockCpu() {
 		if(eventLock != null && eventLock.isHeld()) {
 			eventLock.release();
 		}
 	}
-	
+
 	
 	@Override
 	public void on_incoming_call(int acc_id, final int callId, SWIGTYPE_p_pjsip_rx_data rdata) {
 		lockCpu();
 		
 		//Check if we have not already an ongoing call
-		
 		SipCallSession existingOngoingCall = getActiveCallInProgress();
 		if(existingOngoingCall != null) {
 			if(existingOngoingCall.getCallState() == SipCallSession.InvState.CONFIRMED) {
 				Log.e(THIS_FILE, "For now we do not support two call at the same time !!!");
 				//If there is an ongoing call... For now decline TODO : should here manage multiple calls
-				//Send busy here
-				pjsua.call_hangup(callId, 486, null, null);
+				pjsua.call_hangup(callId, 0, null, null);
 				unlockCpu();
 				return;
 			}
 		}
-		
 		
 		SipCallSession callInfo = getCallInfo(callId, true);
 		Log.d(THIS_FILE, "Incoming call <<");
@@ -242,11 +238,11 @@ public class UAStateReceiver extends Callback {
 				micLevel = 0;
 			}
 			pjsua.conf_adjust_rx_level(0, micLevel);
-			pjsua.set_ec( pjService.prefsWrapper.getEchoCancellationTail(), pjService.prefsWrapper.getEchoMode());
+			
 			
 			// Auto record
 			if (recordedCall == INVALID_RECORD && 
-					pjService.prefsWrapper.getPreferenceBooleanValue(SipConfigManager.AUTO_RECORD_CALLS)) {
+					pjService.prefsWrapper.getPreferenceBooleanValue(PreferencesWrapper.AUTO_RECORD_CALLS)) {
 				startRecording(callId);
 			}
 			
@@ -317,15 +313,6 @@ public class UAStateReceiver extends Callback {
 		unlockCpu();
 	}
 	
-	@Override
-	public void on_zrtp_show_sas(pj_str_t sas, int verified) {
-		String sasString = sas.getPtr();
-		Log.d(THIS_FILE, "Hey hoy hay, we get the show SAS " + sasString);
-		Intent zrtpIntent = new Intent("com.cipsimple.tmp.zrtp.showSAS");
-		zrtpIntent.putExtra(Intent.EXTRA_SUBJECT, sasString);
-		pjService.service.sendBroadcast(zrtpIntent);
-		
-	}
 	
 	// -------
 	// Current call management -- assume for now one unique call is managed

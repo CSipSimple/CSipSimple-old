@@ -3,57 +3,58 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2010-12-30 15:22+0100\n"
-"PO-Revision-Date: 2010-12-10 14:37+0000\n"
-"Last-Translator: M66B <Unknown>\n"
+"PO-Revision-Date: 2010-10-19 13:49+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: nl <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2010-12-31 06:02+0000\n"
-"X-Generator: Launchpad (build Unknown)\n"
 "Generated-By: Babel 1.0dev\n"
 
 msgctxt "w_common_display_name"
 msgid "Account name"
-msgstr "Account-naam"
+msgstr ""
 
 msgctxt "w_common_display_name_desc"
 msgid "Display name for this account"
-msgstr "Weergavenaam voor dit account"
+msgstr ""
 
 msgctxt "w_common_username"
 msgid "User name"
-msgstr "Gebruikersnaam"
+msgstr ""
 
 msgctxt "w_common_username_desc"
 msgid "Sip account login"
-msgstr "SIP-account login"
+msgstr ""
 
 msgctxt "w_common_phone_number"
 msgid "Phone number"
-msgstr "Telefoonnummer"
+msgstr ""
 
 msgctxt "w_common_phone_number_desc"
 msgid "Sip phone number given by your provider"
-msgstr "SIP-telefoonnummer gegeven door uw provider"
+msgstr ""
 
 msgctxt "w_common_password"
 msgid "Password"
-msgstr "Wachtwoord"
+msgstr ""
 
 msgctxt "w_common_password_desc"
 msgid "Password for your account"
-msgstr "Wachtwoord voor uw account"
+msgstr ""
 
 msgctxt "w_common_server"
 msgid "Server"
-msgstr "Server"
+msgstr ""
 
 msgctxt "w_common_server_desc"
 msgid "SIP server domain/IP[:port]"
-msgstr "SIP-server domein/IP[:poort]"
+msgstr ""
+

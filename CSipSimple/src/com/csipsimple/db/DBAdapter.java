@@ -42,7 +42,7 @@ public class DBAdapter {
 	static String THIS_FILE = "SIP ACC_DB";
 
 	private static final String DATABASE_NAME = "com.csipsimple.db";
-	private static final int DATABASE_VERSION = 23;
+	private static final int DATABASE_VERSION = 16;
 	private static final String ACCOUNTS_TABLE_NAME = "accounts";
 	private static final String CALLLOGS_TABLE_NAME = "calllogs";
 	private static final String FILTERS_TABLE_NAME = "outgoing_filters";
@@ -78,23 +78,18 @@ public class DBAdapter {
 			+ SipProfile.FIELD_CONTACT_PARAMS 		+ " TEXT,"
 			+ SipProfile.FIELD_CONTACT_URI_PARAMS	+ " TEXT,"
 			+ SipProfile.FIELD_TRANSPORT	 		+ " INTEGER," 
-			+ SipProfile.FIELD_USE_SRTP	 			+ " INTEGER," 
-			+ SipProfile.FIELD_USE_ZRTP	 			+ " INTEGER," 
+			+ SipProfile.FIELD_USE_SRTP	 		+ " INTEGER," 
 
 			// Proxy infos
 			+ SipProfile.FIELD_PROXY				+ " TEXT,"
-			+ SipProfile.FIELD_REG_USE_PROXY		+ " INTEGER,"
 
 			// And now cred_info since for now only one cred info can be managed
 			// In future release a credential table should be created
 			+ SipProfile.FIELD_REALM 				+ " TEXT," 
 			+ SipProfile.FIELD_SCHEME 				+ " TEXT," 
-			+ SipProfile.FIELD_USERNAME				+ " TEXT," 
+			+ SipProfile.FIELD_USERNAME			+ " TEXT," 
 			+ SipProfile.FIELD_DATATYPE 			+ " INTEGER," 
-			+ SipProfile.FIELD_DATA 				+ " TEXT,"
-			
-			
-			+ SipProfile.FIELD_SIP_STACK 			+ " INTEGER" 
+			+ SipProfile.FIELD_DATA 				+ " TEXT"
 		+ ");";
 	
 	private final static String TABLE_CALLLOGS_CREATE = "CREATE TABLE IF NOT EXISTS "
@@ -200,47 +195,6 @@ public class DBAdapter {
 					Log.e(THIS_FILE, "Upgrade fail... maybe a crappy rom...", e);
 				}
 				
-			}
-			if(oldVersion < 17) {
-				try {
-					db.execSQL("UPDATE " + ACCOUNTS_TABLE_NAME + " SET " + SipProfile.FIELD_KA_INTERVAL + "=0");
-				}catch(SQLiteException e) {
-					Log.e(THIS_FILE, "Upgrade fail... maybe a crappy rom...", e);
-				}
-			}
-			if(oldVersion < 18) {
-				try {
-					//As many users are crying... remove auto transport and force udp
-					db.execSQL("UPDATE " + ACCOUNTS_TABLE_NAME + " SET " + SipProfile.FIELD_TRANSPORT + "="+SipProfile.TRANSPORT_UDP +" WHERE "+ SipProfile.FIELD_TRANSPORT + "=" + SipProfile.TRANSPORT_AUTO);
-				}catch(SQLiteException e) {
-					Log.e(THIS_FILE, "Upgrade fail... maybe a crappy rom...", e);
-				}
-			}
-			if(oldVersion < 22) {
-				try {
-					//Add use proxy row
-					db.execSQL("ALTER TABLE " + ACCOUNTS_TABLE_NAME + " ADD "+
-							SipProfile.FIELD_REG_USE_PROXY + " INTEGER");
-					db.execSQL("UPDATE " + ACCOUNTS_TABLE_NAME + " SET " + SipProfile.FIELD_REG_USE_PROXY + "=3");
-					//Add stack field
-					db.execSQL("ALTER TABLE " + ACCOUNTS_TABLE_NAME + " ADD "+
-							SipProfile.FIELD_SIP_STACK + " INTEGER");
-					db.execSQL("UPDATE " + ACCOUNTS_TABLE_NAME + " SET " + SipProfile.FIELD_SIP_STACK + "=0");
-					Log.d(THIS_FILE, "Upgrade done");
-				}catch(SQLiteException e) {
-					Log.e(THIS_FILE, "Upgrade fail... maybe a crappy rom...", e);
-				}
-			}
-			if(oldVersion < 23) {
-				try {
-					//Add use zrtp row
-					db.execSQL("ALTER TABLE " + ACCOUNTS_TABLE_NAME + " ADD "+
-							SipProfile.FIELD_USE_ZRTP + " INTEGER");
-					db.execSQL("UPDATE " + ACCOUNTS_TABLE_NAME + " SET " + SipProfile.FIELD_USE_ZRTP + "=0");
-					Log.d(THIS_FILE, "Upgrade done");
-				}catch(SQLiteException e) {
-					Log.e(THIS_FILE, "Upgrade fail... maybe a crappy rom...", e);
-				}
 			}
 
 			onCreate(db);
@@ -498,11 +452,9 @@ public class DBAdapter {
 		return numRows;
 	}
 	
-
-	public void removeAllAccounts() {
-		db.delete(FILTERS_TABLE_NAME, "1", null);
-		db.delete(ACCOUNTS_TABLE_NAME, "1", null);
+	public int countAvailableAccountsForNumber(String number) {
 		
+		return 0;
 	}
 	
 	
@@ -774,5 +726,5 @@ public class DBAdapter {
 				SipMessage.FIELD_TYPE+ "="+SipMessage.MESSAGE_TYPE_QUEUED, 
 				new String[] {sTo, body}) > 0;
 	}
-
+	
 }
