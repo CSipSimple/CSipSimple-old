@@ -1,4 +1,4 @@
-/* $Id: videoport.h 3402 2010-12-30 16:31:16Z ming $ */
+/* $Id: videoport.h 3431 2011-03-01 15:55:34Z ming $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -108,7 +108,7 @@ PJ_DECL(void) pjmedia_vid_port_set_cb(pjmedia_vid_port *vid_port,
  *
  * @return		The video stream.
  */
-PJ_DECL(pjmedia_vid_stream*)
+PJ_DECL(pjmedia_vid_dev_stream*)
 pjmedia_vid_port_get_stream(pjmedia_vid_port *vid_port);
 
 /**
@@ -169,7 +169,7 @@ PJ_DECL(pj_status_t) pjmedia_vid_port_connect(pjmedia_vid_port *vid_port,
 					      pj_bool_t destroy);
 
 /**
- * Connect the video port from its downstream (slave) media port, if any.
+ * Disconnect the video port from its downstream (slave) media port, if any.
  * This operation is only valid for video ports created with active interface
  * selected, and assertion may be triggered if this is invoked on a passive
  * video port.

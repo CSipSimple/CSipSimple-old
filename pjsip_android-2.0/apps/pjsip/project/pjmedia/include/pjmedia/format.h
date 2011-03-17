@@ -1,4 +1,4 @@
-/* $Id: format.h 3401 2010-12-20 11:02:48Z ming $ */
+/* $Id: format.h 3449 2011-03-15 11:25:00Z bennylp $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -181,11 +181,13 @@ typedef enum pjmedia_format_id
 
     PJMEDIA_FORMAT_H261     = PJMEDIA_FORMAT_PACK('H', '2', '6', '1'),
     PJMEDIA_FORMAT_H263     = PJMEDIA_FORMAT_PACK('H', '2', '6', '3'),
+    PJMEDIA_FORMAT_H263P    = PJMEDIA_FORMAT_PACK('P', '2', '6', '3'),
 
     PJMEDIA_FORMAT_MJPEG    = PJMEDIA_FORMAT_PACK('M', 'J', 'P', 'G'),
     PJMEDIA_FORMAT_MPEG1VIDEO = PJMEDIA_FORMAT_PACK('M', 'P', '1', 'V'),
     PJMEDIA_FORMAT_MPEG2VIDEO = PJMEDIA_FORMAT_PACK('M', 'P', '2', 'V'),
     PJMEDIA_FORMAT_MPEG4    = PJMEDIA_FORMAT_PACK('M', 'P', 'G', '4'),
+    PJMEDIA_FORMAT_XVID     = PJMEDIA_FORMAT_PACK('x', 'v', 'i', 'd'),
 
 } pjmedia_format_id;
 
@@ -460,9 +462,9 @@ PJ_INLINE(unsigned) PJMEDIA_SPF(unsigned clock_rate, unsigned usec_ptime,
 PJ_INLINE(unsigned) PJMEDIA_FSZ(unsigned bps, unsigned usec_ptime)
 {
 #if PJ_HAS_INT64
-    return ((unsigned)(bps * usec_ptime / PJ_UINT64(8000000)));
+    return ((unsigned)((pj_uint64_t)bps * usec_ptime / PJ_UINT64(8000000)));
 #elif PJ_HAS_FLOATING_POINT
-    return ((unsigned)(bps * usec_ptime / 8000000.0));
+    return ((unsigned)(1.0 * bps * usec_ptime / 8000000.0));
 #else
     return ((unsigned)(bps / 8L * usec_ptime / 1000000));
 #endif

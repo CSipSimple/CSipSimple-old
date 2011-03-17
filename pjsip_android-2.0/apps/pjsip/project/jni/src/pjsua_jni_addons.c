@@ -308,8 +308,8 @@ PJ_DECL(pj_status_t) media_transports_create_ipv6(pjsua_transport_config rtp_cfg
 	    return status;
 	}
     }
-
-    return pjsua_media_transports_attach(tp, i, PJ_TRUE);
+    return PJ_EIGNORED;
+    //return pjsua_media_transports_attach(tp, i, PJ_TRUE);
 }
 
 
@@ -335,6 +335,7 @@ PJ_DECL(pj_bool_t) is_call_secure(pjsua_call_id call_id){
 	}
 
     /* Get and ICE SRTP status */
+	/* TODO : reactivate that !!!!
     pjmedia_transport_info_init(&tp_info);
     pjmedia_transport_get_info(call->med_tp, &tp_info);
     if (tp_info.specific_info_cnt > 0) {
@@ -349,7 +350,7 @@ PJ_DECL(pj_bool_t) is_call_secure(pjsua_call_id call_id){
 			}
 		}
     }
-
+	*/
 	pjsip_dlg_dec_lock(dlg);
 	return result;
 }
@@ -402,7 +403,7 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 #endif
 #endif
 
-		pjmedia_vid_register_factory(&pjmedia_android_video_dev_factory);
+//		pjmedia_vid_register_factory(&pjmedia_android_video_dev_factory);
 		PJ_LOG(4,(THIS_FILE, "Video dev registered" ));
 
 	    // Registering module for tcp hack

@@ -30,7 +30,7 @@ LOCAL_SRC_FILES += $(JNI_SRC_DIR)/opensl_dev.cpp
 endif
 
 ifeq ($(MY_USE_VIDEO),1)
-LOCAL_SRC_FILES += $(JNI_SRC_DIR)/android_video_dev.c
+#LOCAL_SRC_FILES += $(JNI_SRC_DIR)/android_video_dev.c
 endif
 
 LOCAL_LDLIBS := -llog
@@ -69,7 +69,7 @@ ifeq ($(MY_USE_TLS),1)
 	LOCAL_STATIC_LIBRARIES += ssl zrtp4pj crypto 
 endif
 ifeq ($(MY_USE_VIDEO),1)
-	LOCAL_STATIC_LIBRARIES += ffmpeg
+	LOCAL_LDLIBS += -L$(LOCAL_PATH)/../../../ffmpeg-android/build/ffmpeg/armeabi-v7a/lib/ -lavcodec -lavcore -lavformat -lavutil
 endif
 
 

@@ -1,4 +1,4 @@
-/* $Id: sdp.h 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: sdp.h 3419 2011-02-24 07:16:31Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -365,6 +365,20 @@ typedef struct pjmedia_sdp_conn pjmedia_sdp_conn;
 PJ_DECL(pjmedia_sdp_conn*) pjmedia_sdp_conn_clone(pj_pool_t *pool, 
 						  const pjmedia_sdp_conn *rhs);
 
+
+/** 
+ * Compare connection info. 
+ * 
+ * @param conn1	    The first connection info to compare.
+ * @param conn1	    The second connection info to compare.
+ * @param option    Comparison option, which should be zero for now.
+ *
+ * @return	    PJ_SUCCESS when both connection info are equal, otherwise
+ *		    returns PJMEDIA_SDP_ECONNNOTEQUAL.
+ */
+PJ_DECL(pj_status_t) pjmedia_sdp_conn_cmp(const pjmedia_sdp_conn *conn1, 
+					  const pjmedia_sdp_conn *conn2,
+					  unsigned option);
 
 
 /* **************************************************************************

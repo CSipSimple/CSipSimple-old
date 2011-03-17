@@ -1,4 +1,4 @@
-/* $Id: stream.h 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: stream.h 3446 2011-03-15 11:20:35Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -88,7 +88,7 @@ typedef struct pjmedia_channel pjmedia_channel;
  * corresponds to one "m=" line in SDP session descriptor, and it has
  * its own RTP/RTCP socket pair.
  */
-struct pjmedia_stream_info
+typedef struct pjmedia_stream_info
 {
     pjmedia_type	type;	    /**< Media type (audio, video)	    */
     pjmedia_tp_proto	proto;	    /**< Transport protocol (RTP/AVP, etc.) */
@@ -134,17 +134,32 @@ struct pjmedia_stream_info
 					 (see #PJMEDIA_STREAM_ENABLE_KA)
 					 is enabled?			    */
 #endif
-
-    pjmedia_vid_codec_info       vid_codec_info;
-    pjmedia_vid_codec_param     *vid_codec_param;
-};
+} pjmedia_stream_info;
 
 
 /**
- * @see pjmedia_stream_info.
+ * This function will initialize the stream info based on information
+ * in both SDP session descriptors for the specified stream index. 
+ * The remaining information will be taken from default codec parameters. 
+ * If socket info array is specified, the socket will be copied to the 
+ * session info as well.
+ *
+ * @param si		Stream info structure to be initialized.
+ * @param pool		Pool to allocate memory.
+ * @param endpt		PJMEDIA endpoint instance.
+ * @param local		Local SDP session descriptor.
+ * @param remote	Remote SDP session descriptor.
+ * @param stream_idx	Media stream index in the session descriptor.
+ *
+ * @return		PJ_SUCCESS if stream info is successfully initialized.
  */
-typedef struct pjmedia_stream_info pjmedia_stream_info;
-
+PJ_DECL(pj_status_t)
+pjmedia_stream_info_from_sdp( pjmedia_stream_info *si,
+			      pj_pool_t *pool,
+			      pjmedia_endpt *endpt,
+			      const pjmedia_sdp_session *local,
+			      const pjmedia_sdp_session *remote,
+			      unsigned stream_idx);
 
 
 /**
@@ -223,6 +238,17 @@ PJ_DECL(pjmedia_transport*) pjmedia_stream_get_transport(pjmedia_stream *st);
  */
 PJ_DECL(pj_status_t) pjmedia_stream_start(pjmedia_stream *stream);
 
+
+/**
+ * Get the stream info.
+ *
+ * @param stream	The media stream.
+ * @param info		Stream info.
+ *
+ * @return		PJ_SUCCESS on success.
+ */
+PJ_DECL(pj_status_t) pjmedia_stream_get_info( const pjmedia_stream *stream,
+					      pjmedia_stream_info *info);
 
 /**
  * Get the stream statistics. See also
@@ -364,6 +390,7 @@ pjmedia_stream_set_dtmf_callback(pjmedia_stream *stream,
 					    void *user_data, 
 					    int digit), 
 				 void *user_data);
+
 
 /**
  * @}

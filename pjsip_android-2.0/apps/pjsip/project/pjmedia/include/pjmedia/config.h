@@ -1,4 +1,4 @@
-/* $Id: config.h 3402 2010-12-30 16:31:16Z ming $ */
+/* $Id: config.h 3451 2011-03-15 11:29:53Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -884,6 +884,18 @@
  * .... new stuffs ...
  */
 
+/*
+ * Video
+ */
+
+/**
+ * Top level option to disable video.
+ */
+#ifndef PJMEDIA_HAS_VIDEO
+#   define PJMEDIA_HAS_VIDEO				1
+#endif
+
+
 /**
  * Specify if FFMPEG is available. The value here will be used as the default
  * value for other FFMPEG settings below.
@@ -977,6 +989,15 @@
 #ifndef PJMEDIA_CLOCK_SYNC_MAX_SYNC_MSEC
 #   define PJMEDIA_CLOCK_SYNC_MAX_SYNC_MSEC         20000
 #endif
+
+/**
+ * Maximum video frame size.
+ * Default: 128kB
+ */
+#ifndef PJMEDIA_MAX_VIDEO_ENC_FRAME_SIZE
+#  define PJMEDIA_MAX_VIDEO_ENC_FRAME_SIZE	    (1<<17)
+#endif
+
 
 /**
  * Specify the maximum duration (in ms) for resynchronization. When a media

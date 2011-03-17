@@ -1,3 +1,0 @@
-ARCH=arm
-ARCH_ARM=yes
-HAVE_ARMV5TE=no

@@ -8,6 +8,7 @@ else
 MY_PJSIP_FLAGS := $(BASE_PJSIP_FLAGS) -DPJ_HAS_FLOATING_POINT=1
 endif
 
+
 # Pjsip
 include $(TOP_LOCAL_PATH)/pjlib/build/Android.mk
 include $(TOP_LOCAL_PATH)/pjlib-util/build/Android.mk
@@ -47,9 +48,6 @@ ifeq ($(MY_USE_SILK),1)
 endif
 ifeq ($(MY_USE_CODEC2),1)
 	include $(TOP_LOCAL_PATH)/third_party/build/codec2/Android.mk
-endif
-ifeq ($(MY_USE_VIDEO),1)
-	include $(TOP_LOCAL_PATH)/third_party/build/ffmpeg/Android.mk
 endif
 
 # pjsip JNI

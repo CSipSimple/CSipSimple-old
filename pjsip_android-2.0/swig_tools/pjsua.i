@@ -90,11 +90,11 @@ public:
 		pjsip_event *e) {}
 	virtual void on_call_media_state (pjsua_call_id call_id) {}
 	virtual void on_stream_created (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port) {}
 	virtual void on_stream_destroyed (pjsua_call_id call_id,
-		pjmedia_session *sess, 
+		pjmedia_stream *strm, 
 		unsigned stream_idx) {}
 	virtual void on_dtmf_digit (pjsua_call_id call_id, int digit) {}
 	virtual void on_call_transfer_request (pjsua_call_id call_id,
@@ -180,16 +180,16 @@ void on_call_media_state_wrapper (pjsua_call_id call_id) {
  
 
 void on_stream_created_wrapper (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port) {
-	registeredCallbackObject->on_stream_created(call_id, sess, stream_idx, p_port);
+	registeredCallbackObject->on_stream_created(call_id, strm, stream_idx, p_port);
 }
 
 void on_stream_destroyed_wrapper (pjsua_call_id call_id,
-	pjmedia_session *sess, 
+	pjmedia_stream *strm, 
 	unsigned stream_idx) {
-	registeredCallbackObject->on_stream_destroyed(call_id, sess, stream_idx);
+	registeredCallbackObject->on_stream_destroyed(call_id, strm, stream_idx);
 }
 
 void on_dtmf_digit_wrapper (pjsua_call_id call_id, int digit) {
@@ -387,11 +387,11 @@ public:
 		pjsip_event *e);
 	virtual void on_call_media_state (pjsua_call_id call_id);
 	virtual void on_stream_created (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port);
 	virtual void on_stream_destroyed (pjsua_call_id call_id,
-		pjmedia_session *sess, 
+		pjmedia_stream *strm, 
 		unsigned stream_idx);
 	virtual void on_dtmf_digit (pjsua_call_id call_id, int digit);
 	virtual void on_call_transfer_request (pjsua_call_id call_id,
@@ -1172,6 +1172,7 @@ struct pj_time_val
 
  
 #define PJSUA_INVALID_ID	    (-1)
+#define DISABLED_FOR_TICKET_1185	0
 typedef int pjsua_call_id;
 typedef int pjsua_acc_id;
 typedef int pjsua_buddy_id;
@@ -1183,20 +1184,15 @@ typedef struct pjsua_msg_data pjsua_msg_data;
 #ifndef PJSUA_ACC_MAX_PROXIES
 #   define PJSUA_ACC_MAX_PROXIES    8
 #endif
-#if defined(PJMEDIA_HAS_SRTP) && (PJMEDIA_HAS_SRTP != 0)
 #ifndef PJSUA_DEFAULT_USE_SRTP
     #define PJSUA_DEFAULT_USE_SRTP  PJMEDIA_SRTP_DISABLED
 #endif
 #ifndef PJSUA_DEFAULT_SRTP_SECURE_SIGNALING
     #define PJSUA_DEFAULT_SRTP_SECURE_SIGNALING 1
 #endif
-#endif
-#if defined(PJMEDIA_HAS_ZRTP) && (PJMEDIA_HAS_ZRTP != 0)
     
 #ifndef PJSUA_DEFAULT_USE_ZRTP
     #define PJSUA_DEFAULT_USE_ZRTP  PJMEDIA_CREATE_ZRTP
-#endif
-    
 #endif
 #ifndef PJSUA_ADD_ICE_TAGS
 #   define PJSUA_ADD_ICE_TAGS		1
@@ -1204,6 +1200,21 @@ typedef struct pjsua_msg_data pjsua_msg_data;
 #ifndef PJSUA_ACQUIRE_CALL_TIMEOUT
 #   define PJSUA_ACQUIRE_CALL_TIMEOUT 2000
 #endif
+enum pjsua_state
+{
+    
+    PJSUA_STATE_NULL,
+    
+    PJSUA_STATE_CREATED,
+    
+    PJSUA_STATE_INIT,
+    
+    PJSUA_STATE_STARTING,
+    
+    PJSUA_STATE_RUNNING,
+    
+    PJSUA_STATE_CLOSING
+};
 struct pjsua_logging_config
 {
     
@@ -1256,12 +1267,12 @@ struct pjsua_callback
  
     
     void (*on_stream_created)(pjsua_call_id call_id, 
-			      pjmedia_session *sess,
+			      pjmedia_stream *strm,
                               unsigned stream_idx, 
 			      pjmedia_port **p_port);
     
     void (*on_stream_destroyed)(pjsua_call_id call_id,
-                                pjmedia_session *sess, 
+                                pjmedia_stream *strm,
 				unsigned stream_idx);
     
     void (*on_dtmf_digit)(pjsua_call_id call_id, int digit);
@@ -1416,14 +1427,12 @@ struct pjsua_config
     pjsua_callback  cb;
     
     pj_str_t	    user_agent;
-#if defined(PJMEDIA_HAS_SRTP) && (PJMEDIA_HAS_SRTP != 0)
     
     pjmedia_srtp_use	use_srtp;
     
     int		     srtp_secure_signaling;
     
     pj_bool_t	     srtp_optional_dup_offer;
-#endif
     
     pj_bool_t	     hangup_forked_call;
 };
@@ -1460,6 +1469,9 @@ PJ_DECL(pj_status_t) pjsua_create(void);
 %rename(start) pjsua_start;
 %javamethodmodifiers pjsua_start(void) "public synchronized";
 PJ_DECL(pj_status_t) pjsua_start(void);
+%rename(get_state) pjsua_get_state;
+%javamethodmodifiers pjsua_get_state(void) "public synchronized";
+PJ_DECL(pjsua_state) pjsua_get_state(void);
 %rename(handle_events) pjsua_handle_events;
 %javamethodmodifiers pjsua_handle_events(unsigned msec_timeout) "public synchronized";
 PJ_DECL(int) pjsua_handle_events(unsigned msec_timeout);
@@ -1718,14 +1730,18 @@ struct pjsua_acc_config
     unsigned	     ka_interval;
     
     pj_str_t	     ka_data;
-#if defined(PJMEDIA_HAS_SRTP) && (PJMEDIA_HAS_SRTP != 0)
+    
+    unsigned         max_audio_cnt;
+    
+    unsigned         max_video_cnt;
+    
+    pjsua_transport_config rtp_cfg;
     
     pjmedia_srtp_use	use_srtp;
     
     int		     srtp_secure_signaling;
     
     pj_bool_t	     srtp_optional_dup_offer;
-#endif
 //#if defined(PJMEDIA_HAS_ZRTP) && (PJMEDIA_HAS_ZRTP != 0)
     
     pjmedia_zrtp_use     use_zrtp;
@@ -1940,9 +1956,23 @@ struct pjsua_call_info
     
     pjsua_call_media_status media_status;
     
+    unsigned		audio_cnt;
+    
     pjmedia_dir		media_dir;
     
     pjsua_conf_port_id	conf_slot;
+    
+    struct
+    {
+	
+	unsigned		index;
+	
+	pjsua_call_media_status media_status;
+	
+	pjmedia_dir		media_dir;
+	
+	pjsua_conf_port_id	conf_slot;
+    } audio[4];
     
     pj_time_val		connect_duration;
     
@@ -1987,12 +2017,14 @@ PJ_DECL(pj_bool_t) pjsua_call_is_active(pjsua_call_id call_id);
 %rename(call_has_media) pjsua_call_has_media;
 %javamethodmodifiers pjsua_call_has_media(pjsua_call_id call_id) "public synchronized";
 PJ_DECL(pj_bool_t) pjsua_call_has_media(pjsua_call_id call_id);
+#if DISABLED_FOR_TICKET_1185
 %rename(call_get_media_session) pjsua_call_get_media_session;
 %javamethodmodifiers pjsua_call_get_media_session(pjsua_call_id call_id) "public synchronized";
 PJ_DECL(pjmedia_session*) pjsua_call_get_media_session(pjsua_call_id call_id);
 %rename(call_get_media_transport) pjsua_call_get_media_transport;
 %javamethodmodifiers pjsua_call_get_media_transport(pjsua_call_id cid) "public synchronized";
 PJ_DECL(pjmedia_transport*) pjsua_call_get_media_transport(pjsua_call_id cid);
+#endif 
 %rename(call_get_conf_port) pjsua_call_get_conf_port;
 %javamethodmodifiers pjsua_call_get_conf_port(pjsua_call_id call_id) "public synchronized";
 PJ_DECL(pjsua_conf_port_id) pjsua_call_get_conf_port(pjsua_call_id call_id);
@@ -2573,10 +2605,12 @@ PJ_DECL(pj_status_t) pjsua_codec_get_param( const pj_str_t *codec_id,
 					    const pjmedia_codec_param *param) "public synchronized";
 PJ_DECL(pj_status_t) pjsua_codec_set_param( const pj_str_t *codec_id,
 					    const pjmedia_codec_param *param);
+#if DISABLED_FOR_TICKET_1185
 %rename(media_transports_create) pjsua_media_transports_create;
 %javamethodmodifiers pjsua_media_transports_create(const pjsua_transport_config *cfg) "public synchronized";
 PJ_DECL(pj_status_t) 
 pjsua_media_transports_create(const pjsua_transport_config *cfg);
+#endif
 PJ_DECL(int) codecs_get_nbr();
 PJ_DECL(pj_str_t) codecs_get_id(int codec_id) ;
 PJ_DECL(pj_status_t) test_audio_dev(unsigned int clock_rate, unsigned int ptime);

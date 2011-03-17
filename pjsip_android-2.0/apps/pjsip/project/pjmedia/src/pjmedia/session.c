@@ -1,4 +1,4 @@
-/* $Id: session.c 3379 2010-12-02 04:13:57Z nanang $ */
+/* $Id: session.c 3446 2011-03-15 11:20:35Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -140,7 +140,7 @@ static void parse_fmtp( pj_pool_t *pool,
     }
 }
 
-
+#if 0	// Moved to stream.c
 /*
  * Create stream info from SDP media line.
  */
@@ -604,7 +604,7 @@ PJ_DEF(pj_status_t) pjmedia_stream_info_from_sdp(
 
     return PJ_SUCCESS;
 }
-
+#endif
 
 /*
  * Initialize session info from SDP session descriptors.

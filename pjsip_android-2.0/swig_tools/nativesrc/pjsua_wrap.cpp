@@ -1046,11 +1046,11 @@ public:
 		pjsip_event *e) {}
 	virtual void on_call_media_state (pjsua_call_id call_id) {}
 	virtual void on_stream_created (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port) {}
 	virtual void on_stream_destroyed (pjsua_call_id call_id,
-		pjmedia_session *sess, 
+		pjmedia_stream *strm, 
 		unsigned stream_idx) {}
 	virtual void on_dtmf_digit (pjsua_call_id call_id, int digit) {}
 	virtual void on_call_transfer_request (pjsua_call_id call_id,
@@ -1136,16 +1136,16 @@ void on_call_media_state_wrapper (pjsua_call_id call_id) {
  
 
 void on_stream_created_wrapper (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port) {
-	registeredCallbackObject->on_stream_created(call_id, sess, stream_idx, p_port);
+	registeredCallbackObject->on_stream_created(call_id, strm, stream_idx, p_port);
 }
 
 void on_stream_destroyed_wrapper (pjsua_call_id call_id,
-	pjmedia_session *sess, 
+	pjmedia_stream *strm, 
 	unsigned stream_idx) {
-	registeredCallbackObject->on_stream_destroyed(call_id, sess, stream_idx);
+	registeredCallbackObject->on_stream_destroyed(call_id, strm, stream_idx);
 }
 
 void on_dtmf_digit_wrapper (pjsua_call_id call_id, int digit) {
@@ -1438,26 +1438,26 @@ void SwigDirector_Callback::on_call_media_state(pjsua_call_id call_id) {
   if (swigjobj) jenv->DeleteLocalRef(swigjobj);
 }
 
-void SwigDirector_Callback::on_stream_created(pjsua_call_id call_id, pjmedia_session *sess, unsigned int stream_idx, pjmedia_port **p_port) {
+void SwigDirector_Callback::on_stream_created(pjsua_call_id call_id, pjmedia_stream *strm, unsigned int stream_idx, pjmedia_port **p_port) {
   JNIEnvWrapper swigjnienv(this) ;
   JNIEnv * jenv = swigjnienv.getJNIEnv() ;
   jobject swigjobj = (jobject) NULL ;
   jint jcall_id  ;
-  jlong jsess = 0 ;
+  jlong jstrm = 0 ;
   jlong jstream_idx  ;
   jlong jp_port = 0 ;
   
   if (!swig_override[4]) {
-    Callback::on_stream_created(call_id,sess,stream_idx,p_port);
+    Callback::on_stream_created(call_id,strm,stream_idx,p_port);
     return;
   }
   swigjobj = swig_get_self(jenv);
   if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
     jcall_id = (jint) call_id;
-    *((pjmedia_session **)&jsess) = (pjmedia_session *) sess; 
+    *((pjmedia_stream **)&jstrm) = (pjmedia_stream *) strm; 
     jstream_idx = (jlong) stream_idx;
     *((pjmedia_port ***)&jp_port) = (pjmedia_port **) p_port; 
-    jenv->CallStaticVoidMethod(Swig::jclass_pjsuaJNI, Swig::director_methids[4], swigjobj, jcall_id, jsess, jstream_idx, jp_port);
+    jenv->CallStaticVoidMethod(Swig::jclass_pjsuaJNI, Swig::director_methids[4], swigjobj, jcall_id, jstrm, jstream_idx, jp_port);
     if (jenv->ExceptionOccurred()) return ;
   } else {
     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null upcall object");
@@ -1465,24 +1465,24 @@ void SwigDirector_Callback::on_stream_created(pjsua_call_id call_id, pjmedia_ses
   if (swigjobj) jenv->DeleteLocalRef(swigjobj);
 }
 
-void SwigDirector_Callback::on_stream_destroyed(pjsua_call_id call_id, pjmedia_session *sess, unsigned int stream_idx) {
+void SwigDirector_Callback::on_stream_destroyed(pjsua_call_id call_id, pjmedia_stream *strm, unsigned int stream_idx) {
   JNIEnvWrapper swigjnienv(this) ;
   JNIEnv * jenv = swigjnienv.getJNIEnv() ;
   jobject swigjobj = (jobject) NULL ;
   jint jcall_id  ;
-  jlong jsess = 0 ;
+  jlong jstrm = 0 ;
   jlong jstream_idx  ;
   
   if (!swig_override[5]) {
-    Callback::on_stream_destroyed(call_id,sess,stream_idx);
+    Callback::on_stream_destroyed(call_id,strm,stream_idx);
     return;
   }
   swigjobj = swig_get_self(jenv);
   if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
     jcall_id = (jint) call_id;
-    *((pjmedia_session **)&jsess) = (pjmedia_session *) sess; 
+    *((pjmedia_stream **)&jstrm) = (pjmedia_stream *) strm; 
     jstream_idx = (jlong) stream_idx;
-    jenv->CallStaticVoidMethod(Swig::jclass_pjsuaJNI, Swig::director_methids[5], swigjobj, jcall_id, jsess, jstream_idx);
+    jenv->CallStaticVoidMethod(Swig::jclass_pjsuaJNI, Swig::director_methids[5], swigjobj, jcall_id, jstrm, jstream_idx);
     if (jenv->ExceptionOccurred()) return ;
   } else {
     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null upcall object");
@@ -1942,10 +1942,10 @@ void SwigDirector_Callback::swig_connect_director(JNIEnv *jenv, jobject jself, j
       "on_call_media_state", "(I)V", NULL 
     },
     {
-      "on_stream_created", "(ILorg/pjsip/pjsua/SWIGTYPE_p_pjmedia_session;JLorg/pjsip/pjsua/SWIGTYPE_p_p_pjmedia_port;)V", NULL 
+      "on_stream_created", "(ILorg/pjsip/pjsua/SWIGTYPE_p_pjmedia_stream;JLorg/pjsip/pjsua/SWIGTYPE_p_p_pjmedia_port;)V", NULL 
     },
     {
-      "on_stream_destroyed", "(ILorg/pjsip/pjsua/SWIGTYPE_p_pjmedia_session;J)V", NULL 
+      "on_stream_destroyed", "(ILorg/pjsip/pjsua/SWIGTYPE_p_pjmedia_stream;J)V", NULL 
     },
     {
       "on_dtmf_digit", "(II)V", NULL 
@@ -2190,7 +2190,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1call_1media_
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1created(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jlong jarg3, jlong jarg4, jlong jarg5) {
   Callback *arg1 = (Callback *) 0 ;
   pjsua_call_id arg2 ;
-  pjmedia_session *arg3 = (pjmedia_session *) 0 ;
+  pjmedia_stream *arg3 = (pjmedia_stream *) 0 ;
   unsigned int arg4 ;
   pjmedia_port **arg5 = (pjmedia_port **) 0 ;
   
@@ -2199,7 +2199,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1crea
   (void)jarg1_;
   arg1 = *(Callback **)&jarg1; 
   arg2 = (pjsua_call_id)jarg2; 
-  arg3 = *(pjmedia_session **)&jarg3; 
+  arg3 = *(pjmedia_stream **)&jarg3; 
   arg4 = (unsigned int)jarg4; 
   arg5 = *(pjmedia_port ***)&jarg5; 
   (arg1)->on_stream_created(arg2,arg3,arg4,arg5);
@@ -2209,7 +2209,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1crea
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1createdSwigExplicitCallback(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jlong jarg3, jlong jarg4, jlong jarg5) {
   Callback *arg1 = (Callback *) 0 ;
   pjsua_call_id arg2 ;
-  pjmedia_session *arg3 = (pjmedia_session *) 0 ;
+  pjmedia_stream *arg3 = (pjmedia_stream *) 0 ;
   unsigned int arg4 ;
   pjmedia_port **arg5 = (pjmedia_port **) 0 ;
   
@@ -2218,7 +2218,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1crea
   (void)jarg1_;
   arg1 = *(Callback **)&jarg1; 
   arg2 = (pjsua_call_id)jarg2; 
-  arg3 = *(pjmedia_session **)&jarg3; 
+  arg3 = *(pjmedia_stream **)&jarg3; 
   arg4 = (unsigned int)jarg4; 
   arg5 = *(pjmedia_port ***)&jarg5; 
   (arg1)->Callback::on_stream_created(arg2,arg3,arg4,arg5);
@@ -2228,7 +2228,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1crea
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1destroyed(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jlong jarg3, jlong jarg4) {
   Callback *arg1 = (Callback *) 0 ;
   pjsua_call_id arg2 ;
-  pjmedia_session *arg3 = (pjmedia_session *) 0 ;
+  pjmedia_stream *arg3 = (pjmedia_stream *) 0 ;
   unsigned int arg4 ;
   
   (void)jenv;
@@ -2236,7 +2236,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1dest
   (void)jarg1_;
   arg1 = *(Callback **)&jarg1; 
   arg2 = (pjsua_call_id)jarg2; 
-  arg3 = *(pjmedia_session **)&jarg3; 
+  arg3 = *(pjmedia_stream **)&jarg3; 
   arg4 = (unsigned int)jarg4; 
   (arg1)->on_stream_destroyed(arg2,arg3,arg4);
 }
@@ -2245,7 +2245,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1dest
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1destroyedSwigExplicitCallback(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jlong jarg3, jlong jarg4) {
   Callback *arg1 = (Callback *) 0 ;
   pjsua_call_id arg2 ;
-  pjmedia_session *arg3 = (pjmedia_session *) 0 ;
+  pjmedia_stream *arg3 = (pjmedia_stream *) 0 ;
   unsigned int arg4 ;
   
   (void)jenv;
@@ -2253,7 +2253,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_Callback_1on_1stream_1dest
   (void)jarg1_;
   arg1 = *(Callback **)&jarg1; 
   arg2 = (pjsua_call_id)jarg2; 
-  arg3 = *(pjmedia_session **)&jarg3; 
+  arg3 = *(pjmedia_stream **)&jarg3; 
   arg4 = (unsigned int)jarg4; 
   (arg1)->Callback::on_stream_destroyed(arg2,arg3,arg4);
 }
@@ -5791,6 +5791,18 @@ SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_PJSUA_1INVALID_1ID_1get(JN
 }
 
 
+SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_DISABLED_1FOR_1TICKET_11185_1get(JNIEnv *jenv, jclass jcls) {
+  jint jresult = 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (int)(0);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_PJSUA_1ACC_1MAX_1PROXIES_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   int result;
@@ -6328,13 +6340,13 @@ SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1call
 
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1stream_1created_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   pjsua_callback *arg1 = (pjsua_callback *) 0 ;
-  void (*arg2)(pjsua_call_id,pjmedia_session *,unsigned int,pjmedia_port **) = (void (*)(pjsua_call_id,pjmedia_session *,unsigned int,pjmedia_port **)) 0 ;
+  void (*arg2)(pjsua_call_id,pjmedia_stream *,unsigned int,pjmedia_port **) = (void (*)(pjsua_call_id,pjmedia_stream *,unsigned int,pjmedia_port **)) 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjsua_callback **)&jarg1; 
-  arg2 = *(void (**)(pjsua_call_id,pjmedia_session *,unsigned int,pjmedia_port **))&jarg2; 
+  arg2 = *(void (**)(pjsua_call_id,pjmedia_stream *,unsigned int,pjmedia_port **))&jarg2; 
   if (arg1) (arg1)->on_stream_created = arg2;
 }
 
@@ -6342,27 +6354,27 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1strea
 SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1stream_1created_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   pjsua_callback *arg1 = (pjsua_callback *) 0 ;
-  void (*result)(pjsua_call_id,pjmedia_session *,unsigned int,pjmedia_port **) = 0 ;
+  void (*result)(pjsua_call_id,pjmedia_stream *,unsigned int,pjmedia_port **) = 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjsua_callback **)&jarg1; 
-  result = (void (*)(pjsua_call_id,pjmedia_session *,unsigned int,pjmedia_port **)) ((arg1)->on_stream_created);
-  *(void (**)(pjsua_call_id,pjmedia_session *,unsigned int,pjmedia_port **))&jresult = result; 
+  result = (void (*)(pjsua_call_id,pjmedia_stream *,unsigned int,pjmedia_port **)) ((arg1)->on_stream_created);
+  *(void (**)(pjsua_call_id,pjmedia_stream *,unsigned int,pjmedia_port **))&jresult = result; 
   return jresult;
 }
 
 
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1stream_1destroyed_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   pjsua_callback *arg1 = (pjsua_callback *) 0 ;
-  void (*arg2)(pjsua_call_id,pjmedia_session *,unsigned int) = (void (*)(pjsua_call_id,pjmedia_session *,unsigned int)) 0 ;
+  void (*arg2)(pjsua_call_id,pjmedia_stream *,unsigned int) = (void (*)(pjsua_call_id,pjmedia_stream *,unsigned int)) 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjsua_callback **)&jarg1; 
-  arg2 = *(void (**)(pjsua_call_id,pjmedia_session *,unsigned int))&jarg2; 
+  arg2 = *(void (**)(pjsua_call_id,pjmedia_stream *,unsigned int))&jarg2; 
   if (arg1) (arg1)->on_stream_destroyed = arg2;
 }
 
@@ -6370,14 +6382,14 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1strea
 SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1callback_1on_1stream_1destroyed_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   pjsua_callback *arg1 = (pjsua_callback *) 0 ;
-  void (*result)(pjsua_call_id,pjmedia_session *,unsigned int) = 0 ;
+  void (*result)(pjsua_call_id,pjmedia_stream *,unsigned int) = 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(pjsua_callback **)&jarg1; 
-  result = (void (*)(pjsua_call_id,pjmedia_session *,unsigned int)) ((arg1)->on_stream_destroyed);
-  *(void (**)(pjsua_call_id,pjmedia_session *,unsigned int))&jresult = result; 
+  result = (void (*)(pjsua_call_id,pjmedia_stream *,unsigned int)) ((arg1)->on_stream_destroyed);
+  *(void (**)(pjsua_call_id,pjmedia_stream *,unsigned int))&jresult = result; 
   return jresult;
 }
 
@@ -8188,6 +8200,18 @@ SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_start(JNIEnv *jenv, jclass
   (void)jenv;
   (void)jcls;
   result = (pj_status_t)pjsua_start();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_get_1state(JNIEnv *jenv, jclass jcls) {
+  jint jresult = 0 ;
+  pjsua_state result;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (pjsua_state)pjsua_get_state();
   jresult = (jint)result; 
   return jresult;
 }
@@ -10373,6 +10397,91 @@ SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1ka_1d
 }
 
 
+SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1audio_1cnt_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
+  unsigned int arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_acc_config **)&jarg1; 
+  arg2 = (unsigned int)jarg2; 
+  if (arg1) (arg1)->max_audio_cnt = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1audio_1cnt_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
+  unsigned int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_acc_config **)&jarg1; 
+  result = (unsigned int) ((arg1)->max_audio_cnt);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1video_1cnt_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
+  unsigned int arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_acc_config **)&jarg1; 
+  arg2 = (unsigned int)jarg2; 
+  if (arg1) (arg1)->max_video_cnt = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1video_1cnt_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
+  unsigned int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_acc_config **)&jarg1; 
+  result = (unsigned int) ((arg1)->max_video_cnt);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1rtp_1cfg_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+  pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
+  pjsua_transport_config *arg2 = (pjsua_transport_config *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg2_;
+  arg1 = *(pjsua_acc_config **)&jarg1; 
+  arg2 = *(pjsua_transport_config **)&jarg2; 
+  if (arg1) (arg1)->rtp_cfg = *arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1rtp_1cfg_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
+  pjsua_transport_config *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_acc_config **)&jarg1; 
+  result = (pjsua_transport_config *)& ((arg1)->rtp_cfg);
+  *(pjsua_transport_config **)&jresult = result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1use_1srtp_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   pjsua_acc_config *arg1 = (pjsua_acc_config *) 0 ;
   pjmedia_srtp_use arg2 ;
@@ -11845,6 +11954,34 @@ SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1media_1
 }
 
 
+SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1audio_1cnt_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  pjsua_call_info *arg1 = (pjsua_call_info *) 0 ;
+  unsigned int arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_call_info **)&jarg1; 
+  arg2 = (unsigned int)jarg2; 
+  if (arg1) (arg1)->audio_cnt = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1audio_1cnt_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  pjsua_call_info *arg1 = (pjsua_call_info *) 0 ;
+  unsigned int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(pjsua_call_info **)&jarg1; 
+  result = (unsigned int) ((arg1)->audio_cnt);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1media_1dir_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   pjsua_call_info *arg1 = (pjsua_call_info *) 0 ;
   pjmedia_dir arg2 ;
@@ -12105,34 +12242,6 @@ SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_call_1has_1media(JNIEnv *j
   arg1 = (pjsua_call_id)jarg1; 
   result = (pj_bool_t)pjsua_call_has_media(arg1);
   jresult = (jint)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_call_1get_1media_1session(JNIEnv *jenv, jclass jcls, jint jarg1) {
-  jlong jresult = 0 ;
-  pjsua_call_id arg1 ;
-  pjmedia_session *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = (pjsua_call_id)jarg1; 
-  result = (pjmedia_session *)pjsua_call_get_media_session(arg1);
-  *(pjmedia_session **)&jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_call_1get_1media_1transport(JNIEnv *jenv, jclass jcls, jint jarg1) {
-  jlong jresult = 0 ;
-  pjsua_call_id arg1 ;
-  pjmedia_transport *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = (pjsua_call_id)jarg1; 
-  result = (pjmedia_transport *)pjsua_call_get_media_transport(arg1);
-  *(pjmedia_transport **)&jresult = result; 
   return jresult;
 }
 
@@ -15601,21 +15710,6 @@ SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_codec_1set_1param(JNIEnv *
 }
 
 
-SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_media_1transports_1create(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jint jresult = 0 ;
-  pjsua_transport_config *arg1 = (pjsua_transport_config *) 0 ;
-  pj_status_t result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(pjsua_transport_config **)&jarg1; 
-  result = (pj_status_t)pjsua_media_transports_create((pjsua_transport_config const *)arg1);
-  jresult = (jint)result; 
-  return jresult;
-}
-
-
 SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_codecs_1get_1nbr(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   int result;
@@ -16252,6 +16346,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"new_pj_time_val", "()J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_new_1pj_1time_1val},
 {"delete_pj_time_val", "(J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_delete_1pj_1time_1val},
 {"PJSUA_INVALID_ID_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJSUA_1INVALID_1ID_1get},
+{"DISABLED_FOR_TICKET_1185_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_DISABLED_1FOR_1TICKET_11185_1get},
 {"PJSUA_ACC_MAX_PROXIES_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJSUA_1ACC_1MAX_1PROXIES_1get},
 {"PJSUA_DEFAULT_SRTP_SECURE_SIGNALING_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJSUA_1DEFAULT_1SRTP_1SECURE_1SIGNALING_1get},
 {"PJSUA_ADD_ICE_TAGS_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJSUA_1ADD_1ICE_1TAGS_1get},
@@ -16413,6 +16508,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"msg_data_init", "(J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_msg_1data_1init},
 {"create", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_create},
 {"start", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_start},
+{"get_state", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_get_1state},
 {"handle_events", "(J)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_handle_1events},
 {"pool_create", "(Ljava/lang/String;JJ)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pool_1create},
 {"reconfigure_logging", "(JLorg/pjsip/pjsua/pjsua_logging_config;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_reconfigure_1logging},
@@ -16553,6 +16649,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"pjsua_acc_config_ka_interval_get", "(JLorg/pjsip/pjsua/pjsua_acc_config;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1ka_1interval_1get},
 {"pjsua_acc_config_ka_data_set", "(JLorg/pjsip/pjsua/pjsua_acc_config;JLorg/pjsip/pjsua/pj_str_t;)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1ka_1data_1set},
 {"pjsua_acc_config_ka_data_get", "(JLorg/pjsip/pjsua/pjsua_acc_config;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1ka_1data_1get},
+{"pjsua_acc_config_max_audio_cnt_set", "(JLorg/pjsip/pjsua/pjsua_acc_config;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1audio_1cnt_1set},
+{"pjsua_acc_config_max_audio_cnt_get", "(JLorg/pjsip/pjsua/pjsua_acc_config;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1audio_1cnt_1get},
+{"pjsua_acc_config_max_video_cnt_set", "(JLorg/pjsip/pjsua/pjsua_acc_config;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1video_1cnt_1set},
+{"pjsua_acc_config_max_video_cnt_get", "(JLorg/pjsip/pjsua/pjsua_acc_config;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1max_1video_1cnt_1get},
+{"pjsua_acc_config_rtp_cfg_set", "(JLorg/pjsip/pjsua/pjsua_acc_config;JLorg/pjsip/pjsua/pjsua_transport_config;)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1rtp_1cfg_1set},
+{"pjsua_acc_config_rtp_cfg_get", "(JLorg/pjsip/pjsua/pjsua_acc_config;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1rtp_1cfg_1get},
 {"pjsua_acc_config_use_srtp_set", "(JLorg/pjsip/pjsua/pjsua_acc_config;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1use_1srtp_1set},
 {"pjsua_acc_config_use_srtp_get", "(JLorg/pjsip/pjsua/pjsua_acc_config;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1use_1srtp_1get},
 {"pjsua_acc_config_srtp_secure_signaling_set", "(JLorg/pjsip/pjsua/pjsua_acc_config;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1acc_1config_1srtp_1secure_1signaling_1set},
@@ -16648,6 +16750,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"pjsua_call_info_last_status_text_get", "(JLorg/pjsip/pjsua/pjsua_call_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1last_1status_1text_1get},
 {"pjsua_call_info_media_status_set", "(JLorg/pjsip/pjsua/pjsua_call_info;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1media_1status_1set},
 {"pjsua_call_info_media_status_get", "(JLorg/pjsip/pjsua/pjsua_call_info;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1media_1status_1get},
+{"pjsua_call_info_audio_cnt_set", "(JLorg/pjsip/pjsua/pjsua_call_info;J)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1audio_1cnt_1set},
+{"pjsua_call_info_audio_cnt_get", "(JLorg/pjsip/pjsua/pjsua_call_info;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1audio_1cnt_1get},
 {"pjsua_call_info_media_dir_set", "(JLorg/pjsip/pjsua/pjsua_call_info;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1media_1dir_1set},
 {"pjsua_call_info_media_dir_get", "(JLorg/pjsip/pjsua/pjsua_call_info;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1media_1dir_1get},
 {"pjsua_call_info_conf_slot_set", "(JLorg/pjsip/pjsua/pjsua_call_info;I)V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjsua_1call_1info_1conf_1slot_1set},
@@ -16664,8 +16768,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"call_make_call", "(IJLorg/pjsip/pjsua/pj_str_t;J[BJ[I)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1make_1call},
 {"call_is_active", "(I)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1is_1active},
 {"call_has_media", "(I)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1has_1media},
-{"call_get_media_session", "(I)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1get_1media_1session},
-{"call_get_media_transport", "(I)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1get_1media_1transport},
 {"call_get_conf_port", "(I)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1get_1conf_1port},
 {"call_get_info", "(IJLorg/pjsip/pjsua/pjsua_call_info;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1get_1info},
 {"call_remote_has_cap", "(IIJLorg/pjsip/pjsua/pj_str_t;JLorg/pjsip/pjsua/pj_str_t;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1remote_1has_1cap},
@@ -16881,7 +16983,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"codec_set_priority", "(JLorg/pjsip/pjsua/pj_str_t;S)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codec_1set_1priority},
 {"codec_get_param", "(JLorg/pjsip/pjsua/pj_str_t;J)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codec_1get_1param},
 {"codec_set_param", "(JLorg/pjsip/pjsua/pj_str_t;J)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codec_1set_1param},
-{"media_transports_create", "(JLorg/pjsip/pjsua/pjsua_transport_config;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_media_1transports_1create},
 {"codecs_get_nbr", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codecs_1get_1nbr},
 {"codecs_get_id", "(I)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codecs_1get_1id},
 {"test_audio_dev", "(JJ)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_test_1audio_1dev},

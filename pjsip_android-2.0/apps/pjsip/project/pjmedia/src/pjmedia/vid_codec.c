@@ -1,4 +1,4 @@
-/* $Id: vid_codec.c 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: vid_codec.c 3425 2011-02-28 18:59:47Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -28,16 +28,76 @@
 
 static pjmedia_vid_codec_mgr *def_vid_codec_mgr;
 
-/* Definition of default codecs parameters */
-struct pjmedia_vid_codec_default_param
+
+/*
+ * Codec manager maintains array of these structs for each supported
+ * codec.
+ */
+typedef struct pjmedia_vid_codec_desc
 {
-    pjmedia_vid_codec_param	*param;
+    pjmedia_vid_codec_info	     info;	/**< Codec info.	    */
+    pjmedia_codec_id	             id;        /**< Fully qualified name   */
+    pjmedia_codec_priority           prio;      /**< Priority.		    */
+    pjmedia_vid_codec_factory       *factory;	/**< The factory.	    */
+    pjmedia_vid_codec_param         *def_param; /**< Default codecs 
+					             parameters.	    */
+} pjmedia_vid_codec_desc;
+
+
+/* The declaration of video codec manager */
+struct pjmedia_vid_codec_mgr
+{
+    /** Codec manager mutex. */
+    pj_mutex_t			*mutex;
+
+    /** List of codec factories registered to codec manager. */
+    pjmedia_vid_codec_factory	 factory_list;
+
+    /** Number of supported codecs. */
+    unsigned			 codec_cnt;
+
+    /** Array of codec descriptor. */
+    pjmedia_vid_codec_desc	 codec_desc[PJMEDIA_CODEC_MGR_MAX_CODECS];
+
 };
+
 
 
 /* Sort codecs in codec manager based on priorities */
 static void sort_codecs(pjmedia_vid_codec_mgr *mgr);
 
+
+/*
+ * Duplicate video codec parameter.
+ */
+PJ_DEF(pjmedia_vid_codec_param*) pjmedia_vid_codec_param_clone(
+					pj_pool_t *pool, 
+					const pjmedia_vid_codec_param *src)
+{
+    pjmedia_vid_codec_param *p;
+    unsigned i;
+
+    PJ_ASSERT_RETURN(pool && src, NULL);
+
+    p = PJ_POOL_ZALLOC_T(pool, pjmedia_vid_codec_param);
+
+    /* Update codec param */
+    pj_memcpy(p, src, sizeof(pjmedia_vid_codec_param));
+    for (i = 0; i < src->dec_fmtp.cnt; ++i) {
+	pj_strdup(pool, &p->dec_fmtp.param[i].name, 
+		  &src->dec_fmtp.param[i].name);
+	pj_strdup(pool, &p->dec_fmtp.param[i].val, 
+		  &src->dec_fmtp.param[i].val);
+    }
+    for (i = 0; i < src->enc_fmtp.cnt; ++i) {
+	pj_strdup(pool, &p->enc_fmtp.param[i].name, 
+		  &src->enc_fmtp.param[i].name);
+	pj_strdup(pool, &p->enc_fmtp.param[i].val, 
+		  &src->enc_fmtp.param[i].val);
+    }
+
+    return p;
+}
 
 /*
  * Initialize codec manager.
@@ -93,7 +153,7 @@ PJ_DEF(pj_status_t) pjmedia_vid_codec_mgr_destroy (pjmedia_vid_codec_mgr *mgr)
 
 PJ_DEF(pjmedia_vid_codec_mgr*) pjmedia_vid_codec_mgr_instance(void)
 {
-    pj_assert(def_vid_codec_mgr);
+    //pj_assert(def_vid_codec_mgr);
     return def_vid_codec_mgr;
 }
 
@@ -264,6 +324,35 @@ PJ_DEF(pj_status_t) pjmedia_vid_codec_mgr_get_codec_info(
 
     for (i=0; i<mgr->codec_cnt; ++i) {
 	if (mgr->codec_desc[i].info.pt == pt) {
+	    *p_info = &mgr->codec_desc[i].info;
+
+	    pj_mutex_unlock(mgr->mutex);
+	    return PJ_SUCCESS;
+	}
+    }
+
+    pj_mutex_unlock(mgr->mutex);
+
+    return PJMEDIA_CODEC_EUNSUP;
+}
+
+
+PJ_DEF(pj_status_t) pjmedia_vid_codec_mgr_get_codec_info2(
+				    pjmedia_vid_codec_mgr *mgr,
+				    pjmedia_format_id fmt_id,
+				    const pjmedia_vid_codec_info **p_info)
+{
+    unsigned i;
+
+    PJ_ASSERT_RETURN(p_info, PJ_EINVAL);
+
+    if (!mgr) mgr = def_vid_codec_mgr;
+    PJ_ASSERT_RETURN(mgr, PJ_EINVAL);
+
+    pj_mutex_lock(mgr->mutex);
+
+    for (i=0; i<mgr->codec_cnt; ++i) {
+	if (mgr->codec_desc[i].info.fmt_id == fmt_id) {
 	    *p_info = &mgr->codec_desc[i].info;
 
 	    pj_mutex_unlock(mgr->mutex);
@@ -604,23 +693,11 @@ PJ_DEF(pj_status_t) pjmedia_vid_codec_mgr_set_default_param(
 	return PJ_SUCCESS;
     }
 
-    p = PJ_POOL_ZALLOC_T(pool, pjmedia_vid_codec_param);
-    p = codec_desc->def_param;
-
-    /* Update codec param */
-    pj_memcpy(p, param, sizeof(pjmedia_vid_codec_param));
-    for (i = 0; i < param->dec_fmtp.cnt; ++i) {
-	pj_strdup(pool, &p->dec_fmtp.param[i].name, 
-		  &param->dec_fmtp.param[i].name);
-	pj_strdup(pool, &p->dec_fmtp.param[i].val, 
-		  &param->dec_fmtp.param[i].val);
-    }
-    for (i = 0; i < param->dec_fmtp.cnt; ++i) {
-	pj_strdup(pool, &p->dec_fmtp.param[i].name, 
-		  &param->dec_fmtp.param[i].name);
-	pj_strdup(pool, &p->dec_fmtp.param[i].val, 
-		  &param->dec_fmtp.param[i].val);
-    }
+    /* Update codec default param */
+    p = pjmedia_vid_codec_param_clone(pool, param);
+    if (!p)
+	return PJ_EINVAL;
+    codec_desc->def_param = p;
 
     pj_mutex_unlock(mgr->mutex);
 

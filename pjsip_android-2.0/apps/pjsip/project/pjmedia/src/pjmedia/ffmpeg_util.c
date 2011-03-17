@@ -1,4 +1,4 @@
-/* $Id: ffmpeg_util.c 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: ffmpeg_util.c 3425 2011-02-28 18:59:47Z nanang $ */
 /*
  * Copyright (C) 2010-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -20,7 +20,7 @@
 #include <pj/errno.h>
 
 #if PJMEDIA_HAS_LIBAVFORMAT && PJMEDIA_HAS_LIBAVUTIL
-
+#warning ici
 #include "ffmpeg_util.h"
 #include <libavformat/avformat.h>
 
@@ -51,12 +51,16 @@ static const struct ffmpeg_codec_table_t
     enum CodecID	codec_id;
 } ffmpeg_codec_table[] =
 {
-    {PJMEDIA_FORMAT_H261,  CODEC_ID_H261},
-    {PJMEDIA_FORMAT_H263,  CODEC_ID_H263},
-    {PJMEDIA_FORMAT_MPEG1VIDEO,  CODEC_ID_MPEG1VIDEO},
-    {PJMEDIA_FORMAT_MPEG2VIDEO,  CODEC_ID_MPEG2VIDEO},
-    {PJMEDIA_FORMAT_MPEG4,  CODEC_ID_MPEG4},    
-    {PJMEDIA_FORMAT_MJPEG,  CODEC_ID_MJPEG},
+    {PJMEDIA_FORMAT_H261,	CODEC_ID_H261},
+    {PJMEDIA_FORMAT_H263,	CODEC_ID_H263},
+    {PJMEDIA_FORMAT_H263P,	CODEC_ID_H263P},
+    {PJMEDIA_FORMAT_MPEG1VIDEO,	CODEC_ID_MPEG1VIDEO},
+    {PJMEDIA_FORMAT_MPEG2VIDEO, CODEC_ID_MPEG2VIDEO},
+    {PJMEDIA_FORMAT_MPEG4,	CODEC_ID_MPEG4},
+    {PJMEDIA_FORMAT_MJPEG,	CODEC_ID_MJPEG},
+#if LIBAVCODEC_VERSION_MAJOR < 53
+    {PJMEDIA_FORMAT_XVID,	CODEC_ID_XVID},
+#endif
 };
 
 static int pjmedia_ffmpeg_ref_cnt;

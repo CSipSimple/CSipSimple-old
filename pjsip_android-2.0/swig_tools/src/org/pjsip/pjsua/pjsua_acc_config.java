@@ -293,6 +293,31 @@ public class pjsua_acc_config {
     return (cPtr == 0) ? null : new pj_str_t(cPtr, false);
   }
 
+  public void setMax_audio_cnt(long value) {
+    pjsuaJNI.pjsua_acc_config_max_audio_cnt_set(swigCPtr, this, value);
+  }
+
+  public long getMax_audio_cnt() {
+    return pjsuaJNI.pjsua_acc_config_max_audio_cnt_get(swigCPtr, this);
+  }
+
+  public void setMax_video_cnt(long value) {
+    pjsuaJNI.pjsua_acc_config_max_video_cnt_set(swigCPtr, this, value);
+  }
+
+  public long getMax_video_cnt() {
+    return pjsuaJNI.pjsua_acc_config_max_video_cnt_get(swigCPtr, this);
+  }
+
+  public void setRtp_cfg(pjsua_transport_config value) {
+    pjsuaJNI.pjsua_acc_config_rtp_cfg_set(swigCPtr, this, pjsua_transport_config.getCPtr(value), value);
+  }
+
+  public pjsua_transport_config getRtp_cfg() {
+    long cPtr = pjsuaJNI.pjsua_acc_config_rtp_cfg_get(swigCPtr, this);
+    return (cPtr == 0) ? null : new pjsua_transport_config(cPtr, false);
+  }
+
   public void setUse_srtp(pjmedia_srtp_use value) {
     pjsuaJNI.pjsua_acc_config_use_srtp_set(swigCPtr, this, value.swigValue());
   }

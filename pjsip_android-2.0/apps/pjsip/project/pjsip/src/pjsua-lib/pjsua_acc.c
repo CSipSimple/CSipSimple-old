@@ -1,4 +1,4 @@
-/* $Id: pjsua_acc.c 3377 2010-12-01 08:53:52Z nanang $ */
+/* $Id: pjsua_acc.c 3457 2011-03-17 04:34:43Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -118,7 +118,8 @@ PJ_DEF(void) pjsua_acc_config_dup( pj_pool_t *pool,
 
     pjsip_auth_clt_pref_dup(pool, &dst->auth_pref, &src->auth_pref);
 
-    dst->ka_interval = src->ka_interval;
+    pjsua_transport_config_dup(pool, &dst->rtp_cfg, &src->rtp_cfg);
+
     pj_strdup(pool, &dst->ka_data, &src->ka_data);
 }
 
@@ -1487,6 +1488,7 @@ static void keep_alive_timer_cb(pj_timer_heap_t *th, pj_timer_entry *te)
 		pjsua_perror(THIS_FILE, "Error starting keep-alive timer", status);
 		}
     }
+
     PJSUA_UNLOCK();
 }
 
@@ -1531,7 +1533,6 @@ static void update_keep_alive(pjsua_acc *acc, pj_bool_t start,
 	 * Note that this applies only for UDP. For TCP/TLS, the keep-alive
 	 * is done by the transport layer.
 	 */
-
 	if (/*pjsua_var.stun_srv.ipv4.sin_family == 0 ||*/
 	    acc->cfg.ka_interval == 0 ||
 	    param->rdata->tp_info.transport->key.type != PJSIP_TRANSPORT_UDP)

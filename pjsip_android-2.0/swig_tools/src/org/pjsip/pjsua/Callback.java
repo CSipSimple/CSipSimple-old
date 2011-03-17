@@ -66,12 +66,12 @@ public class Callback {
     if (getClass() == Callback.class) pjsuaJNI.Callback_on_call_media_state(swigCPtr, this, call_id); else pjsuaJNI.Callback_on_call_media_stateSwigExplicitCallback(swigCPtr, this, call_id);
   }
 
-  public void on_stream_created(int call_id, SWIGTYPE_p_pjmedia_session sess, long stream_idx, SWIGTYPE_p_p_pjmedia_port p_port) {
-    if (getClass() == Callback.class) pjsuaJNI.Callback_on_stream_created(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_session.getCPtr(sess), stream_idx, SWIGTYPE_p_p_pjmedia_port.getCPtr(p_port)); else pjsuaJNI.Callback_on_stream_createdSwigExplicitCallback(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_session.getCPtr(sess), stream_idx, SWIGTYPE_p_p_pjmedia_port.getCPtr(p_port));
+  public void on_stream_created(int call_id, SWIGTYPE_p_pjmedia_stream strm, long stream_idx, SWIGTYPE_p_p_pjmedia_port p_port) {
+    if (getClass() == Callback.class) pjsuaJNI.Callback_on_stream_created(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_stream.getCPtr(strm), stream_idx, SWIGTYPE_p_p_pjmedia_port.getCPtr(p_port)); else pjsuaJNI.Callback_on_stream_createdSwigExplicitCallback(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_stream.getCPtr(strm), stream_idx, SWIGTYPE_p_p_pjmedia_port.getCPtr(p_port));
   }
 
-  public void on_stream_destroyed(int call_id, SWIGTYPE_p_pjmedia_session sess, long stream_idx) {
-    if (getClass() == Callback.class) pjsuaJNI.Callback_on_stream_destroyed(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_session.getCPtr(sess), stream_idx); else pjsuaJNI.Callback_on_stream_destroyedSwigExplicitCallback(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_session.getCPtr(sess), stream_idx);
+  public void on_stream_destroyed(int call_id, SWIGTYPE_p_pjmedia_stream strm, long stream_idx) {
+    if (getClass() == Callback.class) pjsuaJNI.Callback_on_stream_destroyed(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_stream.getCPtr(strm), stream_idx); else pjsuaJNI.Callback_on_stream_destroyedSwigExplicitCallback(swigCPtr, this, call_id, SWIGTYPE_p_pjmedia_stream.getCPtr(strm), stream_idx);
   }
 
   public void on_dtmf_digit(int call_id, int digit) {

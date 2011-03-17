@@ -1,4 +1,4 @@
-/* $Id: avi_player.c 3402 2010-12-30 16:31:16Z ming $ */
+/* $Id: avi_player.c 3425 2011-02-28 18:59:47Z nanang $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -339,6 +339,7 @@ pjmedia_avi_player_create_streams(pj_pool_t *pool,
             /* Check supported video formats here */
             if (avi_hdr.strl_hdr[i].flags & AVISF_VIDEO_PALCHANGES ||
                 (avi_hdr.strl_hdr[i].codec != PJMEDIA_FORMAT_MJPEG &&
+                 avi_hdr.strl_hdr[i].codec != PJMEDIA_FORMAT_XVID &&
                  avi_hdr.strl_hdr[i].codec != PJMEDIA_FORMAT_UYVY &&
                  avi_hdr.strl_hdr[i].codec != PJMEDIA_FORMAT_YUY2 &&
                  avi_hdr.strl_hdr[i].codec != PJMEDIA_FORMAT_IYUV &&

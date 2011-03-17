@@ -1,4 +1,4 @@
-/* $Id: pjmedia.h 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: pjmedia.h 3420 2011-02-24 07:47:55Z nanang $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -59,6 +59,7 @@
 #include <pjmedia/splitcomb.h>
 #include <pjmedia/stereo.h>
 #include <pjmedia/stream.h>
+#include <pjmedia/stream_common.h>
 #include <pjmedia/tonegen.h>
 #include <pjmedia/transport.h>
 #include <pjmedia/transport_adapter_sample.h>
@@ -68,6 +69,7 @@
 #include <pjmedia/transport_udp.h>
 #include <pjmedia/videoport.h>
 #include <pjmedia/vid_codec.h>
+#include <pjmedia/vid_stream.h>
 #include <pjmedia/wav_playlist.h>
 #include <pjmedia/wav_port.h>
 #include <pjmedia/wave.h>

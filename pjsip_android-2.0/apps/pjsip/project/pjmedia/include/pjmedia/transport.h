@@ -1,4 +1,4 @@
-/* $Id: transport.h 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: transport.h 3457 2011-03-17 04:34:43Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -483,6 +483,9 @@ struct pjmedia_transport
 
     /** Transport's "virtual" function table. */
     pjmedia_transport_op    *op;
+
+    /** Application/user data */
+    void		    *user_data;
 };
 
 /**

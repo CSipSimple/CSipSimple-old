@@ -90,11 +90,11 @@ public:
 		pjsip_event *e) {}
 	virtual void on_call_media_state (pjsua_call_id call_id) {}
 	virtual void on_stream_created (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port) {}
 	virtual void on_stream_destroyed (pjsua_call_id call_id,
-		pjmedia_session *sess, 
+		pjmedia_stream *strm, 
 		unsigned stream_idx) {}
 	virtual void on_dtmf_digit (pjsua_call_id call_id, int digit) {}
 	virtual void on_call_transfer_request (pjsua_call_id call_id,
@@ -180,16 +180,16 @@ void on_call_media_state_wrapper (pjsua_call_id call_id) {
  
 
 void on_stream_created_wrapper (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port) {
-	registeredCallbackObject->on_stream_created(call_id, sess, stream_idx, p_port);
+	registeredCallbackObject->on_stream_created(call_id, strm, stream_idx, p_port);
 }
 
 void on_stream_destroyed_wrapper (pjsua_call_id call_id,
-	pjmedia_session *sess, 
+	pjmedia_stream *strm, 
 	unsigned stream_idx) {
-	registeredCallbackObject->on_stream_destroyed(call_id, sess, stream_idx);
+	registeredCallbackObject->on_stream_destroyed(call_id, strm, stream_idx);
 }
 
 void on_dtmf_digit_wrapper (pjsua_call_id call_id, int digit) {
@@ -387,11 +387,11 @@ public:
 		pjsip_event *e);
 	virtual void on_call_media_state (pjsua_call_id call_id);
 	virtual void on_stream_created (pjsua_call_id call_id, 
-		pjmedia_session *sess,
+		pjmedia_stream *strm,
 		unsigned stream_idx, 
 		pjmedia_port **p_port);
 	virtual void on_stream_destroyed (pjsua_call_id call_id,
-		pjmedia_session *sess, 
+		pjmedia_stream *strm, 
 		unsigned stream_idx);
 	virtual void on_dtmf_digit (pjsua_call_id call_id, int digit);
 	virtual void on_call_transfer_request (pjsua_call_id call_id,

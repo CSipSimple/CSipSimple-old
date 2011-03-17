@@ -71,22 +71,22 @@ public class pjsua_callback {
     return (cPtr == 0) ? null : new SWIGTYPE_p_f_int__void(cPtr, false);
   }
 
-  public void setOn_stream_created(SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int_p_p_pjmedia_port__void value) {
-    pjsuaJNI.pjsua_callback_on_stream_created_set(swigCPtr, this, SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int_p_p_pjmedia_port__void.getCPtr(value));
+  public void setOn_stream_created(SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int_p_p_pjmedia_port__void value) {
+    pjsuaJNI.pjsua_callback_on_stream_created_set(swigCPtr, this, SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int_p_p_pjmedia_port__void.getCPtr(value));
   }
 
-  public SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int_p_p_pjmedia_port__void getOn_stream_created() {
+  public SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int_p_p_pjmedia_port__void getOn_stream_created() {
     long cPtr = pjsuaJNI.pjsua_callback_on_stream_created_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int_p_p_pjmedia_port__void(cPtr, false);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int_p_p_pjmedia_port__void(cPtr, false);
   }
 
-  public void setOn_stream_destroyed(SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int__void value) {
-    pjsuaJNI.pjsua_callback_on_stream_destroyed_set(swigCPtr, this, SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int__void.getCPtr(value));
+  public void setOn_stream_destroyed(SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int__void value) {
+    pjsuaJNI.pjsua_callback_on_stream_destroyed_set(swigCPtr, this, SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int__void.getCPtr(value));
   }
 
-  public SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int__void getOn_stream_destroyed() {
+  public SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int__void getOn_stream_destroyed() {
     long cPtr = pjsuaJNI.pjsua_callback_on_stream_destroyed_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_f_int_p_pjmedia_session_unsigned_int__void(cPtr, false);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_f_int_p_pjmedia_stream_unsigned_int__void(cPtr, false);
   }
 
   public void setOn_dtmf_digit(SWIGTYPE_p_f_int_int__void value) {

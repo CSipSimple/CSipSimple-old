@@ -21,8 +21,8 @@ public:
     virtual void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id, pjsip_rx_data *rdata);
     virtual void on_call_tsx_state(pjsua_call_id call_id, pjsip_transaction *tsx, pjsip_event *e);
     virtual void on_call_media_state(pjsua_call_id call_id);
-    virtual void on_stream_created(pjsua_call_id call_id, pjmedia_session *sess, unsigned int stream_idx, pjmedia_port **p_port);
-    virtual void on_stream_destroyed(pjsua_call_id call_id, pjmedia_session *sess, unsigned int stream_idx);
+    virtual void on_stream_created(pjsua_call_id call_id, pjmedia_stream *strm, unsigned int stream_idx, pjmedia_port **p_port);
+    virtual void on_stream_destroyed(pjsua_call_id call_id, pjmedia_stream *strm, unsigned int stream_idx);
     virtual void on_dtmf_digit(pjsua_call_id call_id, int digit);
     virtual void on_call_transfer_request(pjsua_call_id call_id, pj_str_t const *dst, pjsip_status_code *code);
     virtual void on_call_transfer_status(pjsua_call_id call_id, int st_code, pj_str_t const *st_text, pj_bool_t final_, pj_bool_t *p_cont);

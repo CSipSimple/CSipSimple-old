@@ -13,7 +13,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)../pjlib/include/ $(LOCAL_PATH)../pjlib-util/in
 	$(LOCAL_PATH)../third_party/srtp/crypto/include $(LOCAL_PATH)../third_party/build/srtp/ \
 	$(LOCAL_PATH)../third_party/build/speex/  $(LOCAL_PATH)../third_party/speex/include \
 	$(LOCAL_PATH)../third_party/g729/include $(LOCAL_PATH)../third_party/silk/interface/ \
-	$(LOCAL_PATH)../third_party/codec2/src $(LOCAL_PATH)../third_party/ffmpeg
+	$(LOCAL_PATH)../third_party/codec2/src $(LOCAL_PATH)../../../ffmpeg-android/ffmpeg/
 
 LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 PJLIB_SRC_DIR := src/pjmedia
@@ -39,6 +39,7 @@ LOCAL_SRC_FILES := $(PJLIB_SRC_DIR)/alaw_ulaw.c $(PJLIB_SRC_DIR)/alaw_ulaw_table
 	$(PJLIB_SRC_DIR)/session.c $(PJLIB_SRC_DIR)/silencedet.c \
 	$(PJLIB_SRC_DIR)/sound_port.c $(PJLIB_SRC_DIR)/stereo_port.c \
 	$(PJLIB_SRC_DIR)/stream.c $(PJLIB_SRC_DIR)/tonegen.c $(PJLIB_SRC_DIR)/transport_adapter_sample.c \
+	$(PJLIB_SRC_DIR)/stream_common.c $(PJLIB_SRC_DIR)/vid_stream.c \
 	$(PJLIB_SRC_DIR)/transport_ice.c $(PJLIB_SRC_DIR)/transport_loop.c \
 	$(PJLIB_SRC_DIR)/transport_srtp.c $(PJLIB_SRC_DIR)/transport_udp.c \
 	$(PJLIB_SRC_DIR)/vid_codec.c $(PJLIB_SRC_DIR)/videoport.c \
@@ -46,7 +47,7 @@ LOCAL_SRC_FILES := $(PJLIB_SRC_DIR)/alaw_ulaw.c $(PJLIB_SRC_DIR)/alaw_ulaw_table
 	$(PJLIB_SRC_DIR)/wsola.c \
 	$(PJMEDIADEV_SRC_DIR)/audiodev.c $(PJMEDIADEV_SRC_DIR)/audiotest.c $(PJMEDIADEV_SRC_DIR)/errno.c  \
 	$(PJMEDIAVDEV_SRC_DIR)/videodev.c $(PJMEDIAVDEV_SRC_DIR)/ffmpeg_dev.c $(PJMEDIAVDEV_SRC_DIR)/colorbar_dev.c \
-	$(PJMEDIAVDEV_SRC_DIR)/v4l2_dev.c
+	$(PJMEDIAVDEV_SRC_DIR)/v4l2_dev.c 
 
 
 ifeq ($(MY_USE_G729),1)

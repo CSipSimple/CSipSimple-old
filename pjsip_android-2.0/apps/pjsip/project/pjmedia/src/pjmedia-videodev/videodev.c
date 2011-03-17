@@ -1,4 +1,4 @@
-/* $Id: videodev.c 3395 2010-12-14 13:03:10Z ming $ */
+/* $Id: videodev.c 3420 2011-02-24 07:47:55Z nanang $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -372,7 +372,6 @@ pjmedia_vid_register_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
 {
     pj_status_t status;
 
-	PJ_LOG(1,(THIS_FILE,"called %d ", vid_subsys.init_count));
     if (vid_subsys.init_count == 0)
 	return PJMEDIA_EVID_INIT;
 
@@ -381,7 +380,6 @@ pjmedia_vid_register_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
     if (status == PJ_SUCCESS) {
 	vid_subsys.drv_cnt++;
     } else {
-    	PJ_LOG(1,(THIS_FILE,"ARG!!"));
 	deinit_driver(vid_subsys.drv_cnt);
     }
 
@@ -426,8 +424,8 @@ PJ_DEF(pj_status_t) pjmedia_vid_subsys_shutdown(void)
 {
     unsigned i;
 
-    /* Allow shutdown() to be called multiple times as long as there is matching
-     * number of init().
+    /* Allow shutdown() to be called multiple times as long as there is
+     * matching number of init().
      */
     if (vid_subsys.init_count == 0) {
 	return PJ_SUCCESS;
@@ -548,7 +546,8 @@ PJ_DEF(pj_status_t) pjmedia_vid_dev_lookup( const char *drv_name,
     PJ_ASSERT_RETURN(vid_subsys.pf, PJMEDIA_EVID_INIT);
 
     for (drv_idx=0; drv_idx<vid_subsys.drv_cnt; ++drv_idx) {
-	if (!pj_ansi_stricmp(drv_name, vid_subsys.drv[drv_idx].name)) {
+	if (!pj_ansi_stricmp(drv_name, vid_subsys.drv[drv_idx].name))
+	{
 	    f = vid_subsys.drv[drv_idx].f;
 	    break;
 	}
@@ -557,7 +556,8 @@ PJ_DEF(pj_status_t) pjmedia_vid_dev_lookup( const char *drv_name,
     if (!f)
 	return PJ_ENOTFOUND;
 
-    for (dev_idx=0; dev_idx<vid_subsys.drv[drv_idx].dev_cnt; ++dev_idx) {
+    for (dev_idx=0; dev_idx<vid_subsys.drv[drv_idx].dev_cnt; ++dev_idx)
+    {
 	pjmedia_vid_dev_info info;
 	pj_status_t status;
 
@@ -608,10 +608,11 @@ PJ_DEF(pj_status_t) pjmedia_vid_dev_default_param(pj_pool_t *pool,
 }
 
 /* API: Open video stream object using the specified parameters. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_create(const pjmedia_vid_param *prm,
-                                              const pjmedia_vid_cb *cb,
-					      void *user_data,
-					      pjmedia_vid_stream **p_vid_strm)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_create(
+					const pjmedia_vid_param *prm,
+					const pjmedia_vid_cb *cb,
+					void *user_data,
+					pjmedia_vid_dev_stream **p_vid_strm)
 {
     pjmedia_vid_dev_factory *cap_f=NULL, *rend_f=NULL, *f=NULL;
     pjmedia_vid_param param;
@@ -676,8 +677,9 @@ PJ_DEF(pj_status_t) pjmedia_vid_stream_create(const pjmedia_vid_param *prm,
 }
 
 /* API: Get the running parameters for the specified video stream. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_get_param(pjmedia_vid_stream *strm,
-						 pjmedia_vid_param *param)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_get_param(
+					    pjmedia_vid_dev_stream *strm,
+					    pjmedia_vid_param *param)
 {
     pj_status_t status;
 
@@ -696,49 +698,54 @@ PJ_DEF(pj_status_t) pjmedia_vid_stream_get_param(pjmedia_vid_stream *strm,
 }
 
 /* API: Get the value of a specific capability of the video stream. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_get_cap(pjmedia_vid_stream *strm,
-					       pjmedia_vid_dev_cap cap,
-					       void *value)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_get_cap(
+					    pjmedia_vid_dev_stream *strm,
+					    pjmedia_vid_dev_cap cap,
+					    void *value)
 {
     return strm->op->get_cap(strm, cap, value);
 }
 
 /* API: Set the value of a specific capability of the video stream. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_set_cap(pjmedia_vid_stream *strm,
-					       pjmedia_vid_dev_cap cap,
-					       const void *value)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_set_cap(
+					    pjmedia_vid_dev_stream *strm,
+					    pjmedia_vid_dev_cap cap,
+					    const void *value)
 {
     return strm->op->set_cap(strm, cap, value);
 }
 
 /* API: Start the stream. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_start(pjmedia_vid_stream *strm)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_start(pjmedia_vid_dev_stream *strm)
 {
     return strm->op->start(strm);
 }
 
-PJ_DEF(pj_status_t) pjmedia_vid_stream_get_frame(pjmedia_vid_stream *strm,
-                                                 pjmedia_frame *frame)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_get_frame(
+					    pjmedia_vid_dev_stream *strm,
+					    pjmedia_frame *frame)
 {
     pj_assert(strm->op->get_frame);
     return strm->op->get_frame(strm, frame);
 }
 
-PJ_DEF(pj_status_t) pjmedia_vid_stream_put_frame(pjmedia_vid_stream *strm,
-                                                 const pjmedia_frame *frame)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_put_frame(
+					    pjmedia_vid_dev_stream *strm,
+                                            const pjmedia_frame *frame)
 {
     pj_assert(strm->op->put_frame);
     return strm->op->put_frame(strm, frame);
 }
 
 /* API: Stop the stream. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_stop(pjmedia_vid_stream *strm)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_stop(pjmedia_vid_dev_stream *strm)
 {
     return strm->op->stop(strm);
 }
 
 /* API: Destroy the stream. */
-PJ_DEF(pj_status_t) pjmedia_vid_stream_destroy(pjmedia_vid_stream *strm)
+PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_destroy(
+						pjmedia_vid_dev_stream *strm)
 {
     return strm->op->destroy(strm);
 }

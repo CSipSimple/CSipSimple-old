@@ -1,4 +1,4 @@
-/* $Id: sdp_cmp.c 3198 2010-06-04 13:41:34Z nanang $ */
+/* $Id: sdp_cmp.c 3419 2011-02-24 07:16:31Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -295,3 +295,10 @@ PJ_DEF(pj_status_t) pjmedia_sdp_session_cmp( const pjmedia_sdp_session *sd1,
 }
 
 
+PJ_DEF(pj_status_t) pjmedia_sdp_conn_cmp(const pjmedia_sdp_conn *conn1, 
+					 const pjmedia_sdp_conn *conn2,
+					 unsigned option)
+{
+    PJ_UNUSED_ARG(option);
+    return compare_conn(conn1, conn2);
+}

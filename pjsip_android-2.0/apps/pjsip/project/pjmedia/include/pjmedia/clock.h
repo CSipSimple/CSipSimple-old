@@ -1,4 +1,4 @@
-/* $Id: clock.h 3402 2010-12-30 16:31:16Z ming $ */
+/* $Id: clock.h 3431 2011-03-01 15:55:34Z ming $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -181,6 +181,19 @@ enum pjmedia_clock_options
 };
 
 
+typedef struct pjmedia_clock_param
+{
+    /**
+     * The frame interval, in microseconds.
+     */
+    unsigned usec_interval;
+    /**
+     * The media clock rate, to determine timestamp
+     * increment for each call.
+     */
+    unsigned clock_rate;
+} pjmedia_clock_param;
+
 /**
  * Type of media clock callback.
  *
@@ -231,9 +244,7 @@ PJ_DECL(pj_status_t) pjmedia_clock_create( pj_pool_t *pool,
  * call #pjmedia_clock_start() to actually start the clock.
  *
  * @param pool		    Pool to allocate memory.
- * @param usec_interval	    The frame interval, in microseconds.
- * @param clock_rate	    The media clock rate, to determine timestamp
- * 			    increment for each call.
+ * @param param	            The clock parameter.
  * @param options	    Bitmask of pjmedia_clock_options.
  * @param cb		    Callback to be called for each clock tick.
  * @param user_data	    User data, which will be passed to the callback.
@@ -243,8 +254,7 @@ PJ_DECL(pj_status_t) pjmedia_clock_create( pj_pool_t *pool,
  *			    code.
  */
 PJ_DECL(pj_status_t) pjmedia_clock_create2(pj_pool_t *pool,
-					   unsigned usec_interval,
-					   unsigned clock_rate,
+                                           const pjmedia_clock_param *param,
 					   unsigned options,
 					   pjmedia_clock_callback *cb,
 					   void *user_data,
@@ -271,6 +281,16 @@ PJ_DECL(pj_status_t) pjmedia_clock_start(pjmedia_clock *clock);
  */
 PJ_DECL(pj_status_t) pjmedia_clock_stop(pjmedia_clock *clock);
 
+
+/**
+ * Modify the clock's parameter.
+ *
+ * @param clock		    The media clock.
+ * @param param	            The clock's new parameter.
+ * @return		    PJ_SUCCES on success.
+ */
+PJ_DECL(pj_status_t) pjmedia_clock_modify(pjmedia_clock *clock,
+                                          const pjmedia_clock_param *param);
 
 
 /**
