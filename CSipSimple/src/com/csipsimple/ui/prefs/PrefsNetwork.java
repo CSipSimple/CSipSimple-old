@@ -76,7 +76,7 @@ public class PrefsNetwork extends GenericPrefs {
 		boolean canUseTLS = false;
 		try{
 			canUseTLS = (pjsua.can_use_tls() == pjsuaConstants.PJ_TRUE);
-		}catch (Exception e) {
+		}catch (ExceptionInInitializerError e) {
 			Log.e(THIS_FILE, "Unable to get pjsua tls state");
 		}
 		if(!canUseTLS) {

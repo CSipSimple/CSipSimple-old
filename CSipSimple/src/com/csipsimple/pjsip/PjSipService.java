@@ -113,6 +113,10 @@ public class PjSipService {
 		if (stackFile != null && !sipStackIsCorrupted) {
 			try {
 				// Try to load the stack
+				System.loadLibrary("avcodec");
+				System.loadLibrary("avcore");
+				System.loadLibrary("avutil");
+				System.loadLibrary("avformat");
 				System.load(stackFile.getAbsolutePath());
 				hasSipStack = true;
 				return true;
@@ -342,7 +346,7 @@ public class PjSipService {
 								Log.d(THIS_FILE, "Activate qos for voice packets");
 								cfg.setQos_type(pj_qos_type.PJ_QOS_TYPE_VOICE);
 							}
-	
+	/*
 							if (prefsWrapper.useIPv6()) {
 								status = pjsua.media_transports_create_ipv6(cfg);
 							} else {
@@ -358,6 +362,7 @@ public class PjSipService {
 								created = false;
 								return false;
 							}
+							*/
 						}
 					}
 	

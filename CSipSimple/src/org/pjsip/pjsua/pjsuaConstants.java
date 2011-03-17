@@ -17,6 +17,7 @@ public interface pjsuaConstants {
   public final static int PJMEDIA_TONEGEN_NO_LOCK = pjsuaJNI.PJMEDIA_TONEGEN_NO_LOCK_get();
 
   public final static int PJSUA_INVALID_ID = pjsuaJNI.PJSUA_INVALID_ID_get();
+  public final static int DISABLED_FOR_TICKET_1185 = pjsuaJNI.DISABLED_FOR_TICKET_1185_get();
   public final static int PJSUA_ACC_MAX_PROXIES = pjsuaJNI.PJSUA_ACC_MAX_PROXIES_get();
   public final static int PJSUA_DEFAULT_SRTP_SECURE_SIGNALING = pjsuaJNI.PJSUA_DEFAULT_SRTP_SECURE_SIGNALING_get();
   public final static int PJSUA_ADD_ICE_TAGS = pjsuaJNI.PJSUA_ADD_ICE_TAGS_get();

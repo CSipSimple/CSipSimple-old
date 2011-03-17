@@ -269,6 +269,7 @@ public class pjsuaJNI {
   public final static native long new_pj_time_val();
   public final static native void delete_pj_time_val(long jarg1);
   public final static native int PJSUA_INVALID_ID_get();
+  public final static native int DISABLED_FOR_TICKET_1185_get();
   public final static native int PJSUA_ACC_MAX_PROXIES_get();
   public final static native int PJSUA_DEFAULT_SRTP_SECURE_SIGNALING_get();
   public final static native int PJSUA_ADD_ICE_TAGS_get();
@@ -430,6 +431,7 @@ public class pjsuaJNI {
   public final static native void msg_data_init(long jarg1);
   public final static native int create();
   public final static native int start();
+  public final static native int get_state();
   public final static native int handle_events(long jarg1);
   public final static native long pool_create(String jarg1, long jarg2, long jarg3);
   public final static native int reconfigure_logging(long jarg1, pjsua_logging_config jarg1_);
@@ -570,6 +572,12 @@ public class pjsuaJNI {
   public final static native long pjsua_acc_config_ka_interval_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_ka_data_set(long jarg1, pjsua_acc_config jarg1_, long jarg2, pj_str_t jarg2_);
   public final static native long pjsua_acc_config_ka_data_get(long jarg1, pjsua_acc_config jarg1_);
+  public final static native void pjsua_acc_config_max_audio_cnt_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
+  public final static native long pjsua_acc_config_max_audio_cnt_get(long jarg1, pjsua_acc_config jarg1_);
+  public final static native void pjsua_acc_config_max_video_cnt_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
+  public final static native long pjsua_acc_config_max_video_cnt_get(long jarg1, pjsua_acc_config jarg1_);
+  public final static native void pjsua_acc_config_rtp_cfg_set(long jarg1, pjsua_acc_config jarg1_, long jarg2, pjsua_transport_config jarg2_);
+  public final static native long pjsua_acc_config_rtp_cfg_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_use_srtp_set(long jarg1, pjsua_acc_config jarg1_, int jarg2);
   public final static native int pjsua_acc_config_use_srtp_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_srtp_secure_signaling_set(long jarg1, pjsua_acc_config jarg1_, int jarg2);
@@ -665,6 +673,8 @@ public class pjsuaJNI {
   public final static native long pjsua_call_info_last_status_text_get(long jarg1, pjsua_call_info jarg1_);
   public final static native void pjsua_call_info_media_status_set(long jarg1, pjsua_call_info jarg1_, int jarg2);
   public final static native int pjsua_call_info_media_status_get(long jarg1, pjsua_call_info jarg1_);
+  public final static native void pjsua_call_info_audio_cnt_set(long jarg1, pjsua_call_info jarg1_, long jarg2);
+  public final static native long pjsua_call_info_audio_cnt_get(long jarg1, pjsua_call_info jarg1_);
   public final static native void pjsua_call_info_media_dir_set(long jarg1, pjsua_call_info jarg1_, int jarg2);
   public final static native int pjsua_call_info_media_dir_get(long jarg1, pjsua_call_info jarg1_);
   public final static native void pjsua_call_info_conf_slot_set(long jarg1, pjsua_call_info jarg1_, int jarg2);
@@ -681,8 +691,6 @@ public class pjsuaJNI {
   public final static native int call_make_call(int jarg1, long jarg2, pj_str_t jarg2_, long jarg3, byte[] jarg4, long jarg5, int[] jarg6);
   public final static native int call_is_active(int jarg1);
   public final static native int call_has_media(int jarg1);
-  public final static native long call_get_media_session(int jarg1);
-  public final static native long call_get_media_transport(int jarg1);
   public final static native int call_get_conf_port(int jarg1);
   public final static native int call_get_info(int jarg1, long jarg2, pjsua_call_info jarg2_);
   public final static native long call_remote_has_cap(int jarg1, int jarg2, long jarg3, pj_str_t jarg3_, long jarg4, pj_str_t jarg4_);
@@ -898,7 +906,6 @@ public class pjsuaJNI {
   public final static native int codec_set_priority(long jarg1, pj_str_t jarg1_, short jarg2);
   public final static native int codec_get_param(long jarg1, pj_str_t jarg1_, long jarg2);
   public final static native int codec_set_param(long jarg1, pj_str_t jarg1_, long jarg2);
-  public final static native int media_transports_create(long jarg1, pjsua_transport_config jarg1_);
   public final static native int codecs_get_nbr();
   public final static native long codecs_get_id(int jarg1);
   public final static native int test_audio_dev(long jarg1, long jarg2);
@@ -929,11 +936,11 @@ public class pjsuaJNI {
   public static void SwigDirector_Callback_on_call_media_state(Callback self, int call_id) {
     self.on_call_media_state(call_id);
   }
-  public static void SwigDirector_Callback_on_stream_created(Callback self, int call_id, long sess, long stream_idx, long p_port) {
-    self.on_stream_created(call_id, (sess == 0) ? null : new SWIGTYPE_p_pjmedia_session(sess, false), stream_idx, (p_port == 0) ? null : new SWIGTYPE_p_p_pjmedia_port(p_port, false));
+  public static void SwigDirector_Callback_on_stream_created(Callback self, int call_id, long strm, long stream_idx, long p_port) {
+    self.on_stream_created(call_id, (strm == 0) ? null : new SWIGTYPE_p_pjmedia_stream(strm, false), stream_idx, (p_port == 0) ? null : new SWIGTYPE_p_p_pjmedia_port(p_port, false));
   }
-  public static void SwigDirector_Callback_on_stream_destroyed(Callback self, int call_id, long sess, long stream_idx) {
-    self.on_stream_destroyed(call_id, (sess == 0) ? null : new SWIGTYPE_p_pjmedia_session(sess, false), stream_idx);
+  public static void SwigDirector_Callback_on_stream_destroyed(Callback self, int call_id, long strm, long stream_idx) {
+    self.on_stream_destroyed(call_id, (strm == 0) ? null : new SWIGTYPE_p_pjmedia_stream(strm, false), stream_idx);
   }
   public static void SwigDirector_Callback_on_dtmf_digit(Callback self, int call_id, int digit) {
     self.on_dtmf_digit(call_id, digit);

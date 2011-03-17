@@ -207,19 +207,6 @@ public class UAStateReceiver extends Callback {
 		unlockCpu();
 	}
 
-	@Override
-	public void on_stream_created(int call_id, SWIGTYPE_p_pjmedia_session sess, long stream_idx, SWIGTYPE_p_p_pjmedia_port p_port) {
-		lockCpu();
-		Log.d(THIS_FILE, "Stream created");
-		unlockCpu();
-	}
-	
-	@Override
-	public void on_stream_destroyed(int callId, SWIGTYPE_p_pjmedia_session sess, long streamIdx) {
-		lockCpu();
-		Log.d(THIS_FILE, "Stream destroyed");
-		unlockCpu();
-	}
 
 	@Override
 	public void on_call_media_state(int callId) {

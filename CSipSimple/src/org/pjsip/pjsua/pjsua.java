@@ -66,6 +66,10 @@ public class pjsua implements pjsuaConstants {
     return pjsuaJNI.start();
   }
 
+  public synchronized static pjsua_state get_state() {
+    return pjsua_state.swigToEnum(pjsuaJNI.get_state());
+  }
+
   public synchronized static int handle_events(long msec_timeout) {
     return pjsuaJNI.handle_events(msec_timeout);
   }
@@ -284,16 +288,6 @@ public class pjsua implements pjsuaConstants {
 
   public synchronized static int call_has_media(int call_id) {
     return pjsuaJNI.call_has_media(call_id);
-  }
-
-  public synchronized static SWIGTYPE_p_pjmedia_session call_get_media_session(int call_id) {
-    long cPtr = pjsuaJNI.call_get_media_session(call_id);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_session(cPtr, false);
-  }
-
-  public synchronized static SWIGTYPE_p_pjmedia_transport call_get_media_transport(int cid) {
-    long cPtr = pjsuaJNI.call_get_media_transport(cid);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_transport(cPtr, false);
   }
 
   public synchronized static int call_get_conf_port(int call_id) {
@@ -591,10 +585,6 @@ public class pjsua implements pjsuaConstants {
 
   public synchronized static int codec_set_param(pj_str_t codec_id, SWIGTYPE_p_pjmedia_codec_param param) {
     return pjsuaJNI.codec_set_param(pj_str_t.getCPtr(codec_id), codec_id, SWIGTYPE_p_pjmedia_codec_param.getCPtr(param));
-  }
-
-  public synchronized static int media_transports_create(pjsua_transport_config cfg) {
-    return pjsuaJNI.media_transports_create(pjsua_transport_config.getCPtr(cfg), cfg);
   }
 
   public static int codecs_get_nbr() {
