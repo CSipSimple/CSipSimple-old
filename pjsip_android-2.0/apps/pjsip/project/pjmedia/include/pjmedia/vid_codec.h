@@ -1,4 +1,4 @@
-/* $Id: vid_codec.h 3425 2011-02-28 18:59:47Z nanang $ */
+/* $Id: vid_codec.h 3461 2011-03-17 11:33:34Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -58,6 +58,7 @@ typedef struct pjmedia_vid_codec_info
 					     zero (support any frame-rate)  */
     pjmedia_ratio       fps[PJMEDIA_VID_CODEC_MAX_FPS_CNT];
                                         /**< Supported frame-rates	    */
+    pj_bool_t		has_rtp_pack;	/**< Support RTP packetization      */
 } pjmedia_vid_codec_info;
 
 

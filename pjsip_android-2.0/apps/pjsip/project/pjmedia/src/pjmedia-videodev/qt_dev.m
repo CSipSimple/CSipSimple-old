@@ -1,4 +1,4 @@
-/* $Id: qt_dev.m 3395 2010-12-14 13:03:10Z ming $ */
+/* $Id: qt_dev.m 3459 2011-03-17 11:25:19Z bennylp $ */
 /*
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -76,6 +76,9 @@ struct qt_stream
     pjmedia_vid_param	 param;		    /**< Settings	       */
     pj_pool_t           *pool;              /**< Memory pool.          */
 
+    pj_timestamp	 cap_frame_ts;	    /**< Captured frame tstamp */
+    unsigned		 cap_ts_inc;	    /**< Increment	       */
+    
     pjmedia_vid_cb       vid_cb;            /**< Stream callback.      */
     void                *user_data;         /**< Application data.     */
 
@@ -321,9 +324,13 @@ static pj_status_t qt_factory_default_param(pj_pool_t *pool,
     frame.buf = [sampleBuffer bytesForAllSamples];
     frame.size = size;
     frame.bit_info = 0;
+    frame.timestamp.u64 = stream->cap_frame_ts.u64;
+    
     if (stream->vid_cb.capture_cb)
         (*stream->vid_cb.capture_cb)(&stream->base, stream->user_data,
 				     &frame);
+    
+    stream->cap_frame_ts.u64 += stream->cap_ts_inc;
 }
 @end
 
@@ -379,7 +386,7 @@ static pj_status_t qt_factory_create_stream(pjmedia_vid_dev_factory *f,
     
     /* Create capture stream here */
     if (param->dir & PJMEDIA_DIR_CAPTURE) {
-	pjmedia_video_format_detail *vfd;
+	const pjmedia_video_format_detail *vfd;
 	qt_fmt_info *qfi = get_qt_format_info(param->fmt.id);
 	
 	if (!qfi) {
@@ -437,6 +444,8 @@ static pj_status_t qt_factory_create_stream(pjmedia_vid_dev_factory *f,
 					  kCVPixelBufferHeightKey, nil]];
 
 	pj_assert(vfd->fps.num);
+	strm->cap_ts_inc = PJMEDIA_SPF2(&strm->param.clock_rate, &vfd->fps, 1);
+	
 	[strm->video_output setMinimumVideoFrameInterval:
 			    (1.0f * vfd->fps.denum / (double)vfd->fps.num)];
 	

@@ -1,4 +1,4 @@
-/* $Id: videoport.c 3431 2011-03-01 15:55:34Z ming $ */
+/* $Id: videoport.c 3459 2011-03-17 11:25:19Z bennylp $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -100,6 +100,7 @@ static pj_status_t vid_pasv_port_get_frame(struct pjmedia_port *this_port,
 PJ_DEF(void) pjmedia_vid_port_param_default(pjmedia_vid_port_param *prm)
 {
     pj_bzero(prm, sizeof(*prm));
+    prm->active = PJ_TRUE;
 }
 
 PJ_DEF(pj_status_t) pjmedia_vid_port_create( pj_pool_t *pool,

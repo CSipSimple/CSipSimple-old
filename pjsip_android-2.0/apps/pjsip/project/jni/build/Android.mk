@@ -20,6 +20,7 @@ JNI_SRC_DIR := src/
 LOCAL_SRC_FILES := $(JNI_SRC_DIR)/pjsua_wrap.cpp $(JNI_SRC_DIR)/pjsua_jni_addons.c $(JNI_SRC_DIR)/zrtp_android.c
 
 
+LOCAL_LDLIBS := -llog
 
 	
 ifeq ($(MY_ANDROID_DEV),1)
@@ -30,17 +31,17 @@ LOCAL_SRC_FILES += $(JNI_SRC_DIR)/opensl_dev.cpp
 endif
 
 ifeq ($(MY_USE_VIDEO),1)
-#LOCAL_SRC_FILES += $(JNI_SRC_DIR)/android_video_dev.c
+LOCAL_SRC_FILES += $(JNI_SRC_DIR)/opengl_video_dev.c
+LOCAL_LDLIBS += -lGLESv1_CM
 endif
 
-LOCAL_LDLIBS := -llog
 
 ifeq ($(MY_USE_TLS),1)
 LOCAL_LDLIBS += -ldl 
 endif
 
 ifeq ($(MY_ANDROID_DEV),2)
-LOCAL_LDLIBS += -lOpenSLES
+LOCAL_LDLIBS += -lOpenSLES 
 endif
 
 

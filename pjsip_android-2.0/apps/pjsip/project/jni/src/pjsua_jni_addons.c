@@ -31,8 +31,8 @@
 #include "opensl_dev.h"
 #endif
 
-
-#include "android_video_dev.h"
+//todo : #if
+#include "opengl_video_dev.h"
 
 #define THIS_FILE		"pjsua_jni_addons.c"
 
@@ -180,6 +180,154 @@ PJ_DECL(pj_status_t) test_audio_dev(unsigned int clock_rate, unsigned int ptime)
 	}
 
 	return status;
+}
+
+PJ_DECL(pj_status_t) test_video_dev( ) {
+	pjmedia_vid_port *capture=NULL, *renderer=NULL;
+	    pjmedia_vid_port_param param;
+	    pjmedia_video_format_detail *vfd;
+	    pjmedia_vid_cb cb;
+	    pj_status_t status;
+	    int rc = 0, i;
+
+
+	    PJ_LOG(3, (THIS_FILE, "  loopback test"));
+
+	    pjmedia_vid_port_param_default(&param);
+
+	    /* Create capture, set it to active (master) */
+	    status = pjmedia_vid_dev_default_param(pjsua_var.pool,
+	                                           PJMEDIA_VID_DEFAULT_CAPTURE_DEV,
+						   &param.vidparam);
+	    if (status != PJ_SUCCESS) {
+		rc = 100; goto on_return;
+	    }
+	    param.vidparam.dir = PJMEDIA_DIR_CAPTURE;
+	    param.active = PJ_TRUE;
+
+	    if (param.vidparam.fmt.detail_type != PJMEDIA_FORMAT_DETAIL_VIDEO) {
+		rc = 103; goto on_return;
+	    }
+
+	    vfd = pjmedia_format_get_video_format_detail(&param.vidparam.fmt, PJ_TRUE);
+	    if (vfd == NULL) {
+		rc = 105; goto on_return;
+	    }
+
+	    status = pjmedia_vid_port_create(pjsua_var.pool, &param, &capture);
+	    if (status != PJ_SUCCESS) {
+		rc = 110; goto on_return;
+	    }
+
+	    /* Create renderer, set it to passive (slave)  */
+	    param.active = PJ_FALSE;
+	    param.vidparam.dir = PJMEDIA_DIR_RENDER;
+	    param.vidparam.rend_id = PJMEDIA_VID_DEFAULT_RENDER_DEV;
+	    param.vidparam.disp_size = vfd->size;
+
+	    status = pjmedia_vid_port_create(pjsua_var.pool, &param, &renderer);
+	    if (status != PJ_SUCCESS) {
+		rc = 130; goto on_return;
+	    }
+/*
+	    pj_bzero(&cb, sizeof(cb));
+	    cb.on_event_cb = vid_event_cb;
+	    pjmedia_vid_port_set_cb(renderer, &cb, NULL);
+*/
+	    /* Connect capture to renderer */
+	    status = pjmedia_vid_port_connect(
+	                 capture,
+			 pjmedia_vid_port_get_passive_port(renderer),
+			 PJ_FALSE);
+	    if (status != PJ_SUCCESS) {
+		rc = 140; goto on_return;
+	    }
+
+	    /* Start streaming.. */
+	    status = pjmedia_vid_port_start(renderer);
+	    if (status != PJ_SUCCESS) {
+		rc = 150; goto on_return;
+	    }
+	    status = pjmedia_vid_port_start(capture);
+	    if (status != PJ_SUCCESS) {
+		rc = 160; goto on_return;
+	    }
+
+	    /* Sleep while the webcam is being displayed... */
+	    for (i = 0; i < 15; i++) {
+	        pj_thread_sleep(100);
+	    }
+
+	    /**
+	     * Test the renderer's format capability if the device
+	     * supports it.
+	     */
+	    /*
+	    if (pjmedia_vid_dev_stream_get_cap(pjmedia_vid_port_get_stream(renderer),
+	                                       PJMEDIA_VID_DEV_CAP_FORMAT,
+	                                       &param.vidparam.fmt) == PJ_SUCCESS)
+	    {
+	        status = pjmedia_vid_port_stop(capture);
+	        if (status != PJ_SUCCESS) {
+	            rc = 170; goto on_return;
+	        }
+	        status = pjmedia_vid_port_disconnect(capture);
+	        if (status != PJ_SUCCESS) {
+	            rc = 180; goto on_return;
+	        }
+	        pjmedia_vid_port_destroy(capture);
+
+	        param.vidparam.dir = PJMEDIA_DIR_CAPTURE;
+	        param.active = PJ_TRUE;
+	        pjmedia_format_init_video(&param.vidparam.fmt, param.vidparam.fmt.id,
+	                                  640, 480,
+	                                  vfd->fps.num, vfd->fps.denum);
+	        vfd = pjmedia_format_get_video_format_detail(&param.vidparam.fmt,
+	                                                     PJ_TRUE);
+	        if (vfd == NULL) {
+	            rc = 185; goto on_return;
+	        }
+
+	        status = pjmedia_vid_port_create(pjsua_var.pool, &param, &capture);
+	        if (status != PJ_SUCCESS) {
+	            rc = 190; goto on_return;
+	        }
+
+	        status = pjmedia_vid_port_connect(
+	                     capture,
+	                     pjmedia_vid_port_get_passive_port(renderer),
+	                     PJ_FALSE);
+	        if (status != PJ_SUCCESS) {
+	            rc = 200; goto on_return;
+	        }
+
+	        status = pjmedia_vid_dev_stream_set_cap(
+	                     pjmedia_vid_port_get_stream(renderer),
+	                     PJMEDIA_VID_DEV_CAP_FORMAT,
+	                     &param.vidparam.fmt);
+	        if (status != PJ_SUCCESS) {
+	            rc = 205; goto on_return;
+	        }
+
+	        status = pjmedia_vid_port_start(capture);
+	        if (status != PJ_SUCCESS) {
+	            rc = 210; goto on_return;
+	        }
+	    }
+	    */
+
+	    for (i = 0; i < 35; i++) {
+	        pj_thread_sleep(100);
+	    }
+
+	on_return:
+	    PJ_PERROR(3, (THIS_FILE, status, "  error"));
+	    if (capture)
+		pjmedia_vid_port_destroy(capture);
+	    if (renderer)
+		pjmedia_vid_port_destroy(renderer);
+
+	    return rc;
 }
 
 /**
@@ -403,7 +551,8 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 #endif
 #endif
 
-//		pjmedia_vid_register_factory(&pjmedia_android_video_dev_factory);
+		//TODO : PJ_VID?
+		pjmedia_vid_register_factory(&pjmedia_ogl_factory);
 		PJ_LOG(4,(THIS_FILE, "Video dev registered" ));
 
 	    // Registering module for tcp hack

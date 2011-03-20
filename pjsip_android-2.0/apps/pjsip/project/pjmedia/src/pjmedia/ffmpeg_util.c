@@ -1,4 +1,4 @@
-/* $Id: ffmpeg_util.c 3425 2011-02-28 18:59:47Z nanang $ */
+/* $Id: ffmpeg_util.c 3461 2011-03-17 11:33:34Z bennylp $ */
 /*
  * Copyright (C) 2010-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -20,7 +20,7 @@
 #include <pj/errno.h>
 
 #if PJMEDIA_HAS_LIBAVFORMAT && PJMEDIA_HAS_LIBAVUTIL
-#warning ici
+
 #include "ffmpeg_util.h"
 #include <libavformat/avformat.h>
 
@@ -54,6 +54,7 @@ static const struct ffmpeg_codec_table_t
     {PJMEDIA_FORMAT_H261,	CODEC_ID_H261},
     {PJMEDIA_FORMAT_H263,	CODEC_ID_H263},
     {PJMEDIA_FORMAT_H263P,	CODEC_ID_H263P},
+    {PJMEDIA_FORMAT_H264,	CODEC_ID_H264},
     {PJMEDIA_FORMAT_MPEG1VIDEO,	CODEC_ID_MPEG1VIDEO},
     {PJMEDIA_FORMAT_MPEG2VIDEO, CODEC_ID_MPEG2VIDEO},
     {PJMEDIA_FORMAT_MPEG4,	CODEC_ID_MPEG4},

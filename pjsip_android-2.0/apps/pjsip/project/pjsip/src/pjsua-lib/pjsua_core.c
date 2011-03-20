@@ -175,6 +175,7 @@ PJ_DEF(void) pjsua_acc_config_default(pjsua_acc_config *cfg)
     cfg->ka_interval = 15;
     cfg->ka_data = pj_str("\r\n");
     cfg->max_audio_cnt = 1;
+    cfg->max_video_cnt = 1;
     pjsua_transport_config_default(&cfg->rtp_cfg);
     cfg->use_srtp = pjsua_var.ua_cfg.use_srtp;
     cfg->srtp_secure_signaling = pjsua_var.ua_cfg.srtp_secure_signaling;

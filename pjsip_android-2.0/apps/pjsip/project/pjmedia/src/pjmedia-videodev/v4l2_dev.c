@@ -1,4 +1,4 @@
-/* $Id: v4l2_dev.c 3447 2011-03-15 11:22:04Z bennylp $ */
+/* $Id: v4l2_dev.c 3459 2011-03-17 11:25:19Z bennylp $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -676,8 +676,8 @@ static pj_status_t vid4lin_stream_get_frame_mmap(vid4lin_stream *stream,
 
     frame->type = PJMEDIA_FRAME_TYPE_VIDEO;
     frame->size = buf.bytesused;
-    frame->timestamp.u64 = PJ_TIME_VAL_MSEC(time) * stream->param.clock_rate
-			   / PJ_UINT64(1000);
+    frame->timestamp.u64 = PJ_UINT64(1) * PJ_TIME_VAL_MSEC(time) *
+			   stream->param.clock_rate / PJ_UINT64(1000);
     pj_memcpy(frame->buf, stream->buffers[buf.index].start, buf.bytesused);
 
 on_return:

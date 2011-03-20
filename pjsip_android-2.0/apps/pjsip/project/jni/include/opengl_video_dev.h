@@ -22,11 +22,15 @@
 #include <pjmedia-videodev/videodev_imp.h>
 
 
+
 /*
  * C compatible declaration of Android factory.
  */
 PJ_BEGIN_DECL
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_android_video_dev_factory(pj_pool_factory *pf);
+PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_factory(pj_pool_factory *pf);
+
+PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_init(int width, int height);
+PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_draw();
 PJ_END_DECL
 
 
