@@ -599,6 +599,10 @@ public class pjsua implements pjsuaConstants {
     return pjsuaJNI.test_audio_dev(clock_rate, ptime);
   }
 
+  public static int test_video_dev() {
+    return pjsuaJNI.test_video_dev();
+  }
+
   public static int send_dtmf_info(int current_call, pj_str_t digits) {
     return pjsuaJNI.send_dtmf_info(current_call, pj_str_t.getCPtr(digits), digits);
   }
@@ -645,6 +649,21 @@ public class pjsua implements pjsuaConstants {
 
   public static void jzrtp_SASVerified() {
     pjsuaJNI.jzrtp_SASVerified();
+  }
+
+  public static SWIGTYPE_p_pjmedia_vid_dev_factory pjmedia_ogl_factory(SWIGTYPE_p_pj_pool_factory pf) {
+    long cPtr = pjsuaJNI.pjmedia_ogl_factory(SWIGTYPE_p_pj_pool_factory.getCPtr(pf));
+    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_vid_dev_factory(cPtr, false);
+  }
+
+  public static SWIGTYPE_p_pjmedia_vid_dev_factory pjmedia_ogl_surface_init(int width, int height) {
+    long cPtr = pjsuaJNI.pjmedia_ogl_surface_init(width, height);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_vid_dev_factory(cPtr, false);
+  }
+
+  public static SWIGTYPE_p_pjmedia_vid_dev_factory pjmedia_ogl_surface_draw() {
+    long cPtr = pjsuaJNI.pjmedia_ogl_surface_draw();
+    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_vid_dev_factory(cPtr, false);
   }
 
 }

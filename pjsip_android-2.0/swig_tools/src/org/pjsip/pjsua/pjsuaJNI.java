@@ -909,6 +909,7 @@ public class pjsuaJNI {
   public final static native int codecs_get_nbr();
   public final static native long codecs_get_id(int jarg1);
   public final static native int test_audio_dev(long jarg1, long jarg2);
+  public final static native int test_video_dev();
   public final static native int send_dtmf_info(int jarg1, long jarg2, pj_str_t jarg2_);
   public final static native long call_dump__SWIG_1(int jarg1, int jarg2, String jarg3);
   public final static native int can_use_tls();
@@ -923,6 +924,9 @@ public class pjsuaJNI {
   public final static native int PJMEDIA_NO_ZRTP_get();
   public final static native int PJMEDIA_CREATE_ZRTP_get();
   public final static native void jzrtp_SASVerified();
+  public final static native long pjmedia_ogl_factory(long jarg1);
+  public final static native long pjmedia_ogl_surface_init(int jarg1, int jarg2);
+  public final static native long pjmedia_ogl_surface_draw();
 
   public static void SwigDirector_Callback_on_call_state(Callback self, int call_id, long e) {
     self.on_call_state(call_id, (e == 0) ? null : new pjsip_event(e, false));

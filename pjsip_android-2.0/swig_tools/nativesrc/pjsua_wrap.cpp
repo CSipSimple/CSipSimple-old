@@ -325,21 +325,28 @@ namespace Swig {
     class JNIEnvWrapper {
       const Director *director_;
       JNIEnv *jenv_;
+      int env_status;
+      JNIEnv *g_env;
     public:
       JNIEnvWrapper(const Director *director) : director_(director), jenv_(0) {
+    	env_status = director_->swig_jvm_->GetEnv( (void **) &g_env, JNI_VERSION_1_6);
 #if defined(SWIG_JAVA_ATTACH_CURRENT_THREAD_AS_DAEMON)
-        // Attach a daemon thread to the JVM. Useful when the JVM should not wait for 
+        // Attach a daemon thread to the JVM. Useful when the JVM should not wait for
         // the thread to exit upon shutdown. Only for jdk-1.4 and later.
-        director_->swig_jvm_->AttachCurrentThreadAsDaemon((void **) &jenv_, NULL);
+        director_->swig_jvm_->AttachCurrentThreadAsDaemon( &jenv_, NULL);
 #else
-        director_->swig_jvm_->AttachCurrentThread((void **) &jenv_, NULL);
+        director_->swig_jvm_->AttachCurrentThread( &jenv_, NULL);
 #endif
       }
       ~JNIEnvWrapper() {
 #if !defined(SWIG_JAVA_NO_DETACH_CURRENT_THREAD)
         // Some JVMs, eg jdk-1.4.2 and lower on Solaris have a bug and crash with the DetachCurrentThread call.
         // However, without this call, the JVM hangs on exit when the thread was not created by the JVM and creates a memory leak.
-        director_->swig_jvm_->DetachCurrentThread();
+
+    	 if( env_status == JNI_EDETACHED ){
+			  director_->swig_jvm_->DetachCurrentThread();
+    	 }
+
 #endif
       }
       JNIEnv *getJNIEnv() const {
@@ -1030,6 +1037,7 @@ jdoubleArray SWIG_JavaArrayOutDouble (JNIEnv *jenv, double *result, jsize sz) {
 
 #include <pjsua-lib/pjsua.h>
 #include "pjsua_jni_addons.h"
+#include "opengl_video_dev.h"
 #include "zrtp_android.h"
 
 // LOGGING
@@ -15752,6 +15760,18 @@ SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_test_1audio_1dev(JNIEnv *j
 }
 
 
+SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_test_1video_1dev(JNIEnv *jenv, jclass jcls) {
+  jint jresult = 0 ;
+  pj_status_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (pj_status_t)test_video_dev();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_send_1dtmf_1info(JNIEnv *jenv, jclass jcls, jint jarg1, jlong jarg2, jobject jarg2_) {
   jint jresult = 0 ;
   int arg1 ;
@@ -15982,6 +16002,48 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_jzrtp_1SASVerified(JNIEnv 
 }
 
 
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1factory(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  jlong jresult = 0 ;
+  pj_pool_factory *arg1 = (pj_pool_factory *) 0 ;
+  pjmedia_vid_dev_factory *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(pj_pool_factory **)&jarg1; 
+  result = (pjmedia_vid_dev_factory *)pjmedia_ogl_factory(arg1);
+  *(pjmedia_vid_dev_factory **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1init(JNIEnv *jenv, jclass jcls, jint jarg1, jint jarg2) {
+  jlong jresult = 0 ;
+  int arg1 ;
+  int arg2 ;
+  pjmedia_vid_dev_factory *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  arg2 = (int)jarg2; 
+  result = (pjmedia_vid_dev_factory *)pjmedia_ogl_surface_init(arg1,arg2);
+  *(pjmedia_vid_dev_factory **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1draw(JNIEnv *jenv, jclass jcls) {
+  jlong jresult = 0 ;
+  pjmedia_vid_dev_factory *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (pjmedia_vid_dev_factory *)pjmedia_ogl_surface_draw();
+  *(pjmedia_vid_dev_factory **)&jresult = result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_swig_1module_1init(JNIEnv *jenv, jclass jcls) {
   int i;
   
@@ -16071,6 +16133,7 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_swig_1module_1init(JNIEnv 
 #ifdef __cplusplus
 }
 #endif
+
 
 JavaVM *android_jvm;
 
@@ -16986,6 +17049,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"codecs_get_nbr", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codecs_1get_1nbr},
 {"codecs_get_id", "(I)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_codecs_1get_1id},
 {"test_audio_dev", "(JJ)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_test_1audio_1dev},
+{"test_video_dev", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_test_1video_1dev},
 {"send_dtmf_info", "(IJLorg/pjsip/pjsua/pj_str_t;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_send_1dtmf_1info},
 {"call_dump__SWIG_1", "(IILjava/lang/String;)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_call_1dump_1_1SWIG_11},
 {"can_use_tls", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_can_1use_1tls},
@@ -16999,7 +17063,10 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"set_turn_cfg", "(JLorg/pjsip/pjsua/pjsua_media_config;JLorg/pjsip/pjsua/pj_str_t;JLorg/pjsip/pjsua/pj_str_t;)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_set_1turn_1cfg},
 {"PJMEDIA_NO_ZRTP_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJMEDIA_1NO_1ZRTP_1get},
 {"PJMEDIA_CREATE_ZRTP_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJMEDIA_1CREATE_1ZRTP_1get},
-{"jzrtp_SASVerified", "()V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_jzrtp_1SASVerified}
+{"jzrtp_SASVerified", "()V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_jzrtp_1SASVerified},
+{"pjmedia_ogl_factory", "(J)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1factory},
+{"pjmedia_ogl_surface_init", "(II)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1init},
+{"pjmedia_ogl_surface_draw", "()J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1draw}
 
 	};
 

@@ -74,6 +74,7 @@ JAVA_ARRAYSOFCLASSES(pj_str_t)
 
 #include <pjsua-lib/pjsua.h>
 #include "pjsua_jni_addons.h"
+#include "opengl_video_dev.h"
 #include "zrtp_android.h"
 
 // LOGGING
