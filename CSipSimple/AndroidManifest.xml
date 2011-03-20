@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.csipsimple"
 	android:installLocation="auto"
-	android:versionName="0.01-01" android:versionCode="728">
+	android:versionName="0.01-01" android:versionCode="733">
 	<supports-screens android:smallScreens="true" 
 		android:normalScreens="true"
 		android:largeScreens="true"
@@ -87,6 +87,9 @@
 		</activity>
 		<activity android:name="com.csipsimple.ui.prefs.Codecs" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.csipsimple.ui.prefs.PrefsSecurity" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
+	
+	
+		<activity android:name="com.csipsimple.ui.TestVideo" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		
 
 		<!-- Wizards -->

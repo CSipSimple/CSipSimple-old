@@ -43,6 +43,7 @@ import android.widget.TextView;
 import com.csipsimple.R;
 import com.csipsimple.api.ISipService;
 import com.csipsimple.service.SipService;
+import com.csipsimple.ui.TestVideo;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
 
@@ -180,6 +181,7 @@ public class MainPrefs extends ListActivity {
 	public static final int MENU_EXPERT_VIEW = Menu.FIRST + 1;
 	public static final int MENU_RESET_VIEW = Menu.FIRST + 2;
 	public static final int MENU_TEST_AUDIO = Menu.FIRST + 3;
+	public static final int MENU_TEST_VIDEO = Menu.FIRST + 4;
 	
 	
 	@Override
@@ -187,6 +189,7 @@ public class MainPrefs extends ListActivity {
 
 		menu.findItem(MENU_EXPERT_VIEW).setTitle(getToogleExpertTitle());
 		menu.findItem(MENU_TEST_AUDIO).setVisible(prefsWrapper.isAdvancedUser());
+		menu.findItem(MENU_TEST_VIDEO).setVisible(prefsWrapper.isAdvancedUser());
 		return super.onPrepareOptionsMenu(menu);
 	}
 	
@@ -201,14 +204,16 @@ public class MainPrefs extends ListActivity {
 		menu.add(Menu.NONE, MENU_RESET_VIEW, Menu.NONE, R.string.restore_default).setIcon(
 				android.R.drawable.ic_menu_revert);
 		menu.add(Menu.NONE, MENU_TEST_AUDIO, Menu.NONE, "Test audio").setIcon(R.drawable.ic_prefs_media);
+		menu.add(Menu.NONE, MENU_TEST_VIDEO, Menu.NONE, "Test video").setIcon(android.R.drawable.ic_menu_camera);
 		return super.onCreateOptionsMenu(menu);
 	}
 	
 	 @Override
 		public boolean onOptionsItemSelected(MenuItem item) {
+		 Thread t;
 			switch (item.getItemId()) {
 			case MENU_TEST_AUDIO:
-				Thread t = new Thread() {
+				 t = new Thread() {
 					public void run() {
 						pjsua.test_audio_dev(8000, 10);
 						pjsua.test_audio_dev(16000, 10);
@@ -223,6 +228,9 @@ public class MainPrefs extends ListActivity {
 				};
 				
 				t.start();
+				return true;
+			case MENU_TEST_VIDEO:
+				 startActivity(new Intent(this, TestVideo.class));
 				return true;
 			case MENU_RESET_VIEW:
 				prefsWrapper.resetAllDefaultValues();
