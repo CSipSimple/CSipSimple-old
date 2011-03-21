@@ -61,6 +61,8 @@
 %apply unsigned *INOUT { unsigned *count };
 %apply int *OUTPUT { int *capture_dev };
 %apply int *OUTPUT { int *playback_dev };
+%apply float *OUTPUT { float *mappingWidth };
+%apply float *OUTPUT { float *mappingHeight };
 %apply pjsua_conf_port_id *OUTPUT { pjsua_conf_port_id *p_id };
 //%pp_out(pjmedia_port)
 /* We need to be able to pass arrays of pjmedia_tone_desc to pjmedia */
@@ -2390,6 +2392,5 @@ enum pjmedia_zrtp_use
 #endif
 PJ_DECL(void) jzrtp_SASVerified();
 
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_factory(pj_pool_factory *pf);
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_init(int width, int height);
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_draw();
+PJ_DECL(pj_status_t) pjmedia_ogl_surface_init(int width, int height);
+PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappingHeight);

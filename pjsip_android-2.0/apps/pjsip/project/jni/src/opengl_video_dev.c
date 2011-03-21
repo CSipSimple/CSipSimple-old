@@ -23,10 +23,7 @@
 #include <GLES/gl.h>
 #include <GLES/glext.h>
 
-static GLint textureWidth;
-static GLint textureHeight;
-static void* imageData;
-static pj_mutex_t* ogl_mutex;
+
 
 
 #define THIS_FILE		"android_video_dev.c"
@@ -39,6 +36,7 @@ static pj_mutex_t* ogl_mutex;
 typedef struct ogl_fmt_info
 {
     pjmedia_format_id   fmt_id;
+    GLenum internalFormat;
     GLenum format;
     GLenum type;
 } ogl_fmt_info;
@@ -46,7 +44,10 @@ typedef struct ogl_fmt_info
 static ogl_fmt_info ogl_fmts[] =
 {
 
-    {PJMEDIA_FORMAT_RGBA,  GL_RGBA, GL_UNSIGNED_BYTE} ,
+    {PJMEDIA_FORMAT_RGBA,  GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE} ,
+//    {PJMEDIA_FORMAT_BGRA,  GL_BGRA, GL_BGRA, GL_UNSIGNED_BYTE} ,
+
+  //  {PJMEDIA_FORMAT_YUY2 , GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE}
     //{PJMEDIA_FORMAT_RGB24, GL_RGB, GL_UNSIGNED_SHORT_4_4_4} ,
     /*
     {PJMEDIA_FORMAT_RGB24, 0, 0xFF, 0xFF00, 0xFF0000, 0} ,
@@ -97,6 +98,22 @@ struct ogl_stream
     pj_bool_t			 render_exited;
     pj_status_t			 status;
 
+    // Gl texture infos
+    GLint textureWidth;
+    GLint textureHeight;
+    GLint frameWidth;
+    GLint frameHeight;
+    float glMappingWidth;
+    float glMappingHeight;
+    GLenum glInternalFormat;
+    GLenum glFormat;
+    GLenum glType;
+    // Gl texture state
+    pj_bool_t need_glTex_init;
+    pj_mutex_t* frame_mutex;
+    //Gl texture datas
+    void* imageData;
+
 
     /* For frame conversion */
     pjmedia_converter		*conv;
@@ -105,6 +122,9 @@ struct ogl_stream
 
     pjmedia_video_apply_fmt_param vafp;
 };
+
+//TODO : stream should be get from the application as an argument
+static struct ogl_stream *current_stream;
 
 
 /* Prototypes */
@@ -323,7 +343,8 @@ static pj_status_t ogl_factory_create_stream(
     pj_status_t status;
     pjmedia_video_format_detail *vfd;
     const pjmedia_video_format_info *vfi;
-
+    ogl_fmt_info *ogl_fmt_info;
+    pjmedia_format dest_fmt;
 
     /* Create and Initialize stream descriptor */
     pool = pj_pool_create(sf->pf, "opengl-dev", 1000, 1000, NULL);
@@ -339,46 +360,81 @@ static pj_status_t ogl_factory_create_stream(
     /* Create render stream here */
     if (param->dir & PJMEDIA_DIR_RENDER) {
         strm->status = PJ_SUCCESS;
-        /*
-        status = pj_thread_create(pool, "ogl_thread", create_ogl_thread,
-                                  strm, 0, 0, &strm->ogl_thread);
-        if (status != PJ_SUCCESS) {
-            goto on_error;
-        }
-        while (strm->status == PJ_SUCCESS && !strm->surf && !strm->overlay)
-            pj_thread_sleep(10);
-        if ((status = strm->status) != PJ_SUCCESS) {
-            goto on_error;
-        }
-		*/
-        pjmedia_format_copy(&strm->conv_param.src, &param->fmt);
-        pjmedia_format_copy(&strm->conv_param.dst, &param->fmt);
 
-        status = pjmedia_converter_create(NULL, pool, &strm->conv_param,
-                                          &strm->conv);
+        // Get basic ogl-es parameters
+		vfd = pjmedia_format_get_video_format_detail(&strm->param.fmt, PJ_TRUE);
+
+
+		strm->frameWidth = (GLint)vfd->size.w;
+		strm->frameHeight = (GLint)vfd->size.h;
+
+		// Is that a supported format ?
+		ogl_fmt_info = get_ogl_format_info(strm->param.fmt.id);
+		if(ogl_fmt_info == NULL){
+
+
+			pjmedia_format_init_video(&strm->conv_param.dst, ogl_fmts[0].fmt_id,
+					strm->frameWidth, strm->frameHeight,
+					vfd->fps.num, vfd->fps.denum);
+			pjmedia_format_copy(&strm->conv_param.src, &param->fmt);
+			status = pjmedia_converter_create(NULL, pool, &strm->conv_param,
+											  &strm->conv);
+
+			PJ_LOG(3, (THIS_FILE, "== NEED CONVERT == %d", status));
+			if(status != PJ_SUCCESS){
+
+				goto on_error;
+			}
+
+			vfi = pjmedia_get_video_format_info(pjmedia_video_format_mgr_instance(), strm->param.fmt.id);
+
+			strm->conv_buf.buf = (void *)pj_pool_alloc(strm->pool, vfi->bpp / 8 * strm->frameWidth * strm->frameHeight);
+			ogl_fmt_info = &ogl_fmts[0];
+		}
+
+		vfi = pjmedia_get_video_format_info(pjmedia_video_format_mgr_instance(), ogl_fmt_info->fmt_id);
+
+		strm->glInternalFormat = ogl_fmt_info->internalFormat;
+		strm->glFormat = ogl_fmt_info->format;
+		strm->glType = ogl_fmt_info->type;
+
+		//OpenGL-ES Only support pow x 2 textures so upscale texture with to lower matching sizes
+		GLint i = 64;
+		while( i <  strm->frameWidth){
+				i *= 2;
+		}
+		strm->textureWidth = i;
+		i = 64;
+		while( i <  strm->frameHeight){
+				i *= 2;
+		}
+		strm->textureHeight = i;
+
+		strm->need_glTex_init = PJ_TRUE;
+		strm->glMappingWidth = (float) strm->frameWidth / (float) strm->textureWidth;
+		strm->glMappingHeight = (float) strm->frameHeight / (float) strm->textureHeight;
+
+
+
+		PJ_LOG(4, (THIS_FILE, "We expect : %d x %d x %d", strm->frameWidth , strm->frameHeight, vfi->bpp/8));
+		PJ_LOG(4, (THIS_FILE, "GL mapping is : %f x %f",  strm->glMappingWidth, strm->glMappingHeight));
+
+		pj_size_t dataSize = strm->frameWidth * strm->frameHeight * vfi->bpp/8;
+		strm->imageData = pj_pool_alloc(sf->pool, dataSize);
+		pj_bzero(strm->imageData, dataSize);
+		pj_mutex_create_simple(strm->pool, "opengl-es", &strm->frame_mutex);
+
+		//TODO : remove this way to retrieve the stream
+		current_stream = strm;
+
     }
 
-    /* Apply the remaining settings */
-    if (param->flags & PJMEDIA_VID_DEV_CAP_OUTPUT_WINDOW) {
+	/* Apply the remaining settings */
+	if (param->flags & PJMEDIA_VID_DEV_CAP_OUTPUT_WINDOW) {
 		ogl_stream_set_cap(&strm->base,
 						PJMEDIA_VID_DEV_CAP_OUTPUT_WINDOW,
 								&param->window);
-    }
-
-
-    vfi = pjmedia_get_video_format_info(pjmedia_video_format_mgr_instance(),
-                                        strm->param.fmt.id);
-
-    vfd = pjmedia_format_get_video_format_detail(&strm->param.fmt, PJ_TRUE);
-
-    textureWidth = (GLint)vfd->size.w;
-    textureHeight = (GLint)vfd->size.h;
-    PJ_LOG(4, (THIS_FILE, "We expect : %d x %d x %d", textureWidth , textureHeight, vfi->bpp/8));
-    pj_size_t dataSize = textureWidth * textureHeight * vfi->bpp/8;
-    imageData = pj_pool_alloc(sf->pool, dataSize);
-    pj_bzero(imageData, dataSize);
-    pj_mutex_create_simple(strm->pool, "opengl-es", &ogl_mutex);
-
+	}
 
     /* Done */
     strm->base.op = &stream_op;
@@ -457,7 +513,7 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
     pj_status_t status = PJ_SUCCESS;
 
 
-    PJ_LOG(3, (THIS_FILE, "Put a frame ...."));
+
     if (!stream->is_running) {
         stream->render_exited = PJ_TRUE;
         goto on_return;
@@ -467,10 +523,20 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
     	goto on_return;
     }
 
-    pj_mutex_lock(ogl_mutex);
-    pj_memcpy(imageData, frame->buf, frame->size);
-    pj_mutex_unlock(ogl_mutex);
+    if(stream->conv != NULL){
+    	PJ_LOG(4, (THIS_FILE, "Convertable frame"));
 
+    	pjmedia_converter_convert(stream->conv, frame, &stream->conv_buf);
+
+    	pj_mutex_lock(stream->frame_mutex);
+		pj_memcpy(stream->imageData, stream->conv_buf.buf, stream->conv_buf.size);
+		pj_mutex_unlock(stream->frame_mutex);
+    }else{
+    	PJ_LOG(4, (THIS_FILE, "Direct frame"));
+		pj_mutex_lock(stream->frame_mutex);
+		pj_memcpy(stream->imageData, frame->buf, frame->size);
+		pj_mutex_unlock(stream->frame_mutex);
+    }
 
 on_return:
     return status;
@@ -503,12 +569,14 @@ static pj_status_t ogl_stream_stop(pjmedia_vid_dev_stream *strm)
     	pj_thread_sleep(10);
     }
 
-    pj_mutex_lock(ogl_mutex);
+    pj_mutex_lock(stream->frame_mutex);
 
-    textureHeight = 0;
-    textureWidth = 0;
+    stream->textureHeight = 0;
+    stream->textureWidth = 0;
+    stream->frameHeight = 0;
+    stream->frameWidth = 0;
 
-    pj_mutex_unlock(ogl_mutex);
+    pj_mutex_unlock(stream->frame_mutex);
     return PJ_SUCCESS;
 }
 
@@ -522,6 +590,11 @@ static pj_status_t ogl_stream_destroy(pjmedia_vid_dev_stream *strm)
 
     ogl_stream_stop(strm);
 
+    if(stream->conv != NULL){
+    	pjmedia_converter_destroy(stream->conv);
+    	stream->conv = NULL;
+    }
+
     pj_pool_release(stream->pool);
 
     return PJ_SUCCESS;
@@ -529,25 +602,44 @@ static pj_status_t ogl_stream_destroy(pjmedia_vid_dev_stream *strm)
 
 
 
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_init(int width,
+PJ_DECL(pj_status_t) pjmedia_ogl_surface_init(int width,
 		int height) {
 //
-
+	return PJ_SUCCESS;
 }
 
 
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_draw(){
-	//
-	int i = 0;
+PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappingHeight){
+	*mappingHeight = 1.0f;
+	*mappingWidth = 1.0f;
 
-	if(textureWidth > 0 && textureHeight > 0){
+	if(current_stream && current_stream->textureWidth > 0 && current_stream->textureHeight > 0){
 
-		pj_mutex_lock(ogl_mutex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)imageData);
-		pj_mutex_unlock(ogl_mutex);
+
+		if(current_stream->need_glTex_init){
+			//Fill the entiere image with empty
+			glTexImage2D(GL_TEXTURE_2D, 0,
+					current_stream->glInternalFormat,
+					current_stream->textureWidth, current_stream->textureHeight, 0,
+					current_stream->glFormat, current_stream->glType, (GLvoid *) NULL);
+			current_stream->need_glTex_init = PJ_FALSE;
+		}
+
+		pj_mutex_lock(current_stream->frame_mutex);
+
+		// Update relevant portion
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+				current_stream->frameWidth, current_stream->frameHeight,
+				current_stream->glFormat, current_stream->glType, current_stream->imageData);
+		//imageData
+		*mappingHeight = current_stream->glMappingHeight;
+		*mappingWidth = current_stream->glMappingWidth;
+
+		pj_mutex_unlock(current_stream->frame_mutex);
 
 
 
 	}
-
+	//TODO : return not init if here
+	return PJ_SUCCESS;
 }

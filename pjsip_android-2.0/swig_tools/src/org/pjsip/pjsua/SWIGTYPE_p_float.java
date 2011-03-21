@@ -8,18 +8,18 @@
 
 package org.pjsip.pjsua;
 
-public class SWIGTYPE_p_pjsua_callback {
+public class SWIGTYPE_p_float {
   private long swigCPtr;
 
-  protected SWIGTYPE_p_pjsua_callback(long cPtr, boolean futureUse) {
+  protected SWIGTYPE_p_float(long cPtr, boolean futureUse) {
     swigCPtr = cPtr;
   }
 
-  protected SWIGTYPE_p_pjsua_callback() {
+  protected SWIGTYPE_p_float() {
     swigCPtr = 0;
   }
 
-  protected static long getCPtr(SWIGTYPE_p_pjsua_callback obj) {
+  protected static long getCPtr(SWIGTYPE_p_float obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 }

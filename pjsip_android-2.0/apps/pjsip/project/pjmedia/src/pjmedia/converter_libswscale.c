@@ -30,7 +30,7 @@ static pj_status_t factory_create_converter(pjmedia_converter_factory *cf,
 					    pjmedia_converter **p_cv);
 static void factory_destroy_factory(pjmedia_converter_factory *cf);
 static pj_status_t libswscale_conv_convert(pjmedia_converter *converter,
-					   pjmedia_frame *src_frame,
+					   const pjmedia_frame *src_frame,
 					   pjmedia_frame *dst_frame);
 static void libswscale_conv_destroy(pjmedia_converter *converter);
 
@@ -135,7 +135,7 @@ static void factory_destroy_factory(pjmedia_converter_factory *cf)
 }
 
 static pj_status_t libswscale_conv_convert(pjmedia_converter *converter,
-					   pjmedia_frame *src_frame,
+					   const pjmedia_frame *src_frame,
 					   pjmedia_frame *dst_frame)
 {
     struct ffmpeg_converter *fcv = (struct ffmpeg_converter*)converter;

@@ -651,19 +651,12 @@ public class pjsua implements pjsuaConstants {
     pjsuaJNI.jzrtp_SASVerified();
   }
 
-  public static SWIGTYPE_p_pjmedia_vid_dev_factory pjmedia_ogl_factory(SWIGTYPE_p_pj_pool_factory pf) {
-    long cPtr = pjsuaJNI.pjmedia_ogl_factory(SWIGTYPE_p_pj_pool_factory.getCPtr(pf));
-    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_vid_dev_factory(cPtr, false);
+  public static int pjmedia_ogl_surface_init(int width, int height) {
+    return pjsuaJNI.pjmedia_ogl_surface_init(width, height);
   }
 
-  public static SWIGTYPE_p_pjmedia_vid_dev_factory pjmedia_ogl_surface_init(int width, int height) {
-    long cPtr = pjsuaJNI.pjmedia_ogl_surface_init(width, height);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_vid_dev_factory(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_pjmedia_vid_dev_factory pjmedia_ogl_surface_draw() {
-    long cPtr = pjsuaJNI.pjmedia_ogl_surface_draw();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_pjmedia_vid_dev_factory(cPtr, false);
+  public static int pjmedia_ogl_surface_draw(float[] mappingWidth, float[] mappingHeight) {
+    return pjsuaJNI.pjmedia_ogl_surface_draw(mappingWidth, mappingHeight);
   }
 
 }

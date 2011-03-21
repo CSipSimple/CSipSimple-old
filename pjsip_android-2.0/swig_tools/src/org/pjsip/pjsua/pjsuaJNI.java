@@ -924,9 +924,8 @@ public class pjsuaJNI {
   public final static native int PJMEDIA_NO_ZRTP_get();
   public final static native int PJMEDIA_CREATE_ZRTP_get();
   public final static native void jzrtp_SASVerified();
-  public final static native long pjmedia_ogl_factory(long jarg1);
-  public final static native long pjmedia_ogl_surface_init(int jarg1, int jarg2);
-  public final static native long pjmedia_ogl_surface_draw();
+  public final static native int pjmedia_ogl_surface_init(int jarg1, int jarg2);
+  public final static native int pjmedia_ogl_surface_draw(float[] jarg1, float[] jarg2);
 
   public static void SwigDirector_Callback_on_call_state(Callback self, int call_id, long e) {
     self.on_call_state(call_id, (e == 0) ? null : new pjsip_event(e, false));

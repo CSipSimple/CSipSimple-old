@@ -16002,44 +16002,66 @@ SWIGEXPORT void JNICALL Java_org_pjsip_pjsua_pjsuaJNI_jzrtp_1SASVerified(JNIEnv 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1factory(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  jlong jresult = 0 ;
-  pj_pool_factory *arg1 = (pj_pool_factory *) 0 ;
-  pjmedia_vid_dev_factory *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = *(pj_pool_factory **)&jarg1; 
-  result = (pjmedia_vid_dev_factory *)pjmedia_ogl_factory(arg1);
-  *(pjmedia_vid_dev_factory **)&jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1init(JNIEnv *jenv, jclass jcls, jint jarg1, jint jarg2) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1init(JNIEnv *jenv, jclass jcls, jint jarg1, jint jarg2) {
+  jint jresult = 0 ;
   int arg1 ;
   int arg2 ;
-  pjmedia_vid_dev_factory *result = 0 ;
+  pj_status_t result;
   
   (void)jenv;
   (void)jcls;
   arg1 = (int)jarg1; 
   arg2 = (int)jarg2; 
-  result = (pjmedia_vid_dev_factory *)pjmedia_ogl_surface_init(arg1,arg2);
-  *(pjmedia_vid_dev_factory **)&jresult = result; 
+  result = (pj_status_t)pjmedia_ogl_surface_init(arg1,arg2);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1draw(JNIEnv *jenv, jclass jcls) {
-  jlong jresult = 0 ;
-  pjmedia_vid_dev_factory *result = 0 ;
+SWIGEXPORT jint JNICALL Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1draw(JNIEnv *jenv, jclass jcls, jfloatArray jarg1, jfloatArray jarg2) {
+  jint jresult = 0 ;
+  float *arg1 = (float *) 0 ;
+  float *arg2 = (float *) 0 ;
+  float temp1 ;
+  float temp2 ;
+  pj_status_t result;
   
   (void)jenv;
   (void)jcls;
-  result = (pjmedia_vid_dev_factory *)pjmedia_ogl_surface_draw();
-  *(pjmedia_vid_dev_factory **)&jresult = result; 
+  {
+    if (!jarg1) {
+      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
+      return 0;
+    }
+    if (jenv->GetArrayLength(jarg1) == 0) {
+      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
+      return 0;
+    }
+    arg1 = &temp1; 
+  }
+  {
+    if (!jarg2) {
+      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
+      return 0;
+    }
+    if (jenv->GetArrayLength(jarg2) == 0) {
+      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
+      return 0;
+    }
+    arg2 = &temp2; 
+  }
+  result = (pj_status_t)pjmedia_ogl_surface_draw(arg1,arg2);
+  jresult = (jint)result; 
+  {
+    jfloat jvalue = (jfloat)temp1;
+    jenv->SetFloatArrayRegion(jarg1, 0, 1, &jvalue);
+  }
+  {
+    jfloat jvalue = (jfloat)temp2;
+    jenv->SetFloatArrayRegion(jarg2, 0, 1, &jvalue);
+  }
+  
+  
   return jresult;
 }
 
@@ -17064,9 +17086,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 {"PJMEDIA_NO_ZRTP_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJMEDIA_1NO_1ZRTP_1get},
 {"PJMEDIA_CREATE_ZRTP_get", "()I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_PJMEDIA_1CREATE_1ZRTP_1get},
 {"jzrtp_SASVerified", "()V", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_jzrtp_1SASVerified},
-{"pjmedia_ogl_factory", "(J)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1factory},
-{"pjmedia_ogl_surface_init", "(II)J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1init},
-{"pjmedia_ogl_surface_draw", "()J", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1draw}
+{"pjmedia_ogl_surface_init", "(II)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1init},
+{"pjmedia_ogl_surface_draw", "([F[F)I", (void*)& Java_org_pjsip_pjsua_pjsuaJNI_pjmedia_1ogl_1surface_1draw}
 
 	};
 

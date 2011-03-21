@@ -26,8 +26,8 @@
 
 #define THIS_FILE		"colorbar_dev.c"
 #define DEFAULT_CLOCK_RATE	90000
-#define DEFAULT_WIDTH		512 //352 //640
-#define DEFAULT_HEIGHT		512 //288 //480
+#define DEFAULT_WIDTH		352 //640
+#define DEFAULT_HEIGHT		288 //480
 #define DEFAULT_FPS		25
 
 /* cbar_ device info */
@@ -62,13 +62,16 @@ struct cbar_fmt_info {
 /* Colorbar video source supports */
 static struct cbar_fmt_info cbar_fmts[] =
 {
-    /* Packed formats */
+
 	    { PJMEDIA_FORMAT_RGBA,      {0, 1, 2}, {4, 4, 4} },
+
+    /* Packed formats */
     { PJMEDIA_FORMAT_YUY2,      {0, 1, 3}, {2, 4, 4} },
     { PJMEDIA_FORMAT_UYVY,      {1, 0, 2}, {2, 4, 4} },
     { PJMEDIA_FORMAT_YVYU,      {0, 3, 1}, {2, 4, 4} },
     { PJMEDIA_FORMAT_RGB24,     {0, 1, 2}, {3, 3, 3} },
     { PJMEDIA_FORMAT_BGRA,      {2, 1, 0}, {4, 4, 4} },
+   // { PJMEDIA_FORMAT_RGBA,      {0, 1, 2}, {4, 4, 4} },
 
     /* Planar formats */
     { PJMEDIA_FORMAT_YV12 },

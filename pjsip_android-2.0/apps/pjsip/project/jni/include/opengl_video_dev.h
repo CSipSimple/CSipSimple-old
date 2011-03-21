@@ -29,8 +29,8 @@
 PJ_BEGIN_DECL
 PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_factory(pj_pool_factory *pf);
 
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_init(int width, int height);
-PJ_DECL(pjmedia_vid_dev_factory*) pjmedia_ogl_surface_draw();
+PJ_DECL(pj_status_t) pjmedia_ogl_surface_init(int width, int height);
+PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappingHeight);
 PJ_END_DECL
 
 

@@ -34,6 +34,7 @@
 //todo : #if
 #include "opengl_video_dev.h"
 
+
 #define THIS_FILE		"pjsua_jni_addons.c"
 
 
@@ -553,6 +554,7 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 
 		//TODO : PJ_VID?
 		pjmedia_vid_register_factory(&pjmedia_ogl_factory);
+		//pjmedia_converter_mgr_register_factory(NULL, &libswscale_factory);
 		PJ_LOG(4,(THIS_FILE, "Video dev registered" ));
 
 	    // Registering module for tcp hack

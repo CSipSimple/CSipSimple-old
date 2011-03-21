@@ -148,7 +148,7 @@ PJ_DEF(pj_status_t) pjmedia_converter_create(pjmedia_converter_mgr *mgr,
 }
 
 PJ_DEF(pj_status_t) pjmedia_converter_convert(pjmedia_converter *cv,
-					       pjmedia_frame *src_frame,
+					       const pjmedia_frame *src_frame,
 					       pjmedia_frame *dst_frame)
 {
     return (*cv->op->convert)(cv, src_frame, dst_frame);
