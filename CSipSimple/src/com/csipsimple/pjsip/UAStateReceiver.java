@@ -26,8 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.pjsip.pjsua.Callback;
-import org.pjsip.pjsua.SWIGTYPE_p_p_pjmedia_port;
-import org.pjsip.pjsua.SWIGTYPE_p_pjmedia_session;
 import org.pjsip.pjsua.SWIGTYPE_p_pjsip_rx_data;
 import org.pjsip.pjsua.pj_str_t;
 import org.pjsip.pjsua.pjsip_event;
@@ -313,6 +311,7 @@ public class UAStateReceiver extends Callback {
 		pjService.service.sendBroadcast(zrtpIntent);
 		
 	}
+	
 	
 	// -------
 	// Current call management -- assume for now one unique call is managed

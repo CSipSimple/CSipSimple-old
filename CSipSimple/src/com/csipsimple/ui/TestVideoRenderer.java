@@ -17,19 +17,18 @@
  */
 package com.csipsimple.ui;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import org.pjsip.pjsua.pjsua;
 
+import com.csipsimple.utils.Log;
+
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
-import android.opengl.GLU;
 
 
 public class TestVideoRenderer implements Renderer {
@@ -100,30 +99,32 @@ public class TestVideoRenderer implements Renderer {
 
 
     
-    public void onDrawFrame(GL10 gl) {
-    	gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-        
-        gl.glMatrixMode(GL10.GL_MODELVIEW);
-        gl.glLoadIdentity();
+	public void onDrawFrame(GL10 gl) {
+		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-		   gl.glBindTexture(GL10.GL_TEXTURE_2D, texturesBuffer.get(0));
+		gl.glMatrixMode(GL10.GL_MODELVIEW);
+		gl.glLoadIdentity();
 
-		   
-            pjsua.pjmedia_ogl_surface_draw();
-            
-            gl.glTranslatef(0.0f, 0.0f, -0.5f);
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, texturesBuffer.get(0));
 
-            gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-            gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, quadBuffer);
-            gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, quadTexBuffer);
-            gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-            gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
-            gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		float[] w = new float[] { 1.0f };
+		float[] h = new float[] { 1.0f };
+		pjsua.pjmedia_ogl_surface_draw(w, h);
 
+		quadTexBuffer.put(2, w[0]).put(6, w[0]);
+		quadTexBuffer.put(5, h[0]).put(7, h[0]);
 
-            
-    }
+	//	gl.glTranslatef(0.0f, 0.0f, -0.5f);
+
+		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, quadBuffer);
+		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, quadTexBuffer);
+		gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
+		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+
+	}
 
     public void onSurfaceChanged(GL10 gl, int width, int height) {
     	LoadTextures(gl);
