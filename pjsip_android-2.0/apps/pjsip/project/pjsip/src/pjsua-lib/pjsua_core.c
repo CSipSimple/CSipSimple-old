@@ -1,4 +1,4 @@
-/* $Id: pjsua_core.c 3457 2011-03-17 04:34:43Z bennylp $ */
+/* $Id: pjsua_core.c 3471 2011-03-22 09:49:23Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -635,6 +635,10 @@ PJ_DEF(pj_status_t) pjsua_create(void)
     /* Set default sound device ID */
     pjsua_var.cap_dev = PJMEDIA_AUD_DEFAULT_CAPTURE_DEV;
     pjsua_var.play_dev = PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV;
+
+    /* Set default video device ID */
+    pjsua_var.vcap_dev = PJMEDIA_VID_DEFAULT_CAPTURE_DEV;
+    pjsua_var.vrdr_dev = PJMEDIA_VID_DEFAULT_RENDER_DEV;
 
     /* Init caching pool. */
     pj_caching_pool_init(&pjsua_var.cp, NULL, 0);
@@ -1447,6 +1451,8 @@ PJ_DEF(pj_status_t) pjsua_destroy(void)
 	pjsua_var.pool = NULL;
 	pj_caching_pool_destroy(&pjsua_var.cp);
 
+	pjsua_set_state(PJSUA_STATE_NULL);
+
 	PJ_LOG(4,(THIS_FILE, "PJSUA destroyed..."));
 
 	/* End logging */
@@ -1461,8 +1467,6 @@ PJ_DEF(pj_status_t) pjsua_destroy(void)
 
     /* Clear pjsua_var */
     pj_bzero(&pjsua_var, sizeof(pjsua_var));
-
-    pjsua_set_state(PJSUA_STATE_NULL);
 
     /* Done. */
     return PJ_SUCCESS;

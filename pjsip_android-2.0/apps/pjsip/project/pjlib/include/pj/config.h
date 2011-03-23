@@ -1,4 +1,4 @@
-/* $Id: config.h 3408 2011-01-21 07:15:22Z bennylp $ */
+/* $Id: config.h 3468 2011-03-22 09:38:49Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -44,6 +44,10 @@
 #  error "Unknown compiler."
 #endif
 
+/* PJ_ALIGN_DATA is compiler specific directive to align data address */
+#ifndef PJ_ALIGN_DATA
+#  error "PJ_ALIGN_DATA is not defined!"
+#endif
 
 /********************************************************************
  * Include target OS specific configuration.

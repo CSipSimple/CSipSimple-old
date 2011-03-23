@@ -172,7 +172,7 @@ struct pjmedia_converter_op
      * 			successfully.
      */
     pj_status_t (*convert)(pjmedia_converter *cv,
-			   const pjmedia_frame *src_frame,
+			   pjmedia_frame *src_frame,
 			   pjmedia_frame *dst_frame);
 
     /**
@@ -299,7 +299,7 @@ PJ_DECL(pj_status_t) pjmedia_converter_create(pjmedia_converter_mgr *mgr,
  * 			successfully.
  */
 PJ_DECL(pj_status_t) pjmedia_converter_convert(pjmedia_converter *cv,
-					       const pjmedia_frame *src_frame,
+					       pjmedia_frame *src_frame,
 					       pjmedia_frame *dst_frame);
 
 /**

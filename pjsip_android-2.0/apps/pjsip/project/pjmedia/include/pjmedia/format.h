@@ -166,6 +166,11 @@ typedef enum pjmedia_format_id
     PJMEDIA_FORMAT_YV12	    = PJMEDIA_FORMAT_PACK('Y', 'V', '1', '2'),
 
     /**
+     * This is planar 4:2:0/24bpp YUV format.
+     */
+    PJMEDIA_FORMAT_NV21	    = PJMEDIA_FORMAT_PACK('N', 'V', '2', '1'),
+
+    /**
      * The JPEG version of planar 4:2:0/12bpp YUV format.
      */
     PJMEDIA_FORMAT_I420JPEG = PJMEDIA_FORMAT_PACK('J', '4', '2', '0'),

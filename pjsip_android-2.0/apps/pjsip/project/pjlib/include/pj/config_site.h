@@ -4,6 +4,9 @@
 #   define PJ_ANDROID   1
 #endif
 
+
+#define PJMEDIA_VIDEO_DEV_HAS_CBAR_SRC 0
+
 #define PJMEDIA_SDP_NEG_PREFER_REMOTE_CODEC_ORDER 0
 #define PJ_HAS_IPV6 1
 

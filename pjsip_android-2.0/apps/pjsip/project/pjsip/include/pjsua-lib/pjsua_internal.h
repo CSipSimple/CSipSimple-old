@@ -1,4 +1,4 @@
-/* $Id: pjsua_internal.h 3457 2011-03-17 04:34:43Z bennylp $ */
+/* $Id: pjsua_internal.h 3471 2011-03-22 09:49:23Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -58,15 +58,20 @@ typedef struct pjsua_call_media
     pjmedia_dir		 dir;       /**< Media direction.		    */
 
     /** The stream */
-    union {
+    struct {
 	/** Audio stream */
 	struct {
-	    pjmedia_stream *stream;    /**< The media session.		    */
+	    pjmedia_stream *stream;    /**< The audio stream.		    */
 	    int		    conf_slot; /**< Slot # in conference bridge.    */
 	} a;
 
 	/** Video stream */
 	struct {
+	    pjmedia_vid_stream  *stream;    /**< The video stream.	    */
+	    pjmedia_vid_port	*capturer;  /**< Video capturer.	    */
+	    pjmedia_vid_port	*renderer;  /**< Video renderer.	    */
+	    pjmedia_converter	*conv_enc;  /**< Converter for encoding dir.*/
+	    pjmedia_converter	*conv_dec;  /**< Converter for decoding dir.*/
 	} v;
 
     } strm;
@@ -119,7 +124,7 @@ struct pjsua_call
 
     unsigned		 med_cnt;   /**< Number of media in SDP.	    */
     pjsua_call_media     media[PJSUA_MAX_CALL_MEDIA]; /**< Array of media   */
-    unsigned		 audio_idx; /**< Selected audio media.		    */
+    int			 audio_idx; /**< First active audio media.	    */
 
     pjsip_evsub		*xfer_sub;  /**< Xfer server subscription, if this
 					 call was triggered by xfer.	    */
@@ -377,6 +382,10 @@ struct pjsua_data
     pjmedia_master_port	*null_snd;  /**< Master port for null sound.	*/
     pjmedia_port	*null_port; /**< Null port.			*/
 
+
+    /* Video device */
+    pjmedia_vid_dev_index vcap_dev;  /**< Capture device ID.		*/
+    pjmedia_vid_dev_index vrdr_dev;  /**< Playback device ID.		*/
 
     /* File players: */
     unsigned		 player_cnt;/**< Number of file players.	*/

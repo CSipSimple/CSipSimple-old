@@ -1,4 +1,4 @@
-/* $Id: types.h 3358 2010-10-28 08:31:42Z nanang $ */
+/* $Id: types.h 3461 2011-03-17 11:33:34Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
