@@ -56,9 +56,12 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.csipsimple.R;
 import com.csipsimple.api.SipCallSession;
@@ -67,6 +70,7 @@ import com.csipsimple.api.SipManager;
 import com.csipsimple.api.ISipService;
 import com.csipsimple.service.MediaManager.MediaState;
 import com.csipsimple.service.SipService;
+import com.csipsimple.ui.camera.VideoProducer;
 import com.csipsimple.utils.CallsUtils;
 import com.csipsimple.utils.DialingFeedback;
 import com.csipsimple.utils.Log;
@@ -119,6 +123,8 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 
 	private GLSurfaceView surface;
 	private TestVideoRenderer renderer;
+
+	private VideoProducer videoProducer;
 	
 	private final static int PICKUP_SIP_URI = 0;
 	
@@ -183,9 +189,24 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		}
 		
 
+		//Display video
 		surface = (GLSurfaceView) findViewById(R.id.side_remote); //new GLSurfaceView(this);
 		renderer = new TestVideoRenderer(this);
 		surface.setRenderer(renderer);
+		
+		//Camera capture
+		videoProducer = new VideoProducer(this);
+		videoProducer.prepare(352, 288, 15);
+		final View local_preview = videoProducer.startPreview();
+		
+        if(local_preview != null){
+            final ViewParent viewParent = local_preview.getParent();
+            if(viewParent != null && viewParent instanceof ViewGroup){
+                    ((ViewGroup)(viewParent)).removeView(local_preview);
+            }
+	        ((RelativeLayout) findViewById(R.id.video_part) ).addView(local_preview);
+	    }
+        
 	}
 	
 	
@@ -258,6 +279,7 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		};
 		
 		t.start();
+        videoProducer.start();
        
 	}
 	
@@ -287,6 +309,7 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		if(manageKeyguard) {
 			keyguardLock.reenableKeyguard();
 		}
+		videoProducer.stop();
 	}
 	
 

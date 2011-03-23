@@ -48,7 +48,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		public void handleMessage(Message message) {
 			switch (message.what) {
 			case HAS_FRAME:
-			//	pushToNative( (byte[]) message.obj, message.arg1, message.arg2, 0);
+				pushToNative( (byte[]) message.obj, message.arg1, message.arg2, 0);
 				if(camera != null) {
 					camera.setOneShotPreviewCallback(CameraPreview.this);
 				}
@@ -85,7 +85,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		// to draw.
 		camera = Camera.open();
 		try {
-			Log.d(THIS_FILE, "> Surface has been created guys !");
+			Log.d(THIS_FILE, ">>> Surface has been created guys !");
 			camera.setPreviewDisplay(holder);
 			// camera.setPreviewCallback(this);
 			camera.setOneShotPreviewCallback(this);
@@ -120,9 +120,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		int cw = parameters.getPreviewSize().width;
 		int ch = parameters.getPreviewSize().height;
 		Log.d(THIS_FILE, "Current format : " + cw + ", " + ch + " @" + parameters.getPreviewFrameRate());
-		parameters.setPreviewSize(320, 240);
-		parameters.setPreviewFrameRate(15);
-		Log.d(THIS_FILE, "Applied format : " + 320 + ", " + 240 + " @" + 15);
+		
+		int fw = 352;
+		int fh = 288;
+		int fq = 15;
+		parameters.setPreviewSize(fw, fh);
+		parameters.setPreviewFrameRate(fq);
+		Log.d(THIS_FILE, "Applied format : " + fw + ", " + fh + " @" + fq);
 
 		camera.setParameters(parameters);
 
@@ -130,6 +134,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	}
 
 	public void onPreviewFrame(byte[] data, Camera camera) {
+
+		Log.d(THIS_FILE, ">>> On preview frame");
 		
 		Camera.Parameters parameters = camera.getParameters();
 		int cw = parameters.getPreviewSize().width;
@@ -141,6 +147,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		} else {
 			Log.d(THIS_FILE, "Got preview callback, but no handler for it");
 		}
+		
+		
 	}
 
 
