@@ -493,6 +493,20 @@ static int find_codec_idx_by_fmt_id(pjmedia_format_id fmt_id)
     return -1;
 }
 
+static void ffmpeg_log(void* ptr, int level, const char* msg, va_list vl){
+	int pj_level = (level >> 3);
+	if(pj_level == 1) {
+		PJ_LOG(1, (THIS_FILE, "%s", msg));
+	} else if(pj_level == 2) {
+		PJ_LOG(2, (THIS_FILE, "%s", msg));
+	} else if(pj_level == 3) {
+		PJ_LOG(3, (THIS_FILE, "%s", msg));
+	} else if(pj_level == 4) {
+		PJ_LOG(4, (THIS_FILE, "%s", msg));
+	} else if(pj_level >= 5) {
+		PJ_LOG(5, (THIS_FILE, "%s", msg));
+	}
+}
 
 /*
  * Initialize and register FFMPEG codec factory to pjmedia endpoint.
@@ -532,6 +546,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_ffmpeg_init(pjmedia_vid_codec_mgr *mgr,
     avcodec_init();
     avcodec_register_all();
     av_log_set_level(AV_LOG_ERROR);
+    av_log_set_callback(&ffmpeg_log);
 
     /* Enum FFMPEG codecs */
     for (c=av_codec_next(NULL); c; c=av_codec_next(c)) 
@@ -1226,6 +1241,8 @@ static pj_status_t ffmpeg_codec_encode( pjmedia_vid_codec *codec,
     pj_uint8_t *out_buf = (pj_uint8_t*)output->buf;
     int out_buf_len = output_buf_len;
     int err;
+
+    PJ_LOG(4, (THIS_FILE, "FFMPEG ENCODE in : %d / out : %d", input->size, output_buf_len));
 
     /* For some reasons (e.g: SSE/MMX usage), the avcodec_encode_video() must
      * have stack aligned to 16 bytes. Let's try to be safe by preparing the

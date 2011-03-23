@@ -197,7 +197,7 @@ PJ_DECL(pj_status_t) test_video_dev( ) {
 
 	    PJ_LOG(3, (THIS_FILE, "List of video codecs:"));
 		pjsua_vid_enum_codecs(c, &count);
-		for (k=0; i<count; ++k) {
+		for (k=0; k<count; ++k) {
 			 PJ_LOG(3, (THIS_FILE, "  %d\t%.*s\n", c[k].priority, (int)c[k].codec_id.slen,
 								   c[k].codec_id.ptr));
 		}
@@ -503,6 +503,7 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 		PJ_LOG(4,(THIS_FILE, "Video dev registered" ));
 
 	    // Registering module for tcp hack
+		/*
 	    static pjsip_module tcp_hack_mod; // cannot be a stack variable
 
 	    memset(&tcp_hack_mod, 0, sizeof(tcp_hack_mod));
@@ -512,8 +513,26 @@ PJ_DECL(pj_status_t) csipsimple_init(pjsua_config *ua_cfg,
 	    tcp_hack_mod.name = pj_str("TCP-Hack");
 
 	    result = pjsip_endpt_register_module(pjsip_ua_get_endpt(pjsip_ua_instance()), &tcp_hack_mod);
+	    */
+
+		// ------ DEBUG -----//
+		pjsua_codec_info c[32];
+		unsigned k, count = PJ_ARRAY_SIZE(c);
 
 
+		PJ_LOG(3, (THIS_FILE, "List of video codecs:"));
+		pjsua_vid_enum_codecs(c, &count);
+		for (k=0; k<count; ++k) {
+			 PJ_LOG(3, (THIS_FILE, "  %d\t%.*s\n", c[k].priority, (int)c[k].codec_id.slen,
+								   c[k].codec_id.ptr));
+		}
+
+		pj_str_t codec_name;
+		codec_name = pj_str("XVID");
+		pjsua_vid_codec_set_priority(&codec_name, 250);
+		codec_name = pj_str("H263-1998");
+		pjsua_vid_codec_set_priority(&codec_name, 100);
+		// END OF DEBUG //
 	}
 
 

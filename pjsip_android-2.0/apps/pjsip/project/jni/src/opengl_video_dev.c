@@ -342,7 +342,6 @@ static pj_status_t ogl_factory_create_stream(
     pjmedia_video_format_detail *vfd;
     const pjmedia_video_format_info *vfi;
     ogl_fmt_info *ogl_fmt_info;
-    pjmedia_format dest_fmt;
 
 
     pjmedia_conversion_param conv_param;
@@ -375,12 +374,13 @@ static pj_status_t ogl_factory_create_stream(
 		PJ_LOG(3, (THIS_FILE, "Requiring format : %d", strm->param.fmt.id));
 
 		if(ogl_fmt_info == NULL){
-
 		    //Reset vfi to be valid for first choosen value
 		    ogl_fmt_info = get_ogl_format_info(sf->dev_info[0].info.fmt[0].id);
 
 		    pjmedia_format_copy(&conv_param.src, &strm->param.fmt);
 		    pjmedia_format_copy(&conv_param.dst, &sf->dev_info[0].info.fmt[0]);
+		    conv_param.dst.det.vid.size.w = conv_param.src.det.vid.size.w;
+		    conv_param.dst.det.vid.size.h = conv_param.src.det.vid.size.h;
 
 		    status = pjmedia_converter_create(NULL, pool, &conv_param,
 								  &strm->cap_conv);
