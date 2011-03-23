@@ -25,7 +25,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import org.pjsip.pjsua.pjsua;
 
-import com.csipsimple.utils.Log;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;

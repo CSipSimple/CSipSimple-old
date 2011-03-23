@@ -146,14 +146,6 @@ public class pjsua_call_info {
     return pjsua_call_media_status.swigToEnum(pjsuaJNI.pjsua_call_info_media_status_get(swigCPtr, this));
   }
 
-  public void setAudio_cnt(long value) {
-    pjsuaJNI.pjsua_call_info_audio_cnt_set(swigCPtr, this, value);
-  }
-
-  public long getAudio_cnt() {
-    return pjsuaJNI.pjsua_call_info_audio_cnt_get(swigCPtr, this);
-  }
-
   public void setMedia_dir(pjmedia_dir value) {
     pjsuaJNI.pjsua_call_info_media_dir_set(swigCPtr, this, value.swigValue());
   }
@@ -168,6 +160,14 @@ public class pjsua_call_info {
 
   public int getConf_slot() {
     return pjsuaJNI.pjsua_call_info_conf_slot_get(swigCPtr, this);
+  }
+
+  public void setMedia_cnt(long value) {
+    pjsuaJNI.pjsua_call_info_media_cnt_set(swigCPtr, this, value);
+  }
+
+  public long getMedia_cnt() {
+    return pjsuaJNI.pjsua_call_info_media_cnt_get(swigCPtr, this);
   }
 
   public void setConnect_duration(pj_time_val value) {

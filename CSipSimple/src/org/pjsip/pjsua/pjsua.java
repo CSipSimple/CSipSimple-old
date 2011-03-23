@@ -571,6 +571,26 @@ public class pjsua implements pjsuaConstants {
     return pjsuaJNI.snd_get_setting(SWIGTYPE_p_pjmedia_aud_dev_cap.getCPtr(cap), pval);
   }
 
+  public synchronized static int vid_enum_devs(SWIGTYPE_p_pjmedia_vid_dev_info info, long[] count) {
+    return pjsuaJNI.vid_enum_devs(SWIGTYPE_p_pjmedia_vid_dev_info.getCPtr(info), count);
+  }
+
+  public synchronized static int vid_get_dev(int[] capture_dev, SWIGTYPE_p_int render_dev) {
+    return pjsuaJNI.vid_get_dev(capture_dev, SWIGTYPE_p_int.getCPtr(render_dev));
+  }
+
+  public synchronized static int vid_set_dev(int capture_dev, int render_dev) {
+    return pjsuaJNI.vid_set_dev(capture_dev, render_dev);
+  }
+
+  public synchronized static int vid_set_setting(SWIGTYPE_p_pjmedia_vid_dev_cap cap, byte[] pval, int keep) {
+    return pjsuaJNI.vid_set_setting(SWIGTYPE_p_pjmedia_vid_dev_cap.getCPtr(cap), pval, keep);
+  }
+
+  public synchronized static int vid_get_setting(SWIGTYPE_p_pjmedia_vid_dev_cap cap, byte[] pval) {
+    return pjsuaJNI.vid_get_setting(SWIGTYPE_p_pjmedia_vid_dev_cap.getCPtr(cap), pval);
+  }
+
   public synchronized static int enum_codecs(pjsua_codec_info id, long[] count) {
     return pjsuaJNI.enum_codecs(pjsua_codec_info.getCPtr(id), id, count);
   }
@@ -585,6 +605,22 @@ public class pjsua implements pjsuaConstants {
 
   public synchronized static int codec_set_param(pj_str_t codec_id, SWIGTYPE_p_pjmedia_codec_param param) {
     return pjsuaJNI.codec_set_param(pj_str_t.getCPtr(codec_id), codec_id, SWIGTYPE_p_pjmedia_codec_param.getCPtr(param));
+  }
+
+  public synchronized static int vid_enum_codecs(pjsua_codec_info id, long[] count) {
+    return pjsuaJNI.vid_enum_codecs(pjsua_codec_info.getCPtr(id), id, count);
+  }
+
+  public synchronized static int vid_codec_set_priority(pj_str_t codec_id, short priority) {
+    return pjsuaJNI.vid_codec_set_priority(pj_str_t.getCPtr(codec_id), codec_id, priority);
+  }
+
+  public synchronized static int vid_codec_get_param(pj_str_t codec_id, SWIGTYPE_p_pjmedia_vid_codec_param param) {
+    return pjsuaJNI.vid_codec_get_param(pj_str_t.getCPtr(codec_id), codec_id, SWIGTYPE_p_pjmedia_vid_codec_param.getCPtr(param));
+  }
+
+  public synchronized static int vid_codec_set_param(pj_str_t codec_id, SWIGTYPE_p_pjmedia_vid_codec_param param) {
+    return pjsuaJNI.vid_codec_set_param(pj_str_t.getCPtr(codec_id), codec_id, SWIGTYPE_p_pjmedia_vid_codec_param.getCPtr(param));
   }
 
   public static int codecs_get_nbr() {

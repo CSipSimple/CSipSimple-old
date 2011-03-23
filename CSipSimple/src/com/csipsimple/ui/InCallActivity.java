@@ -44,6 +44,7 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -115,6 +116,9 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 	private PowerManager powerManager;
 	private WakeLock proximityWakeLock;
 	private PreferencesWrapper prefsWrapper;
+
+	private GLSurfaceView surface;
+	private TestVideoRenderer renderer;
 	
 	private final static int PICKUP_SIP_URI = 0;
 	
@@ -177,6 +181,11 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		if(!prefsWrapper.getPreferenceBooleanValue(SipConfigManager.PREVENT_SCREEN_ROTATION)) {
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		}
+		
+
+		surface = (GLSurfaceView) findViewById(R.id.side_remote); //new GLSurfaceView(this);
+		renderer = new TestVideoRenderer(this);
+		surface.setRenderer(renderer);
 	}
 	
 	
@@ -304,16 +313,18 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 		super.onDestroy();
 	}
 	
-	@Override
-	protected void onNewIntent(Intent intent) {
-		setIntent(intent);
-		//TODO : update UI
-		Log.d(THIS_FILE, "New intent is launched");
-		
-		
-		super.onNewIntent(intent);
-	}
 	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		surface.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		surface.onResume();
+	}
 
 	private static final int UPDATE_FROM_CALL = 1;
 	private static final int UPDATE_FROM_MEDIA = 2;

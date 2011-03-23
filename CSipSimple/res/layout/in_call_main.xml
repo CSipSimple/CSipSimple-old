@@ -30,6 +30,16 @@
 				android:layout_height="fill_parent" />
 		</RelativeLayout>
 		
+		<RelativeLayout
+		  android:layout_width="400dip"
+		  android:layout_height="300dip">
+		    <android.opengl.GLSurfaceView android:id="@+id/side_remote" android:layout_alignParentLeft="true" 
+		    	android:layout_width="fill_parent" android:layout_height="fill_parent"/>
+		    <com.csipsimple.ui.camera.CameraPreview android:layout_alignParentRight="true" android:layout_alignParentBottom="true" 
+		    	android:id="@+id/side_local" 
+		    	android:layout_height="100dip" android:layout_width="100dip" />
+		</RelativeLayout>
+		
 		<LinearLayout
 			android:id="@+id/dialPadContainer"
 			android:orientation="vertical"
