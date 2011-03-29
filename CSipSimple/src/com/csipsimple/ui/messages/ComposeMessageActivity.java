@@ -18,6 +18,9 @@
 package com.csipsimple.ui.messages;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -48,13 +51,12 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.csipsimple.R;
+import com.csipsimple.api.ISipService;
 import com.csipsimple.api.SipCallSession;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipProfile;
-import com.csipsimple.api.SipUri;
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.models.SipMessage;
-import com.csipsimple.api.ISipService;
 import com.csipsimple.service.SipNotifications;
 import com.csipsimple.service.SipService;
 import com.csipsimple.ui.PickupSipUri;
@@ -63,355 +65,377 @@ import com.csipsimple.utils.SmileyParser;
 import com.csipsimple.widgets.AccountChooserButton;
 
 public class ComposeMessageActivity extends Activity implements OnClickListener {
-	private static final String THIS_FILE = "ComposeMessage";
-	private DBAdapter database;
-	private String remoteFrom;
-	private ListView messageList;
-	private TextView fromText;
-	private EditText bodyInput;
-	private AccountChooserButton accountChooserButton;
-	private Button sendButton;
-	private BroadcastReceiver registrationReceiver;
-	private SipNotifications notifications;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+
+    private static final String THIS_FILE = "ComposeMessage";
+    private DBAdapter database;
+    private String remoteFromDisplayName;
+    private String remoteFrom;
+    private ListView messageList;
+    private TextView fromText;
+    private EditText bodyInput;
+    private AccountChooserButton accountChooserButton;
+    private Button sendButton;
+    private BroadcastReceiver registrationReceiver;
+    private SipNotifications notifications;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         setContentView(R.layout.compose_message_activity);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE |
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
         SmileyParser.init(this);
         Log.d(THIS_FILE, "Creating compose message");
-        
+
         messageList = (ListView) findViewById(R.id.history);
         fromText = (TextView) findViewById(R.id.subject);
         bodyInput = (EditText) findViewById(R.id.embedded_text_editor);
         accountChooserButton = (AccountChooserButton) findViewById(R.id.accountChooserButton);
         sendButton = (Button) findViewById(R.id.send_button);
-        
+
         notifications = new SipNotifications(this);
-        
+
         messageList.setDivider(null);
-        
-		// Db
-		if (database == null) {
-			database = new DBAdapter(this);
-		}
-		database.open();
 
-		MessagesCursorAdapter cad = new MessagesCursorAdapter(this, null);
-		messageList.setAdapter(cad);
-		
-		fromText.setOnClickListener(this);
-		sendButton.setOnClickListener(this);
-		
-		registrationReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				if(SipManager.ACTION_SIP_REGISTRATION_CHANGED.equalsIgnoreCase(intent.getAction())) {
-					updateRegistrations();
-				}else if(SipManager.ACTION_SIP_MESSAGE_RECEIVED.equalsIgnoreCase(intent.getAction()) ||
-						SipManager.ACTION_SIP_MESSAGE_STATUS.equalsIgnoreCase(intent.getAction())) {
-					//Check if intent correspond to current message
-					String from = intent.getStringExtra(SipMessage.FIELD_FROM);
-					if(from != null && from.equalsIgnoreCase(remoteFrom)) {
-						loadMessageContent();
-					}
-				}
-			}
-		};
-		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_REGISTRATION_CHANGED));
-		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_RECEIVED));
-		registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_STATUS));
+        // Db
+        if (database == null) {
+            database = new DBAdapter(this);
+        }
+        database.open();
 
-		
+        MessagesCursorAdapter cad = new MessagesCursorAdapter(this, null);
+        messageList.setAdapter(cad);
+
+        fromText.setOnClickListener(this);
+        sendButton.setOnClickListener(this);
+
+        registrationReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (SipManager.ACTION_SIP_REGISTRATION_CHANGED.equalsIgnoreCase(intent.getAction())) {
+                    updateRegistrations();
+                } else if (SipManager.ACTION_SIP_MESSAGE_RECEIVED.equalsIgnoreCase(intent.getAction())
+                        || SipManager.ACTION_SIP_MESSAGE_STATUS.equalsIgnoreCase(intent.getAction())) {
+                    // Check if intent correspond to current message
+                    String from = intent.getStringExtra(SipMessage.FIELD_FROM);
+                    if (from != null && from.equalsIgnoreCase(remoteFrom)) {
+                        loadMessageContent();
+                    }
+                }
+            }
+        };
+        registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_REGISTRATION_CHANGED));
+        registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_RECEIVED));
+        registerReceiver(registrationReceiver, new IntentFilter(SipManager.ACTION_SIP_MESSAGE_STATUS));
+
+
 
         bindService(new Intent(this, SipService.class), connection, Context.BIND_AUTO_CREATE);
-        setFromField(getIntent().getStringExtra(SipMessage.FIELD_FROM));
-        if(remoteFrom == null) {
-			chooseSipUri();
-		}
+        setFromField(getIntent().getStringExtra(SipMessage.DISPLAY_NAME), getIntent().getStringExtra(SipMessage.FIELD_FROM));
+        if (remoteFrom == null) {
+            chooseSipUri();
+        }
         loadMessageContent();
-	}
-	
-	
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		
+    }
 
-    	try {
-			unbindService(connection);
-		}catch(Exception e) {
-			//Just ignore that
-		}
-		service = null;
-		
-		
-		database.close();
-		try {
-			unregisterReceiver(registrationReceiver);
-		} catch (Exception e) {
-			// Nothing to do here
-		}
-	}
-    
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+
+        try {
+            unbindService(connection);
+        } catch (Exception e) {
+            // Just ignore that
+        }
+        service = null;
+
+
+        database.close();
+        try {
+            unregisterReceiver(registrationReceiver);
+        } catch (Exception e) {
+            // Nothing to do here
+        }
+    }
+
     @Override
     protected void onResume() {
-    	Log.d(THIS_FILE, "Resume compose message act");
-    	super.onResume();
-    	notifications.setViewingMessageFrom(remoteFrom);
+        Log.d(THIS_FILE, "Resume compose message act");
+        super.onResume();
+        notifications.setViewingMessageFrom(remoteFrom);
     }
-    
+
     @Override
     protected void onPause() {
-    	super.onPause();
-    	notifications.setViewingMessageFrom(null);
+        super.onPause();
+        notifications.setViewingMessageFrom(null);
     }
-    
-	private final static int PICKUP_SIP_URI = 0;
-	
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		setIntent(intent);
-		setFromField(intent.getStringExtra(SipMessage.FIELD_FROM));
-		if(remoteFrom == null) {
-			chooseSipUri();
-		}
-	}
-	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.d(THIS_FILE, "On activity result");
-		switch (requestCode) {
-		case PICKUP_SIP_URI:
-			if(resultCode == RESULT_OK) {
-				setFromField(data.getStringExtra(Intent.EXTRA_PHONE_NUMBER));
-			}
-			if(remoteFrom == null) {
-				finish();
-			}
-			return;
-		default:
-			break;
-		}
-		super.onActivityResult(requestCode, resultCode, data);
-	}
-	
-	// Service connection
-	private ISipService service;
-	private ServiceConnection connection = new ServiceConnection(){
-		@Override
-		public void onServiceConnected(ComponentName arg0, IBinder arg1) {
-			service = ISipService.Stub.asInterface(arg1);
-			accountChooserButton.updateService(service);
-			updateRegistrations();
-		}
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			service = null;
-		}
+
+    private final static int PICKUP_SIP_URI = 0;
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        setFromField(getIntent().getStringExtra(SipMessage.DISPLAY_NAME), intent.getStringExtra(SipMessage.FIELD_FROM));
+        if (remoteFrom == null) {
+            chooseSipUri();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(THIS_FILE, "On activity result");
+        switch (requestCode) {
+            case PICKUP_SIP_URI:
+                if (resultCode == RESULT_OK) {
+                    setFromField(data.getStringExtra(Intent.EXTRA_PHONE_NUMBER), data.getStringExtra(Intent.EXTRA_PHONE_NUMBER));
+                }
+                if (remoteFrom == null) {
+                    finish();
+                }
+                return;
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // Service connection
+    private ISipService service;
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName arg0, IBinder arg1) {
+            service = ISipService.Stub.asInterface(arg1);
+            accountChooserButton.updateService(service);
+            updateRegistrations();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            service = null;
+        }
     };
-	
-	private void loadMessageContent() {
-		CursorAdapter ad = (CursorAdapter) messageList.getAdapter();
-		
-		if(remoteFrom != null) {
-			Cursor cursor = database.getConversation(remoteFrom);
-			startManagingCursor(cursor);
-			ad.changeCursor(cursor);
-			
-			//And now update the read state of thread
-			database.markConversationAsRead(remoteFrom);
-		}else {
-			ad.changeCursor(null);
-		}
-	}
-	
-	protected void updateRegistrations() {
-		boolean canChangeIfValid = TextUtils.isEmpty(bodyInput.getText().toString());
-		accountChooserButton.updateRegistration(canChangeIfValid);
-	}
-	
-    public static Intent createIntent(Context context, String from) {
+
+    private void loadMessageContent() {
+        CursorAdapter ad = (CursorAdapter) messageList.getAdapter();
+
+        if (remoteFrom != null) {
+            Cursor cursor = database.getConversation(remoteFrom);
+            startManagingCursor(cursor);
+            ad.changeCursor(cursor);
+
+            // And now update the read state of thread
+            database.markConversationAsRead(remoteFrom);
+        } else {
+            ad.changeCursor(null);
+        }
+    }
+
+    protected void updateRegistrations() {
+        boolean canChangeIfValid = TextUtils.isEmpty(bodyInput.getText().toString());
+        accountChooserButton.updateRegistration(canChangeIfValid);
+    }
+
+    public static Intent createIntent(Context context, String displayName, String from) {
         Intent intent = new Intent(context, ComposeMessageActivity.class);
 
         if (from != null) {
+            intent.putExtra(SipMessage.DISPLAY_NAME, displayName);
             intent.putExtra(SipMessage.FIELD_FROM, from);
         }
 
         return intent;
-   }
-    
-    private void setFromField(String from) {
-    	if(from != null) {
-    		if(remoteFrom != from) {
-    			remoteFrom = from;
-    			fromText.setText(remoteFrom);
-    			loadMessageContent();
-    			notifications.setViewingMessageFrom(remoteFrom);
-    		}
-    	}
     }
-    
 
-	public static final class MessageListItemViews {
-		TextView contentView;
-		TextView errorView;
-		ImageView deliveredIndicator;
-	}
-    
-	class MessagesCursorAdapter extends ResourceCursorAdapter {
+    private void setFromField(String displayName, String from) {
+        if (from != null) {
+            if (remoteFrom != from) {
+                remoteFrom = from;
+                if (!displayName.equals(from)) remoteFromDisplayName = displayName;
+                // fromText.setText(remoteFrom);
+                fromText.setText(displayName);
+                loadMessageContent();
+                notifications.setViewingMessageFrom(remoteFrom);
+            }
+        }
+    }
 
-        
-		public MessagesCursorAdapter(Context context, Cursor c) {
-			super(context, R.layout.message_list_item, c);
-		}
 
-		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			final MessageListItemViews tagView = (MessageListItemViews) view.getTag();
-			String number = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_FROM));
-			long date = cursor.getLong(cursor.getColumnIndex(SipMessage.FIELD_DATE));
-			String subject = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_BODY));
-			String mimeType = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_MIME_TYPE));
-			int type = cursor.getInt(cursor.getColumnIndex(SipMessage.FIELD_TYPE));
-			int status = cursor.getInt(cursor.getColumnIndex(SipMessage.FIELD_STATUS));
-			
-			int flags = DateUtils.FORMAT_ABBREV_RELATIVE;
-			String timestamp = (String) DateUtils.getRelativeTimeSpanString(date, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, flags);
-			
-			
-	        
-			
-	        //Delivery state
-	        if(type == SipMessage.MESSAGE_TYPE_QUEUED) {
-	        	tagView.deliveredIndicator.setVisibility(View.VISIBLE);
-	        	tagView.deliveredIndicator.setImageResource(R.drawable.ic_email_pending);
-	        }else if(type == SipMessage.MESSAGE_TYPE_FAILED) {
-	        	tagView.deliveredIndicator.setVisibility(View.VISIBLE);
-	        	tagView.deliveredIndicator.setImageResource(R.drawable.ic_sms_mms_not_delivered);
-	        }else {
-	        	tagView.deliveredIndicator.setVisibility(View.GONE);
-	        }
-	        
-	        if(status == SipMessage.STATUS_NONE 
-	        		|| status == SipCallSession.StatusCode.OK
-	        		|| status == SipCallSession.StatusCode.ACCEPTED) {
-	        	tagView.errorView.setVisibility(View.GONE);
-	        }else {
-	        	
-	        	int splitIndex = subject.indexOf(" // ");
-	        	String errorTxt = null;
-	        	if(splitIndex != -1) {
-	        		errorTxt = subject.substring(splitIndex+4, subject.length());
-	        		subject = subject.substring(0, splitIndex);
-	        	}
-	        	if(errorTxt != null) {
-		        	tagView.errorView.setVisibility(View.VISIBLE);
-		        	tagView.errorView.setText(errorTxt);
-	        	}
-	        }
-	        
-	     // Subject
-	        tagView.contentView.setText(formatMessage(number, subject, timestamp, mimeType));
-	       
-	        view.setBackgroundResource(type == SipMessage.MESSAGE_TYPE_INBOX ? R.drawable.listitem_background_lightblue: R.drawable.listitem_background);
+    public static final class MessageListItemViews {
 
-		}
+        TextView contentView;
+        TextView errorView;
+        ImageView deliveredIndicator;
+    }
 
-		@Override
-		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+    class MessagesCursorAdapter extends ResourceCursorAdapter {
 
-			View view = super.newView(context, cursor, parent);
-			
-			MessageListItemViews tagView = new MessageListItemViews();
-			tagView.contentView = (TextView) view.findViewById(R.id.text_view);
-			tagView.errorView = (TextView) view.findViewById(R.id.error_view);
-			tagView.deliveredIndicator = (ImageView) view.findViewById(R.id.delivered_indicator);
-			
-			view.setTag(tagView);
+        private SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
 
-			return view;
-		}
-		
-		TextAppearanceSpan mTextSmallSpan =
-	        new TextAppearanceSpan(ComposeMessageActivity.this, android.R.style.TextAppearance_Small);
-		
-		private CharSequence formatMessage(String contact, String body, String timestamp, String contentType) {
-			CharSequence template = ComposeMessageActivity.this.getResources().getText(R.string.name_colon);
-			String formatedContact;
-			if(contact.equalsIgnoreCase(SipMessage.SELF)) {
-				formatedContact = getString(R.string.messagelist_sender_self);
-			}else {
-				formatedContact = SipUri.getDisplayedSimpleContact(contact);
-			}
-			SpannableStringBuilder buf = new SpannableStringBuilder(TextUtils.replace(template, 
-					new String[] { "%s" }, 
-					new CharSequence[] { formatedContact }));
+        public MessagesCursorAdapter(Context context, Cursor c) {
+            super(context, R.layout.message_list_item, c);
+        }
 
-			if (!TextUtils.isEmpty(body)) {
-				// Converts html to spannable if ContentType is "text/html".
-				if (contentType != null && "text/html".equals(contentType)) {
-					buf.append("\n");
-					buf.append(Html.fromHtml(body));
-				} else {
-					SmileyParser parser = SmileyParser.getInstance();
-					buf.append(parser.addSmileySpans(body));
-				}
-			}
-			
-			// We always show two lines because the optional icon bottoms are
-			// aligned with the
-			// bottom of the text field, assuming there are two lines for the
-			// message and the sent time.
-			buf.append("\n");
-			int startOffset = buf.length();
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            final MessageListItemViews tagView = (MessageListItemViews) view.getTag();
+            String displayName = cursor.getString(cursor.getColumnIndex(SipMessage.DISPLAY_NAME));
+            String number = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_FROM));
+            long date = cursor.getLong(cursor.getColumnIndex(SipMessage.FIELD_DATE));
+            String subject = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_BODY));
+            String mimeType = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_MIME_TYPE));
+            int type = cursor.getInt(cursor.getColumnIndex(SipMessage.FIELD_TYPE));
+            int status = cursor.getInt(cursor.getColumnIndex(SipMessage.FIELD_STATUS));
 
-			startOffset = buf.length();
-			buf.append(TextUtils.isEmpty(timestamp) ? " " : timestamp);
+            int flags = DateUtils.FORMAT_ABBREV_RELATIVE;
+            String timestamp = dateFormatter.format(new Date(date));// (String) DateUtils.getRelativeTimeSpanString(date, System.currentTimeMillis(),
+                                                                    // DateUtils.MINUTE_IN_MILLIS, flags);
 
-			buf.setSpan(mTextSmallSpan, startOffset, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			
-			return buf;
-		}
 
-	}
-	
-	private void chooseSipUri() {
-		Intent pickupIntent = new Intent(this, PickupSipUri.class);
-		startActivityForResult(pickupIntent, PICKUP_SIP_URI);
-	}
+            // Delivery state
+            if (type == SipMessage.MESSAGE_TYPE_QUEUED) {
+                tagView.deliveredIndicator.setVisibility(View.VISIBLE);
+                tagView.deliveredIndicator.setImageResource(R.drawable.ic_email_pending);
+            } else if (type == SipMessage.MESSAGE_TYPE_FAILED) {
+                tagView.deliveredIndicator.setVisibility(View.VISIBLE);
+                tagView.deliveredIndicator.setImageResource(R.drawable.ic_sms_mms_not_delivered);
+            } else {
+                tagView.deliveredIndicator.setVisibility(View.GONE);
+            }
 
-	private void sendMessage() {
-		if(service != null) {
-			SipProfile acc = accountChooserButton.getSelectedAccount();
-			if(acc != null && acc.id != SipProfile.INVALID_ID) {
-				try {
-					service.sendMessage(bodyInput.getText().toString(), remoteFrom, acc.id);
-					bodyInput.getText().clear();
-					loadMessageContent();
-				} catch (RemoteException e) {
-					Log.e(THIS_FILE, "Not able to send message");
-				}
-			}
-		}
-	}
+            if (status == SipMessage.STATUS_NONE || status == SipCallSession.StatusCode.OK || status == SipCallSession.StatusCode.ACCEPTED) {
+                tagView.errorView.setVisibility(View.GONE);
+            } else {
 
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.subject:
-			chooseSipUri();
-			break;
-		case R.id.send_button:
-			sendMessage();
-			break;
-		default:
-			break;
-		}
-	}
+                int splitIndex = subject.indexOf(" // ");
+                String errorTxt = null;
+                if (splitIndex != -1) {
+                    errorTxt = subject.substring(splitIndex + 4, subject.length());
+                    subject = subject.substring(0, splitIndex);
+                }
+                if (errorTxt != null) {
+                    tagView.errorView.setVisibility(View.VISIBLE);
+                    tagView.errorView.setText(errorTxt);
+                }
+            }
+
+            if (displayName != null && displayName.length() > 0 && !displayName.equals(number)) {
+                remoteFromDisplayName = displayName;
+                fromText.setText(displayName);
+            }
+
+            // Subject
+            tagView.contentView.setText(formatMessage(displayName, number, subject, timestamp, mimeType));
+
+            view.setBackgroundResource(type == SipMessage.MESSAGE_TYPE_INBOX ? R.drawable.listitem_background_lightblue
+                    : R.drawable.listitem_background);
+
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+
+            View view = super.newView(context, cursor, parent);
+
+            MessageListItemViews tagView = new MessageListItemViews();
+            tagView.contentView = (TextView) view.findViewById(R.id.text_view);
+            tagView.errorView = (TextView) view.findViewById(R.id.error_view);
+            tagView.deliveredIndicator = (ImageView) view.findViewById(R.id.delivered_indicator);
+
+            view.setTag(tagView);
+
+            return view;
+        }
+
+        TextAppearanceSpan mTextSmallSpan = new TextAppearanceSpan(ComposeMessageActivity.this, android.R.style.TextAppearance_Small);
+
+        private CharSequence formatMessage(String displayName, String contact, String body, String timestamp, String contentType) {
+            CharSequence template = ComposeMessageActivity.this.getResources().getText(R.string.name_colon);
+            String formatedContact;
+            if (contact.equalsIgnoreCase(SipMessage.SELF)) {
+                formatedContact = getString(R.string.messagelist_sender_self);
+            } else {
+                // formatedContact = SipUri.getDisplayedSimpleContact(contact);
+                formatedContact = displayName;
+            }
+            SpannableStringBuilder buf = new SpannableStringBuilder();
+
+            buf.append("(");
+            buf.append(timestamp);
+            buf.append(") ");
+
+            buf.append(TextUtils.replace(template, new String[] { "%s"}, new CharSequence[] { formatedContact}));
+
+            if (!TextUtils.isEmpty(body)) {
+                // Converts html to spannable if ContentType is "text/html".
+                if (contentType != null && "text/html".equals(contentType)) {
+                    buf.append(Html.fromHtml(body));
+                } else {
+                    SmileyParser parser = SmileyParser.getInstance();
+                    buf.append(parser.addSmileySpans(body));
+                }
+            }
+
+            // We always show two lines because the optional icon bottoms are
+            // aligned with the
+            // bottom of the text field, assuming there are two lines for the
+            // message and the sent time.
+            // buf.append("\n");
+            // int startOffset = buf.length();
+            //
+            // startOffset = buf.length();
+            // buf.append(TextUtils.isEmpty(timestamp) ? " " : timestamp);
+
+            int startOffset = buf.length();
+            buf.setSpan(mTextSmallSpan, startOffset, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            return buf;
+        }
+
+    }
+
+    private void chooseSipUri() {
+        Intent pickupIntent = new Intent(this, PickupSipUri.class);
+        startActivityForResult(pickupIntent, PICKUP_SIP_URI);
+    }
+
+    private void sendMessage() {
+        if (service != null) {
+            SipProfile acc = accountChooserButton.getSelectedAccount();
+            if (acc != null && acc.id != SipProfile.INVALID_ID) {
+                try {
+
+                    if (remoteFromDisplayName != null)
+                        service.sendMessage(bodyInput.getText().toString(), "<" + remoteFromDisplayName + ">" + remoteFrom, acc.id);
+                    else
+                        service.sendMessage(bodyInput.getText().toString(), remoteFrom, acc.id);
+
+                    bodyInput.getText().clear();
+                    loadMessageContent();
+                } catch (RemoteException e) {
+                    Log.e(THIS_FILE, "Not able to send message");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.subject:
+                chooseSipUri();
+                break;
+            case R.id.send_button:
+                sendMessage();
+                break;
+            default:
+                break;
+        }
+    }
 }

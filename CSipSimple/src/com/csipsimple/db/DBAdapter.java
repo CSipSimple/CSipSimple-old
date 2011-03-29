@@ -129,6 +129,7 @@ public class DBAdapter {
 		+ MESSAGES_TABLE_NAME
 		+ " ("
 			+ SipMessage.FIELD_ID					+ " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + SipMessage.DISPLAY_NAME             + " TEXT,"
 			+ SipMessage.FIELD_FROM				+ " TEXT,"
 			+ SipMessage.FIELD_TO					+ " TEXT,"
 			+ SipMessage.FIELD_CONTACT				+ " TEXT,"
@@ -719,6 +720,7 @@ public class DBAdapter {
 		return db.query(MESSAGES_TABLE_NAME, 
 				new String[]{
 					"ROWID AS _id",
+                    SipMessage.DISPLAY_NAME, 
 					SipMessage.FIELD_FROM, 
 					SipMessage.FIELD_TO, 
 					"CASE WHEN "+SipMessage.FIELD_FROM+"='SELF' THEN "+SipMessage.FIELD_TO+" WHEN "+SipMessage.FIELD_FROM+"!='SELF' THEN "+SipMessage.FIELD_FROM+" END AS message_ordering",
@@ -737,6 +739,7 @@ public class DBAdapter {
 		return db.query(MESSAGES_TABLE_NAME, 
 				new String[]{
 					"ROWID AS _id",
+                    SipMessage.DISPLAY_NAME, 
 					SipMessage.FIELD_FROM, 
 					SipMessage.FIELD_BODY, 
 					SipMessage.FIELD_DATE, 

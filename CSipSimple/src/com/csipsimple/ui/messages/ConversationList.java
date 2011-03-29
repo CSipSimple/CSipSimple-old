@@ -215,19 +215,19 @@ public class ConversationList extends ListActivity {
         } else {
             ConversationListItemViews tag = (ConversationListItemViews) v.getTag();
             if (tag.from.equals("SELF")) {
-                openThread(tag.to);
+                openThread(tag.displayName, tag.to);
             } else {
-                openThread(tag.from);
+                openThread(tag.displayName, tag.from);
             }
         }
     }
 
     private void createNewMessage() {
-        startActivity(ComposeMessageActivity.createIntent(this, null));
+        startActivity(ComposeMessageActivity.createIntent(this, null, null));
     }
 
-    private void openThread(String from) {
-        startActivity(ComposeMessageActivity.createIntent(this, from));
+    private void openThread(String displayName, String from) {
+        startActivity(ComposeMessageActivity.createIntent(this, displayName, from));
     }
     
     private void confirmDeleteThread(final String from) {
@@ -275,6 +275,7 @@ public class ConversationList extends ListActivity {
     public boolean onContextItemSelected(MenuItem item) {
         Cursor cursor = ((CursorAdapter) getListAdapter()).getCursor();
         if (cursor != null && cursor.getPosition() >= 0) {
+            String displayName = cursor.getString(cursor.getColumnIndex(SipMessage.DISPLAY_NAME));
             String number = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_FROM));
             
             if (number.equals("SELF")) {
@@ -287,7 +288,7 @@ public class ConversationList extends ListActivity {
                 break;
             }
             case MENU_VIEW: {
-                openThread(number);
+                openThread(displayName, number);
                 break;
             }
             /*
@@ -318,6 +319,7 @@ public class ConversationList extends ListActivity {
 		TextView fromView;
 		TextView dateView;
 		TextView subjectView;
+        String displayName;
 		String from;
 		String to;
 	}
@@ -337,6 +339,7 @@ public class ConversationList extends ListActivity {
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			final ConversationListItemViews tagView = (ConversationListItemViews) view.getTag();
+            String displayName = cursor.getString(cursor.getColumnIndex(SipMessage.DISPLAY_NAME));
 			String number = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_FROM));
 			String to_number = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_TO));
 			int read = cursor.getInt(cursor.getColumnIndex(SipMessage.FIELD_READ));
@@ -357,6 +360,7 @@ public class ConversationList extends ListActivity {
 //	        subjectLayout.addRule(RelativeLayout.LEFT_OF, R.id.date);
 			
 			//From
+            tagView.displayName = displayName;
 			tagView.from = number;
 			tagView.to = to_number;
 			tagView.fromView.setText(formatMessage(cursor));
@@ -384,14 +388,16 @@ public class ConversationList extends ListActivity {
 		}
 		
 		private CharSequence formatMessage(Cursor cursor) {
+            String displayName = cursor.getString(cursor.getColumnIndex(SipMessage.DISPLAY_NAME));
 			String remoteContact = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_FROM));
 	        SpannableStringBuilder buf = new SpannableStringBuilder();
 			if (remoteContact.equals("SELF")) {
 				remoteContact = cursor.getString(cursor.getColumnIndex(SipMessage.FIELD_TO));
 				buf.append("To: ");
 			}
-                buf.append(SipUri.getDisplayedSimpleContact(remoteContact));
-	        
+//                buf.append(SipUri.getDisplayedSimpleContact(remoteContact));
+            buf.append(displayName);
+        
 	        int counter = cursor.getInt(cursor.getColumnIndex("counter"));
 	        if (counter > 1) {
 	            buf.append(" (" + counter + ") ");

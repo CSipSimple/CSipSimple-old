@@ -20,12 +20,12 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- The name of the SMS/MMS app as it appears to the user in the Home screen, task switcher, etc. -->
-    <string name="app_label">Messaging</string>
+    <string name="app_label">Chat</string>
 
     <!-- Command name to open a Compose screen; displays in conversation list -->
-    <string name="new_message">New message</string>
+    <string name="new_message">New Chat</string>
     <!-- Summary text under "New Message" command; displays in conversation list -->
-    <string name="create_new_message">Compose new message</string>
+    <string name="create_new_message">Start new chat</string>
 
     <!-- Menu item for starting a new conversation -->
     <string name="menu_compose_new">Compose</string>
