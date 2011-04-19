@@ -32,6 +32,10 @@
 					android:summary="@string/gsm_integration_type_desc"
 					android:defaultValue="0"
 					android:entryValues="@array/gsm_integration_type_values" android:entries="@array/gsm_integration_type_choices"/>
+					
+		<ListPreference android:key="selected_theme"
+			android:title="@string/theme" android:summary="@string/theme_desc" 
+			android:defaultValue="" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="@string/general_ui">
 		
@@ -90,6 +94,10 @@
 			android:key="icon_in_status_bar" 
 			android:title="@string/display_icon_in_status_bar" 
 			android:summary="@string/display_icon_in_status_bar_desc"/>
+		<CheckBoxPreference android:defaultValue="false" 
+			android:key="icon_in_status_bar_nbr" 
+			android:title="@string/display_icon_in_status_bar_nbr" 
+			android:summary="@string/display_icon_in_status_bar_nbr_desc"/>
 		
 		<EditTextPreference android:key="log_level"
 				android:title="@string/log_level"

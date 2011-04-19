@@ -313,12 +313,18 @@ public final class SipCallSession implements Parcelable {
 	public boolean isLocalHeld(){
 		return mediaStatus == SipCallSession.MediaState.LOCAL_HOLD;
 	}
+	
+	
+	public boolean isRemoteHeld() {
+		return (mediaStatus == SipCallSession.MediaState.NONE && isActive() && !isBeforeConfirmed());
+	}
 
 	public boolean isBeforeConfirmed() {
 		switch(callState) {
 		case InvState.CALLING :
 		case InvState.INCOMING:
 		case InvState.EARLY:
+		case InvState.CONNECTING:
 			return true;
 		default : 
 			return false;

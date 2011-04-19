@@ -36,6 +36,8 @@ import com.csipsimple.utils.CustomDistribution;
 import com.csipsimple.wizards.impl.A1;
 import com.csipsimple.wizards.impl.Advanced;
 import com.csipsimple.wizards.impl.Basic;
+import com.csipsimple.wizards.impl.Betamax;
+import com.csipsimple.wizards.impl.BroadVoice;
 import com.csipsimple.wizards.impl.Callcentric;
 import com.csipsimple.wizards.impl.CamundaNet;
 import com.csipsimple.wizards.impl.DeltaThree;
@@ -46,6 +48,7 @@ import com.csipsimple.wizards.impl.Expert;
 import com.csipsimple.wizards.impl.Fayn;
 import com.csipsimple.wizards.impl.Freephonie;
 import com.csipsimple.wizards.impl.Gizmo5;
+import com.csipsimple.wizards.impl.IPshka;
 import com.csipsimple.wizards.impl.ITTelenet;
 import com.csipsimple.wizards.impl.IiNet;
 import com.csipsimple.wizards.impl.Ip2Mobile;
@@ -63,13 +66,17 @@ import com.csipsimple.wizards.impl.Pennytel;
 import com.csipsimple.wizards.impl.Phonzo;
 import com.csipsimple.wizards.impl.PlanetPhone;
 import com.csipsimple.wizards.impl.Pozitel;
+import com.csipsimple.wizards.impl.Sapo;
 import com.csipsimple.wizards.impl.Scarlet;
 import com.csipsimple.wizards.impl.Sip2Sip;
+import com.csipsimple.wizards.impl.SipCel;
 import com.csipsimple.wizards.impl.SipSorcery;
 import com.csipsimple.wizards.impl.Sipgate;
+import com.csipsimple.wizards.impl.SiptelPt;
 import com.csipsimple.wizards.impl.Speakezi;
 import com.csipsimple.wizards.impl.UkrTelecom;
 import com.csipsimple.wizards.impl.VPhone;
+import com.csipsimple.wizards.impl.Viva;
 import com.csipsimple.wizards.impl.Vono;
 import com.csipsimple.wizards.impl.WiMobile;
 
@@ -196,6 +203,14 @@ public class WizardUtils {
 					R.drawable.ic_wizard_camundanet, 15, 
 					new Locale[]{}, false, true, 
 					CamundaNet.class));
+			WIZARDS_DICT.put("BETAMAX", new WizardInfo("BETAMAX", "Betamax clone", 
+					R.drawable.ic_wizard_basic, 30, 
+					new Locale[]{}, false, true, 
+					Betamax.class));
+			WIZARDS_DICT.put("SIPCEL", new WizardInfo("SIPCEL", "SIPCEL", 
+					R.drawable.ic_wizard_sipcel, 14, 
+					new Locale[]{}, false, true, 
+					SipCel.class));
 			
 			
 			//Locales
@@ -312,7 +327,6 @@ public class WizardUtils {
 					R.drawable.ic_wizard_vono, 10, 
 					new Locale[] {new Locale("PT", "br")}, false, false, 
 					Vono.class));
-			
 			WIZARDS_DICT.put("OVH", new WizardInfo("OVH", "Ovh", 
 					R.drawable.ic_wizard_ovh, 10, 
 					new Locale[]{
@@ -328,6 +342,28 @@ public class WizardUtils {
 						new Locale("CS", "cz"),
 					}, false, false, 
 					Fayn.class));
+			WIZARDS_DICT.put("VIVA", new WizardInfo("VIVA", "Viva VoIP", 
+					R.drawable.ic_wizard_viva, 30, 
+					new Locale[]{
+						new Locale("EL", "gr"),
+					}, false, false, 
+					Viva.class));
+			WIZARDS_DICT.put("SAPO", new WizardInfo("SAPO", "Sapo", 
+					R.drawable.ic_wizard_sapo, 20, 
+					new Locale[] {new Locale("PT", "pt")}, false, false, 
+					Sapo.class));
+			WIZARDS_DICT.put("BROADVOICE", new WizardInfo("BROADVOICE", "BroadVoice", 
+					R.drawable.ic_wizard_broadvoice, 19, 
+					new Locale[]{Locale.US}, false, false, 
+					BroadVoice.class));
+			WIZARDS_DICT.put("SIPTEL", new WizardInfo("SIPTEL", "Siptel", 
+					R.drawable.ic_wizard_siptel, 10, 
+					new Locale[] {new Locale("PT", "pt")}, false, false, 
+					SiptelPt.class));
+			WIZARDS_DICT.put("IPSHKA", new WizardInfo("IPSHKA", "IPshka", 
+					R.drawable.ic_wizard_ipshka, 10, 
+					new Locale[]{new Locale("UK", "ua")}, false, false, 
+					IPshka.class));
 			
 		}else {
 			WizardInfo info = CustomDistribution.getCustomDistributionWizard();

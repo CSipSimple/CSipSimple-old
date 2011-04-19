@@ -305,6 +305,14 @@ public class AccountsList extends Activity implements OnItemClickListener {
 		case REQUEST_MODIFY:
 			if(resultCode == RESULT_OK){
 				handler.sendMessage(handler.obtainMessage(NEED_LIST_UPDATE));
+				/*
+				int accId = data.getIntExtra(Intent.EXTRA_UID, -1);
+				if(accId != -1) {
+					reloadAsyncAccounts(accId, 1);
+				}else {
+					reloadAsyncAccounts(null, 1);
+				}
+				*/
 			}
 			break;
 		case CHANGE_WIZARD:
@@ -338,6 +346,9 @@ public class AccountsList extends Activity implements OnItemClickListener {
 				if (service != null) {
 					Log.d(THIS_FILE, "Will reload all accounts !");
 					try {
+						//Ensure sip service is started
+						service.sipStart();
+						
 						if(accountId == null) {
 							service.reAddAllAccounts();
 						}else {

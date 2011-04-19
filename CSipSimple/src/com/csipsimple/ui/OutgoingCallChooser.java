@@ -38,6 +38,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -474,8 +475,8 @@ public class OutgoingCallChooser extends ListActivity {
 				try {
 					String phoneNumber = number;
 					String toCall = Filter.rewritePhoneNumber(account, phoneNumber, database);
-					
-					service.makeCall("sip:"+toCall, account.id);
+
+					service.makeCall("sip:" + toCall, account.id);
 					finish();
 				} catch (RemoteException e) {
 					Log.e(THIS_FILE, "Unable to make the call", e);
@@ -504,12 +505,12 @@ public class OutgoingCallChooser extends ListActivity {
 			}
 			if (accountInfo != null && accountInfo.isActive()) {
 				if ( (accountInfo.getPjsuaId() >= 0 && accountInfo.getStatusCode() == SipCallSession.StatusCode.OK) ||
-						accountInfo.getWizard().equalsIgnoreCase("LOCAL") ) {
+						TextUtils.isEmpty( accountInfo.getRegUri() ) ) {
 					try {
 						String phoneNumber = number;
 						String toCall = Filter.rewritePhoneNumber(account, phoneNumber, database);
 						
-						service.makeCall("sip:"+toCall, account.id);
+						service.makeCall("sip:" + toCall, account.id);
 						accountToCallTo = null;
 						finish();
 						return true;

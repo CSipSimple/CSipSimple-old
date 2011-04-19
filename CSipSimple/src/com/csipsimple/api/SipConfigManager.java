@@ -36,22 +36,28 @@ public class SipConfigManager {
 	public static final String ENABLE_VAD = "enable_vad";
 	public static final String SND_MIC_LEVEL = "snd_mic_level";
 	public static final String SND_SPEAKER_LEVEL = "snd_speaker_level";
+	public static final String SND_BT_MIC_LEVEL = "snd_bt_mic_level";
+	public static final String SND_BT_SPEAKER_LEVEL = "snd_bt_speaker_level";
 	public static final String HAS_IO_QUEUE = "has_io_queue";
 	public static final String BITS_PER_SAMPLE = "bits_per_sample";
 	public static final String SET_AUDIO_GENERATE_TONE = "set_audio_generate_tone";
 	public static final String THREAD_COUNT = "thread_count";
 	public static final String ECHO_MODE = "echo_mode";
 	public static final String SND_PTIME = "snd_ptime";
+	public static final String USE_SGS_CALL_HACK = "use_sgs_call_hack";
+	public static final String DTMF_MODE = "dtmf_mode";
+	public static final String USE_ROUTING_API = "use_routing_api";
+	public static final String USE_MODE_API = "use_mode_api";
+	public static final String SIP_AUDIO_MODE = "sip_audio_mode";
+	public static final String MICRO_SOURCE = "micro_source";
 	
 	//UI
 	public static final String USE_SOFT_VOLUME = "use_soft_volume";
 	public static final String PREVENT_SCREEN_ROTATION = "prevent_screen_rotation";
 	public static final String LOG_LEVEL = "log_level";
-	public static final String DTMF_MODE = "dtmf_mode";
-	public static final String USE_ROUTING_API = "use_routing_api";
-	public static final String USE_MODE_API = "use_mode_api";
-	public static final String SIP_AUDIO_MODE = "sip_audio_mode";
+	public static final String THEME = "selected_theme";
 	public static final String ICON_IN_STATUS_BAR = "icon_in_status_bar";
+	public static final String ICON_IN_STATUS_BAR_NBR = "icon_in_status_bar_nbr";
 	public static final String KEEP_AWAKE_IN_CALL = "keep_awake_incall";
 	public static final String GSM_INTEGRATION_TYPE = "gsm_integration_type";
 	public static final String DIAL_PRESS_TONE_MODE = "dial_press_tone_mode";
@@ -78,6 +84,7 @@ public class SipConfigManager {
 	public static final String KEEP_ALIVE_INTERVAL_WIFI = "keep_alive_interval_wifi";
 	public static final String KEEP_ALIVE_INTERVAL_MOBILE = "keep_alive_interval_mobile";
 	public static final String OVERRIDE_NAMESERVER = "override_nameserver";
+	public static final String USE_COMPACT_FORM = "use_compact_form";
 	
 	// SECURE
 	public static final String ENABLE_TLS = "enable_tls";
@@ -99,6 +106,7 @@ public class SipConfigManager {
 	
 	public static final String CODEC_NB = "nb";
 	public static final String CODEC_WB = "wb";
+	
 	
 	public static String getCodecKey(String codecName, String type) {
 		String[] codecParts = codecName.split("/");

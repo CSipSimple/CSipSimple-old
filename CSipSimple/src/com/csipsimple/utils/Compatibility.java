@@ -30,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.media.AudioManager;
+import android.media.MediaRecorder.AudioSource;
 import android.net.Uri;
 import android.net.Uri.Builder;
 import android.provider.Contacts;
@@ -86,6 +87,10 @@ public class Compatibility {
 	public static boolean shouldUseRoutingApi() {
 		Log.d(THIS_FILE, "Current device " + android.os.Build.BRAND + " - " + android.os.Build.DEVICE);
 
+		if(isCompatible(9)) {
+			return false;
+		}
+		
 		//HTC evo 4G
 		if(android.os.Build.PRODUCT.equalsIgnoreCase("htc_supersonic")) {
 			return true;
@@ -101,6 +106,12 @@ public class Compatibility {
 	
 	public static boolean shouldUseModeApi() {
 		Log.d(THIS_FILE, "Current device " + android.os.Build.BRAND + " - " + android.os.Build.DEVICE);
+		
+		// Horray api level 9 thanks to the stock sip app seems to be consistant :D
+		if(isCompatible(9)) {
+			return false;
+		}
+		
 		//ZTE blade
 		if(android.os.Build.DEVICE.equalsIgnoreCase("blade")) {
 			return true;
@@ -128,7 +139,7 @@ public class Compatibility {
 
 
 	public static String guessInCallMode() {
-		if (android.os.Build.BRAND.equalsIgnoreCase("sdg")) {
+		if (android.os.Build.BRAND.equalsIgnoreCase("sdg") || isCompatible(9)) {
 			return "3";
 		}
 		if(android.os.Build.DEVICE.equalsIgnoreCase("blade")) {
@@ -140,6 +151,36 @@ public class Compatibility {
 		}
 
 		return Integer.toString(AudioManager.MODE_NORMAL);
+	}
+	
+	public static String getDefaultMicroSource() {
+		if(isCompatible(10)) {
+			// Note that in APIs this is only available from level 11.
+			// VOICE_COMMUNICATION
+			return Integer.toString(0x7);
+		}
+		/*
+		 * Too risky in terms of regressions
+		 else if (isCompatible(4)) {
+			// VOICE_CALL
+			return 0x4;
+		}
+		*/
+		if(android.os.Build.DEVICE.equalsIgnoreCase("olympus")) {
+			//Motorola atrix bug
+			// CAMCORDER
+			return Integer.toString(0x5);
+		}
+		
+		return Integer.toString(AudioSource.DEFAULT);
+	}
+	
+	public static String getDefaultFrequency() {
+		if(android.os.Build.DEVICE.equalsIgnoreCase("olympus")) {
+			// Atrix bug
+			return "32000";
+		}
+		return isCompatible(4) ? "16000" : "8000";
 	}
 	
 	public static String getCpuAbi() {
@@ -157,6 +198,10 @@ public class Compatibility {
 	}
 	
 	private static boolean needPspWorkaround(PreferencesWrapper preferencesWrapper) {
+		if(isCompatible(9)) {
+			return false;
+		}
+		
 		//Nexus one is impacted
 		if(android.os.Build.DEVICE.equalsIgnoreCase("passion")){
 			return true;
@@ -184,7 +229,8 @@ public class Compatibility {
 		//Motorola milestone 1 and 2 & motorola droid
 		if(android.os.Build.DEVICE.toLowerCase().contains("milestone2") ||
 				android.os.Build.BOARD.toLowerCase().contains("sholes") ||
-				android.os.Build.PRODUCT.toLowerCase().contains("sholes")  ) {
+				android.os.Build.PRODUCT.toLowerCase().contains("sholes") ||
+				android.os.Build.DEVICE.equalsIgnoreCase("olympus") ) {
 			return true;
 		}
 		
@@ -199,7 +245,17 @@ public class Compatibility {
 		}
 		return false;
 	}
-	
+
+	private static boolean needSGSWorkaround(PreferencesWrapper preferencesWrapper) {
+		if(isCompatible(9)) {
+			return false;
+		}
+		if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000") ||
+				android.os.Build.DEVICE.toUpperCase().startsWith("GT-P1000") ) {
+			return true;
+		}
+		return false;
+	}
 	
 	private static void resetCodecsSettings(PreferencesWrapper preferencesWrapper) {
 		//Disable iLBC if not armv7
@@ -254,7 +310,7 @@ public class Compatibility {
 		
 		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SND_MEDIA_QUALITY, getCpuAbi().equalsIgnoreCase("armeabi-v7a") ? "4" : "3");
 		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SND_AUTO_CLOSE_TIME, isCompatible(4) ? "1" : "5");
-		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SND_CLOCK_RATE, isCompatible(4) ? "16000" : "8000");
+		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SND_CLOCK_RATE, getDefaultFrequency());
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.ECHO_CANCELLATION, isCompatible(4) ? true : false);
 		//HTC PSP mode hack
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(preferencesWrapper));
@@ -265,23 +321,29 @@ public class Compatibility {
 		}
 		
 		// Galaxy S default settings
-		if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000")) {
+		if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000") && !isCompatible(9)) {
 			preferencesWrapper.setPreferenceFloatValue(SipConfigManager.SND_MIC_LEVEL, (float) 0.4);
 			preferencesWrapper.setPreferenceFloatValue(SipConfigManager.SND_SPEAKER_LEVEL, (float) 0.2);
 			preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SOFT_VOLUME, true);
 		}
 		//HTC evo 4G
-		if(android.os.Build.PRODUCT.equalsIgnoreCase("htc_supersonic")) {
+		if(android.os.Build.PRODUCT.equalsIgnoreCase("htc_supersonic") && !isCompatible(9)) {
 			preferencesWrapper.setPreferenceFloatValue(SipConfigManager.SND_MIC_LEVEL, (float) 0.5);
 			preferencesWrapper.setPreferenceFloatValue(SipConfigManager.SND_SPEAKER_LEVEL, (float) 1.5);
 			
 		}
 		
-		//Use routing API?
+		//Api to use for routing
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ROUTING_API, shouldUseRoutingApi());
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_MODE_API, shouldUseModeApi());
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround(preferencesWrapper));
+		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround(preferencesWrapper));
+		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SIP_AUDIO_MODE, guessInCallMode());
+		preferencesWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
+		
 	}
+
+
 
 	public static boolean useFlipAnimation() {
 		if (android.os.Build.BRAND.equalsIgnoreCase("archos")) {
@@ -356,6 +418,9 @@ public class Compatibility {
 		return canMakeSkypeCall;
 	}
 	
+	
+	
+	
 
 	public static Intent getContactPhoneIntent() {
     	Intent intent = new Intent(Intent.ACTION_PICK);
@@ -379,7 +444,7 @@ public class Compatibility {
 		if (lastSeenVersion < 14) {
 			
 			// Galaxy S default settings
-			if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000")) {
+			if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000") && !isCompatible(9)) {
 				prefWrapper.setPreferenceFloatValue(SipConfigManager.SND_MIC_LEVEL, (float) 0.4);
 				prefWrapper.setPreferenceFloatValue(SipConfigManager.SND_SPEAKER_LEVEL, (float) 0.2);
 			}
@@ -394,7 +459,7 @@ public class Compatibility {
 		//Now we use svn revisions
 		if (lastSeenVersion < 369) {
 			// Galaxy S default settings
-			if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000")) {
+			if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000") && !isCompatible(9)) {
 				prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SOFT_VOLUME, true);
 			}
 			
@@ -443,8 +508,35 @@ public class Compatibility {
 		if(lastSeenVersion < 613) {
 			resetCodecsSettings(prefWrapper);
 		}
+		if(lastSeenVersion < 704) {
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround(prefWrapper));
+		}
+		if(lastSeenVersion < 794) {
+			prefWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
+			prefWrapper.setPreferenceStringValue(SipConfigManager.SND_CLOCK_RATE, getDefaultFrequency());
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
+		}
 	}
 
+	public static void updateApiVersion(PreferencesWrapper prefWrapper, int lastSeenVersion, int runningVersion) {
+		// Always do for downgrade cases
+		//	if(isCompatible(9)) {
+			//Reset media settings since now interface is clean and works (should work...)
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ROUTING_API, shouldUseRoutingApi());
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_MODE_API, shouldUseModeApi());
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround(prefWrapper));
+			prefWrapper.setPreferenceStringValue(SipConfigManager.SIP_AUDIO_MODE, guessInCallMode());
+			prefWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
+			if(isCompatible(9)) {
+				prefWrapper.setPreferenceFloatValue(SipConfigManager.SND_MIC_LEVEL, (float) 1.0);
+				prefWrapper.setPreferenceFloatValue(SipConfigManager.SND_SPEAKER_LEVEL, (float) 1.0);
+				prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SOFT_VOLUME, false);
+			}
+			
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
 
+	//	}
+	}
 }
 

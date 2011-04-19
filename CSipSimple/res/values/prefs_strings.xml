@@ -75,6 +75,9 @@
 <string name="keep_alive_interval_wifi">Wifi keep alive</string>
 <string name="keep_alive_interval_mobile">Mobile keep alive</string>
 <string name="keep_alive_interval_desc">Interval (sec) for KA packets</string>
+<string name="use_compact_form">Use compact SIP</string>
+<string name="use_compact_form_desc">Reduce SIP packets size. May not work on old SIP servers</string>
+
 
 <!-- Security -->
 <string name="tls">TLS</string>
@@ -118,6 +121,8 @@
 <string name="snd_mic_level_desc">Adjust the micro signal level (1 do nothing)</string>
 <string name="snd_speaker_level">Speaker amplification</string>
 <string name="snd_speaker_level_desc">Adjust the speaker signal level (1 do nothing)</string>
+<string name="snd_bt_mic_level">Bluetooth micro amplification</string>
+<string name="snd_bt_speaker_level">Bluetooth listening amplification</string>
 <string name="snd_stream_level">Initial stream level</string>
 <string name="snd_stream_level_desc">Set the initial level for audio stream (Android stream)</string>
 <string name="snd_auto_close_time">Auto close time</string>
@@ -143,6 +148,8 @@
 <string name="use_mode_api_desc">Try to enable that if audio is routing to speaker instead of earpiece</string>
 <string name="sip_audio_mode">Audio mode for SIP calls</string>
 <string name="sip_audio_mode_desc">Change only if developers advise you to</string>
+<string name="micro_source">Micro source</string>
+<string name="micro_source_desc">Source for micro. Choosing the appropriate value may improve echo cancellation</string>
 <string name="has_io_queue">IO Queue</string>
 <string name="has_io_queue_desc">Activate Queue for input/output</string>
 <string name="set_audio_generate_tone">Tone hack</string>
@@ -155,6 +162,8 @@
 <string name="band_for_edge">Band type for EDGE</string>
 <string name="band_for_other">Band type for other</string>
 <string name="codecs_band_types">Connections bandwidth types for codecs</string>
+<string name="use_sgs_call_hack">Use Samsung Galaxy Hack</string>
+<string name="use_sgs_call_hack_desc">Pre set call mode to solve routing</string>
 
 <!-- UI -->
 <string name="general_ui">General user interface</string>
@@ -189,7 +198,11 @@
 <string name="gsm_integration_type_desc">How the application uses your mobile phone (or not)</string>
 <string name="invert_proximity_sensor">Invert proximity sensor</string>
 <string name="invert_proximity_sensor_desc">May help on some devices when manufacturer inverted near and far</string>
-
+<string name="theme">Theme</string>
+<string name="theme_desc">Theme for the application</string>
+<string name="display_icon_in_status_bar_nbr">Display number in status bar</string>
+<string name="display_icon_in_status_bar_nbr_desc">Display the number of registered accounts in status bar</string>
+    
 <!-- Fast settings -->
 <string name="android_integration">Integrate with Android</string>
 <string name="android_integration_desc">Integration with native dialer and call logs</string>

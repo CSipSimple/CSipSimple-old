@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 
 import com.csipsimple.api.SipManager;
+import com.csipsimple.api.SipProfile;
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
@@ -60,13 +61,22 @@ public class DeviceStateReceiver extends BroadcastReceiver {
 			if (prefWrapper.isValidConnectionForIncoming() && !prefWrapper.hasBeenQuit()) {
 				Log.d(THIS_FILE, "Try to start service if not already started");
 				Intent sip_service_intent = new Intent(context, SipService.class);
+				sip_service_intent.putExtra(SipService.EXTRA_DIRECT_CONNECT, false);
 				context.startService(sip_service_intent);
 			}
 			Log.d(THIS_FILE, "<<< Data device change detected");
 			
-		}else if(intentAction.equals(SipService.INTENT_SIP_ACCOUNT_ACTIVATE)) {
-			long accId = intent.getLongExtra(SipManager.EXTRA_ACCOUNT_ID, -1);
-			if(accId != -1) {
+		}else if(intentAction.equals(SipManager.INTENT_SIP_ACCOUNT_ACTIVATE)) {
+			long accId;
+			accId = intent.getLongExtra(SipManager.EXTRA_ACCOUNT_ID, SipProfile.INVALID_ID);
+			
+			if(accId == SipProfile.INVALID_ID) {
+				// allow remote side to send us integers.
+				// previous call will warn, but that's fine, no worries
+				accId = intent.getIntExtra(SipManager.EXTRA_ACCOUNT_ID, SipProfile.INVALID_ID);
+			}
+			
+			if(accId != SipProfile.INVALID_ID) {
 	    		DBAdapter database = new DBAdapter(context);
 				database.open();
 				boolean active = intent.getBooleanExtra(SipManager.EXTRA_ACTIVATE, true);

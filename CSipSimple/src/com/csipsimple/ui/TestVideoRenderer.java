@@ -17,6 +17,8 @@
  */
 package com.csipsimple.ui;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -79,8 +81,12 @@ public class TestVideoRenderer implements Renderer {
     
     static
     {
-            quadBuffer = FloatBuffer.wrap(quadCoords);
-            quadTexBuffer = FloatBuffer.wrap(quadTexCoords);
+            quadBuffer = (FloatBuffer) ByteBuffer.allocateDirect( 3 * 4 * 4 )
+            				.order(ByteOrder.nativeOrder()).asFloatBuffer()
+            				.put(quadCoords).position(0);
+            quadTexBuffer = (FloatBuffer) ByteBuffer.allocateDirect( 2 * 4 * 4 )
+							.order(ByteOrder.nativeOrder()).asFloatBuffer()
+							.put(quadTexCoords).position(0);
     }
 
     

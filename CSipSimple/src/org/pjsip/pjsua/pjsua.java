@@ -322,16 +322,16 @@ public class pjsua implements pjsuaConstants {
     return pjsuaJNI.call_hangup(call_id, code, pj_str_t.getCPtr(reason), reason, SWIGTYPE_p_pjsua_msg_data.getCPtr(msg_data));
   }
 
-  public synchronized static int call_process_redirect(int call_id, SWIGTYPE_p_pjsip_redirect_op cmd) {
-    return pjsuaJNI.call_process_redirect(call_id, SWIGTYPE_p_pjsip_redirect_op.getCPtr(cmd));
+  public synchronized static int call_process_redirect(int call_id, pjsip_redirect_op cmd) {
+    return pjsuaJNI.call_process_redirect(call_id, cmd.swigValue());
   }
 
   public synchronized static int call_set_hold(int call_id, SWIGTYPE_p_pjsua_msg_data msg_data) {
     return pjsuaJNI.call_set_hold(call_id, SWIGTYPE_p_pjsua_msg_data.getCPtr(msg_data));
   }
 
-  public synchronized static int call_reinvite(int call_id, int unhold, SWIGTYPE_p_pjsua_msg_data msg_data) {
-    return pjsuaJNI.call_reinvite(call_id, unhold, SWIGTYPE_p_pjsua_msg_data.getCPtr(msg_data));
+  public synchronized static int call_reinvite(int call_id, long options, SWIGTYPE_p_pjsua_msg_data msg_data) {
+    return pjsuaJNI.call_reinvite(call_id, options, SWIGTYPE_p_pjsua_msg_data.getCPtr(msg_data));
   }
 
   public synchronized static int call_update(int call_id, long options, SWIGTYPE_p_pjsua_msg_data msg_data) {
@@ -681,6 +681,10 @@ public class pjsua implements pjsuaConstants {
 
   public static int set_turn_cfg(pjsua_media_config media_cfg, pj_str_t username, pj_str_t data) {
     return pjsuaJNI.set_turn_cfg(pjsua_media_config.getCPtr(media_cfg), media_cfg, pj_str_t.getCPtr(username), username, pj_str_t.getCPtr(data), data);
+  }
+
+  public static void set_use_compact_form(int use_compact_form) {
+    pjsuaJNI.set_use_compact_form(use_compact_form);
   }
 
   public static void jzrtp_SASVerified() {

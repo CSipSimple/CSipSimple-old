@@ -38,6 +38,7 @@ import com.csipsimple.api.SipUri.ParsedSipContactInfos;
 import com.csipsimple.db.DBAdapter;
 import com.csipsimple.models.CallerInfo;
 import com.csipsimple.service.SipService;
+import com.csipsimple.ui.InCallActivity2.OnBadgeTouchListener;
 import com.csipsimple.utils.ContactsAsyncHelper;
 import com.csipsimple.utils.Log;
 import com.csipsimple.widgets.InCallControls2.OnTriggerListener;
@@ -51,7 +52,7 @@ public class InCallInfo2 extends ExtensibleBadge {
 	String cachedRemoteUri = "";
 	int cachedInvState = SipCallSession.InvState.INVALID;
 	int cachedMediaState = SipCallSession.MediaState.ERROR;
-	private ImageView photo;
+	private ImageView photo, callIcon;
 	private TextView remoteName, status ;//, title;
 	private Chronometer elapsedTime;
 	private int colorConnected, colorEnd;
@@ -82,6 +83,7 @@ public class InCallInfo2 extends ExtensibleBadge {
 //		title = (TextView) findViewById(R.id.title);
 		elapsedTime = (Chronometer) findViewById(R.id.elapsedTime);
 		status = (TextView) findViewById(R.id.card_status);
+		callIcon = (ImageView) findViewById(R.id.callStatusIcon);
 		
 		//secure = (ImageView) findViewById(R.id.secureIndicator);
 		
@@ -110,8 +112,13 @@ public class InCallInfo2 extends ExtensibleBadge {
 		updateQuickActions();
 		updateElapsedTimer();
 		
+		
+		
+		
 		cachedInvState = callInfo.getCallState();
 		cachedMediaState = callInfo.getMediaStatus();
+		
+		dragListener.setCallState(callInfo);
 	}
 	
 
@@ -131,13 +138,15 @@ public class InCallInfo2 extends ExtensibleBadge {
 		//Take/decline items
 		if(callInfo.isBeforeConfirmed()) {
 			//Answer
-			addItem(R.drawable.ic_in_call_touch_answer, getContext().getString(R.string.take_call), new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dispatchTriggerEvent(OnTriggerListener.TAKE_CALL);
-					collapse();
-				}
-			});
+			if(callInfo.isIncoming()) {
+				addItem(R.drawable.ic_in_call_touch_answer, getContext().getString(R.string.take_call), new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						dispatchTriggerEvent(OnTriggerListener.TAKE_CALL);
+						collapse();
+					}
+				});
+			}
 			//Decline
 			addItem(R.drawable.ic_in_call_touch_end, getContext().getString(R.string.decline_call), new OnClickListener() {
 				@Override
@@ -185,7 +194,26 @@ public class InCallInfo2 extends ExtensibleBadge {
 
 	
 	private synchronized void updateTitle() {
-	
+		//Useless to process that
+		if(cachedInvState == callInfo.getCallState() && 
+			cachedMediaState == callInfo.getMediaStatus()) {
+			return;
+		}
+		
+		int stateIcon = R.drawable.ic_incall_ongoing;
+		if(callInfo.isAfterEnded()) {
+			stateIcon = R.drawable.ic_incall_end;
+		}else if(callInfo.isLocalHeld() || callInfo.isRemoteHeld()) {
+			stateIcon = R.drawable.ic_incall_onhold;
+		}else if(callInfo.isBeforeConfirmed()) {
+			if(callInfo.isIncoming()) {
+			stateIcon = R.drawable.ic_call_log_header_incoming_call;
+			}else {
+				stateIcon = R.drawable.ic_call_log_header_outgoing_call;
+			}
+		}
+		callIcon.setImageResource(stateIcon);
+		
 		/*if(callInfo != null) {
 			title.setText(CallsUtils.getStringCallState(callInfo, context));
 		}else {
@@ -209,11 +237,15 @@ public class InCallInfo2 extends ExtensibleBadge {
 			
 			
 			remoteName.setText( text );
-			
-			SipProfile acc = SipService.getAccount(callInfo.getAccId(), db);
-			if(acc != null && acc.display_name != null) {
-				statusText  += "SIP/"+acc.display_name + " : " ;
+			if(callInfo.getAccId() != SipProfile.INVALID_ID) {
+				SipProfile acc = SipService.getAccount(callInfo.getAccId(), db);
+				if(acc != null && acc.display_name != null) {
+					statusText  += "SIP/"+acc.display_name + " : " ;
+				}
+			}else {
+				statusText  += "SIP : " ;
 			}
+			
 			statusText += uriInfos.userName;
 			status.setText(statusText);
 			
@@ -307,6 +339,7 @@ public class InCallInfo2 extends ExtensibleBadge {
 	};
 	
 	private OnTriggerListener onTriggerListener;
+	private OnBadgeTouchListener dragListener;
 
 
 	/*
@@ -342,6 +375,12 @@ public class InCallInfo2 extends ExtensibleBadge {
 	
 	public SipCallSession getCallInfo() {
 		return callInfo;
+	}
+	
+	
+	public void setOnTouchListener(OnBadgeTouchListener l) {
+		dragListener = l;
+		super.setOnTouchListener(l);
 	}
 
 }

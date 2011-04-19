@@ -122,12 +122,28 @@ public class Callback {
     if (getClass() == Callback.class) pjsuaJNI.Callback_on_typing(swigCPtr, this, call_id, pj_str_t.getCPtr(from), from, pj_str_t.getCPtr(to), to, pj_str_t.getCPtr(contact), contact, is_typing); else pjsuaJNI.Callback_on_typingSwigExplicitCallback(swigCPtr, this, call_id, pj_str_t.getCPtr(from), from, pj_str_t.getCPtr(to), to, pj_str_t.getCPtr(contact), contact, is_typing);
   }
 
-  public void on_nat_detect(SWIGTYPE_p_pj_stun_nat_detect_result res) {
-    if (getClass() == Callback.class) pjsuaJNI.Callback_on_nat_detect(swigCPtr, this, SWIGTYPE_p_pj_stun_nat_detect_result.getCPtr(res)); else pjsuaJNI.Callback_on_nat_detectSwigExplicitCallback(swigCPtr, this, SWIGTYPE_p_pj_stun_nat_detect_result.getCPtr(res));
+  public void on_nat_detect(pj_stun_nat_detect_result res) {
+    if (getClass() == Callback.class) pjsuaJNI.Callback_on_nat_detect(swigCPtr, this, pj_stun_nat_detect_result.getCPtr(res), res); else pjsuaJNI.Callback_on_nat_detectSwigExplicitCallback(swigCPtr, this, pj_stun_nat_detect_result.getCPtr(res), res);
+  }
+
+  public pjsip_redirect_op on_call_redirected(int call_id, pj_str_t target) {
+    return pjsip_redirect_op.swigToEnum((getClass() == Callback.class) ? pjsuaJNI.Callback_on_call_redirected(swigCPtr, this, call_id, pj_str_t.getCPtr(target), target) : pjsuaJNI.Callback_on_call_redirectedSwigExplicitCallback(swigCPtr, this, call_id, pj_str_t.getCPtr(target), target));
   }
 
   public void on_mwi_info(int acc_id, pj_str_t mime_type, pj_str_t body) {
     if (getClass() == Callback.class) pjsuaJNI.Callback_on_mwi_info(swigCPtr, this, acc_id, pj_str_t.getCPtr(mime_type), mime_type, pj_str_t.getCPtr(body), body); else pjsuaJNI.Callback_on_mwi_infoSwigExplicitCallback(swigCPtr, this, acc_id, pj_str_t.getCPtr(mime_type), mime_type, pj_str_t.getCPtr(body), body);
+  }
+
+  public int on_setup_audio(int clock_rate) {
+    return (getClass() == Callback.class) ? pjsuaJNI.Callback_on_setup_audio(swigCPtr, this, clock_rate) : pjsuaJNI.Callback_on_setup_audioSwigExplicitCallback(swigCPtr, this, clock_rate);
+  }
+
+  public void on_teardown_audio() {
+    if (getClass() == Callback.class) pjsuaJNI.Callback_on_teardown_audio(swigCPtr, this); else pjsuaJNI.Callback_on_teardown_audioSwigExplicitCallback(swigCPtr, this);
+  }
+
+  public int on_set_micro_source() {
+    return (getClass() == Callback.class) ? pjsuaJNI.Callback_on_set_micro_source(swigCPtr, this) : pjsuaJNI.Callback_on_set_micro_sourceSwigExplicitCallback(swigCPtr, this);
   }
 
   public void on_zrtp_show_sas(pj_str_t sas, int verified) {

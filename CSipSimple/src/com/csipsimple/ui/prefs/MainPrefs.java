@@ -20,7 +20,6 @@ package com.csipsimple.ui.prefs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.pjsip.pjsua.pjsua;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -213,14 +212,11 @@ public class MainPrefs extends ListActivity {
 		 Thread t;
 			switch (item.getItemId()) {
 			case MENU_TEST_AUDIO:
-				 t = new Thread() {
+				/*
+				Thread t = new Thread() {
 					public void run() {
-						pjsua.test_audio_dev(8000, 10);
-						pjsua.test_audio_dev(16000, 10);
 						pjsua.test_audio_dev(8000, 20);
 						pjsua.test_audio_dev(16000, 20);
-						pjsua.test_audio_dev(8000, 30);
-						pjsua.test_audio_dev(16000, 30);
 						pjsua.test_audio_dev(8000, 40);
 						pjsua.test_audio_dev(16000, 40);
 						
@@ -228,6 +224,8 @@ public class MainPrefs extends ListActivity {
 				};
 				
 				t.start();
+				*/
+				startActivity(new Intent(this, AudioTester.class));
 				return true;
 			case MENU_TEST_VIDEO:
 				 startActivity(new Intent(this, TestVideo.class));

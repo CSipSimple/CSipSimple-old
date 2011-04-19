@@ -47,10 +47,18 @@ public class pjsuaJNI {
   public final static native void Callback_on_pager_status2SwigExplicitCallback(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_, long jarg4, pj_str_t jarg4_, int jarg5, long jarg6, pj_str_t jarg6_, long jarg7, long jarg8);
   public final static native void Callback_on_typing(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_, long jarg4, pj_str_t jarg4_, long jarg5, pj_str_t jarg5_, int jarg6);
   public final static native void Callback_on_typingSwigExplicitCallback(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_, long jarg4, pj_str_t jarg4_, long jarg5, pj_str_t jarg5_, int jarg6);
-  public final static native void Callback_on_nat_detect(long jarg1, Callback jarg1_, long jarg2);
-  public final static native void Callback_on_nat_detectSwigExplicitCallback(long jarg1, Callback jarg1_, long jarg2);
+  public final static native void Callback_on_nat_detect(long jarg1, Callback jarg1_, long jarg2, pj_stun_nat_detect_result jarg2_);
+  public final static native void Callback_on_nat_detectSwigExplicitCallback(long jarg1, Callback jarg1_, long jarg2, pj_stun_nat_detect_result jarg2_);
+  public final static native int Callback_on_call_redirected(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_);
+  public final static native int Callback_on_call_redirectedSwigExplicitCallback(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_);
   public final static native void Callback_on_mwi_info(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_, long jarg4, pj_str_t jarg4_);
   public final static native void Callback_on_mwi_infoSwigExplicitCallback(long jarg1, Callback jarg1_, int jarg2, long jarg3, pj_str_t jarg3_, long jarg4, pj_str_t jarg4_);
+  public final static native int Callback_on_setup_audio(long jarg1, Callback jarg1_, int jarg2);
+  public final static native int Callback_on_setup_audioSwigExplicitCallback(long jarg1, Callback jarg1_, int jarg2);
+  public final static native void Callback_on_teardown_audio(long jarg1, Callback jarg1_);
+  public final static native void Callback_on_teardown_audioSwigExplicitCallback(long jarg1, Callback jarg1_);
+  public final static native int Callback_on_set_micro_source(long jarg1, Callback jarg1_);
+  public final static native int Callback_on_set_micro_sourceSwigExplicitCallback(long jarg1, Callback jarg1_);
   public final static native void Callback_on_zrtp_show_sas(long jarg1, Callback jarg1_, long jarg2, pj_str_t jarg2_, int jarg3);
   public final static native void Callback_on_zrtp_show_sasSwigExplicitCallback(long jarg1, Callback jarg1_, long jarg2, pj_str_t jarg2_, int jarg3);
   public final static native void Callback_on_zrtp_secure_on(long jarg1, Callback jarg1_, long jarg2, pj_str_t jarg2_);
@@ -268,6 +276,16 @@ public class pjsuaJNI {
   public final static native int pj_time_val_msec_get(long jarg1, pj_time_val jarg1_);
   public final static native long new_pj_time_val();
   public final static native void delete_pj_time_val(long jarg1);
+  public final static native void pj_stun_nat_detect_result_status_set(long jarg1, pj_stun_nat_detect_result jarg1_, int jarg2);
+  public final static native int pj_stun_nat_detect_result_status_get(long jarg1, pj_stun_nat_detect_result jarg1_);
+  public final static native void pj_stun_nat_detect_result_status_text_set(long jarg1, pj_stun_nat_detect_result jarg1_, String jarg2);
+  public final static native String pj_stun_nat_detect_result_status_text_get(long jarg1, pj_stun_nat_detect_result jarg1_);
+  public final static native void pj_stun_nat_detect_result_nat_type_set(long jarg1, pj_stun_nat_detect_result jarg1_, long jarg2);
+  public final static native long pj_stun_nat_detect_result_nat_type_get(long jarg1, pj_stun_nat_detect_result jarg1_);
+  public final static native void pj_stun_nat_detect_result_nat_type_name_set(long jarg1, pj_stun_nat_detect_result jarg1_, String jarg2);
+  public final static native String pj_stun_nat_detect_result_nat_type_name_get(long jarg1, pj_stun_nat_detect_result jarg1_);
+  public final static native long new_pj_stun_nat_detect_result();
+  public final static native void delete_pj_stun_nat_detect_result(long jarg1);
   public final static native int PJSUA_INVALID_ID_get();
   public final static native int DISABLED_FOR_TICKET_1185_get();
   public final static native int PJSUA_ACC_MAX_PROXIES_get();
@@ -520,6 +538,8 @@ public class pjsuaJNI {
   public final static native long pjsua_acc_config_reg_uri_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_reg_hdr_list_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
   public final static native long pjsua_acc_config_reg_hdr_list_get(long jarg1, pjsua_acc_config jarg1_);
+  public final static native void pjsua_acc_config_sub_hdr_list_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
+  public final static native long pjsua_acc_config_sub_hdr_list_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_mwi_enabled_set(long jarg1, pjsua_acc_config jarg1_, int jarg2);
   public final static native int pjsua_acc_config_mwi_enabled_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_publish_enabled_set(long jarg1, pjsua_acc_config jarg1_, int jarg2);
@@ -550,6 +570,8 @@ public class pjsuaJNI {
   public final static native long[] pjsua_acc_config_proxy_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_reg_timeout_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
   public final static native long pjsua_acc_config_reg_timeout_get(long jarg1, pjsua_acc_config jarg1_);
+  public final static native void pjsua_acc_config_reg_delay_before_refresh_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
+  public final static native long pjsua_acc_config_reg_delay_before_refresh_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_unreg_timeout_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
   public final static native long pjsua_acc_config_unreg_timeout_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_cred_count_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
@@ -685,6 +707,8 @@ public class pjsuaJNI {
   public final static native long pjsua_call_info_total_duration_get(long jarg1, pjsua_call_info jarg1_);
   public final static native long new_pjsua_call_info();
   public final static native void delete_pjsua_call_info(long jarg1);
+  public final static native int PJSUA_CALL_UNHOLD_get();
+  public final static native int PJSUA_CALL_UPDATE_CONTACT_get();
   public final static native long call_get_max_count();
   public final static native long call_get_count();
   public final static native int enum_calls(int[] jarg1, long[] jarg2);
@@ -699,9 +723,9 @@ public class pjsuaJNI {
   public final static native int call_get_rem_nat_type(int jarg1, long jarg2);
   public final static native int call_answer(int jarg1, long jarg2, long jarg3, pj_str_t jarg3_, long jarg4);
   public final static native int call_hangup(int jarg1, long jarg2, long jarg3, pj_str_t jarg3_, long jarg4);
-  public final static native int call_process_redirect(int jarg1, long jarg2);
+  public final static native int call_process_redirect(int jarg1, int jarg2);
   public final static native int call_set_hold(int jarg1, long jarg2);
-  public final static native int call_reinvite(int jarg1, int jarg2, long jarg3);
+  public final static native int call_reinvite(int jarg1, long jarg2, long jarg3);
   public final static native int call_update(int jarg1, long jarg2, long jarg3);
   public final static native int call_xfer(int jarg1, long jarg2, pj_str_t jarg2_, long jarg3);
   public final static native int PJSUA_XFER_NO_REQUIRE_REPLACES_get();
@@ -930,6 +954,7 @@ public class pjsuaJNI {
   public final static native int csipsimple_destroy();
   public final static native int send_keep_alive(int jarg1);
   public final static native int set_turn_cfg(long jarg1, pjsua_media_config jarg1_, long jarg2, pj_str_t jarg2_, long jarg3, pj_str_t jarg3_);
+  public final static native void set_use_compact_form(int jarg1);
   public final static native int PJMEDIA_NO_ZRTP_get();
   public final static native int PJMEDIA_CREATE_ZRTP_get();
   public final static native void jzrtp_SASVerified();
@@ -991,10 +1016,22 @@ public class pjsuaJNI {
     self.on_typing(call_id, (from == 0) ? null : new pj_str_t(from, false), (to == 0) ? null : new pj_str_t(to, false), (contact == 0) ? null : new pj_str_t(contact, false), is_typing);
   }
   public static void SwigDirector_Callback_on_nat_detect(Callback self, long res) {
-    self.on_nat_detect((res == 0) ? null : new SWIGTYPE_p_pj_stun_nat_detect_result(res, false));
+    self.on_nat_detect((res == 0) ? null : new pj_stun_nat_detect_result(res, false));
+  }
+  public static int SwigDirector_Callback_on_call_redirected(Callback self, int call_id, long target) {
+    return (self.on_call_redirected(call_id, (target == 0) ? null : new pj_str_t(target, false))).swigValue();
   }
   public static void SwigDirector_Callback_on_mwi_info(Callback self, int acc_id, long mime_type, long body) {
     self.on_mwi_info(acc_id, (mime_type == 0) ? null : new pj_str_t(mime_type, false), (body == 0) ? null : new pj_str_t(body, false));
+  }
+  public static int SwigDirector_Callback_on_setup_audio(Callback self, int clock_rate) {
+    return self.on_setup_audio(clock_rate);
+  }
+  public static void SwigDirector_Callback_on_teardown_audio(Callback self) {
+    self.on_teardown_audio();
+  }
+  public static int SwigDirector_Callback_on_set_micro_source(Callback self) {
+    return self.on_set_micro_source();
   }
   public static void SwigDirector_Callback_on_zrtp_show_sas(Callback self, long sas, int verified) {
     self.on_zrtp_show_sas((sas == 0) ? null : new pj_str_t(sas, false), verified);

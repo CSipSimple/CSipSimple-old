@@ -64,11 +64,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.csipsimple.R;
+import com.csipsimple.api.MediaState;
 import com.csipsimple.api.SipCallSession;
 import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.ISipService;
-import com.csipsimple.service.MediaManager.MediaState;
 import com.csipsimple.service.SipService;
 import com.csipsimple.ui.camera.VideoProducer;
 import com.csipsimple.utils.CallsUtils;
@@ -597,25 +597,31 @@ public class InCallActivity extends Activity implements OnTriggerListener, OnDia
 	
 	
 	private synchronized void updateUIFromMedia() {
-		if(SipService.pjService.mediaManager != null && serviceConnected) {
-			MediaState mediaState = SipService.pjService.mediaManager.getMediaState();
-			Log.d(THIS_FILE, "Media update ....");
-			if(!mediaState.equals(lastMediaState)) {
-				SipCallSession callInfo = getCurrentCallInfo();
-				lastMediaState = mediaState;
-				
-				if(callInfo != null) {
-					int state = callInfo.getCallState();
+		if(service != null) {
+			MediaState mediaState;
+			try {
+				mediaState = service.getCurrentMediaState();
+				Log.d(THIS_FILE, "Media update ....");
+				if(!mediaState.equals(lastMediaState)) {
+					SipCallSession callInfo = getCurrentCallInfo();
+					lastMediaState = mediaState;
 					
-					// Background
-					if(state == SipCallSession.InvState.CONFIRMED) {
-						mainFrame.setBackgroundResource(lastMediaState.isBluetoothScoOn?R.drawable.bg_in_call_gradient_bluetooth:R.drawable.bg_in_call_gradient_connected);
+					if(callInfo != null) {
+						int state = callInfo.getCallState();
+						
+						// Background
+						if(state == SipCallSession.InvState.CONFIRMED) {
+							mainFrame.setBackgroundResource(lastMediaState.isBluetoothScoOn?R.drawable.bg_in_call_gradient_bluetooth:R.drawable.bg_in_call_gradient_connected);
+						}
 					}
+					
+					// Actions
+					inCallControls.setMediaState(lastMediaState);
 				}
-				
-				// Actions
-				inCallControls.setMediaState(lastMediaState);
+			} catch (RemoteException e) {
+				Log.e(THIS_FILE, "Can't get the media state ", e);
 			}
+			
 		}
 	}
 	

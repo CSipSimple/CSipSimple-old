@@ -23,10 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
-import org.pjsip.pjsua.pj_str_t;
-import org.pjsip.pjsua.pjmedia_srtp_use;
-import org.pjsip.pjsua.pjsua;
 
 import com.csipsimple.api.SipConfigManager;
 
@@ -34,6 +32,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageInfo;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -88,6 +87,7 @@ public class PreferencesWrapper {
 		put(SipConfigManager.SND_PTIME, "20");
 		put(SipConfigManager.BITS_PER_SAMPLE, "16");
 		put(SipConfigManager.SIP_AUDIO_MODE, "0");
+		put(SipConfigManager.MICRO_SOURCE, "1");
 		put(SipConfigManager.THREAD_COUNT, "3");
 		
 		put(SipConfigManager.STUN_SERVER, "stun.counterpath.com");
@@ -110,7 +110,7 @@ public class PreferencesWrapper {
 		put(SipConfigManager.DIAL_PRESS_VIBRATE_MODE, "0");
 		
 		put(SipConfigManager.DEFAULT_CALLER_ID, "");
-		
+		put(SipConfigManager.THEME, "");
 		
 	}};
 	
@@ -130,6 +130,7 @@ public class PreferencesWrapper {
 		put(SipConfigManager.ENABLE_STUN, false);
 		put(SipConfigManager.ENABLE_QOS, false);
 		put(SipConfigManager.TLS_VERIFY_SERVER, false);
+		put(SipConfigManager.USE_COMPACT_FORM, false);
 		put("use_wifi_in", true);
 		put("use_wifi_out", true);
 		put("use_other_in", true);
@@ -149,6 +150,7 @@ public class PreferencesWrapper {
 		put(SipConfigManager.USE_MODE_API, false);
 		put(SipConfigManager.HAS_IO_QUEUE, false);
 		put(SipConfigManager.SET_AUDIO_GENERATE_TONE, true);
+		put(SipConfigManager.USE_SGS_CALL_HACK, false);
 		
 		//UI
 		put(SipConfigManager.PREVENT_SCREEN_ROTATION, true);
@@ -156,6 +158,7 @@ public class PreferencesWrapper {
 		put(SipConfigManager.INVERT_PROXIMITY_SENSOR, false);
 		put(SipConfigManager.ICON_IN_STATUS_BAR, true);
 		put(SipConfigManager.USE_PARTIAL_WAKE_LOCK, false);
+		put(SipConfigManager.ICON_IN_STATUS_BAR_NBR, false);
 		
 		//Calls
 		put(SipConfigManager.AUTO_RECORD_CALLS, false);
@@ -166,6 +169,8 @@ public class PreferencesWrapper {
 	{
 		put(SipConfigManager.SND_MIC_LEVEL, (float)1.0);
 		put(SipConfigManager.SND_SPEAKER_LEVEL, (float)1.0);
+		put(SipConfigManager.SND_BT_MIC_LEVEL, (float)1.0);
+		put(SipConfigManager.SND_BT_SPEAKER_LEVEL, (float)1.0);
 	}};
 	
 	
@@ -294,6 +299,9 @@ public class PreferencesWrapper {
 		Compatibility.setFirstRunParameters(this);
 	}
 	
+	public SharedPreferences getDirectPrefs() {
+		return prefs;
+	}
 	
 	
 	// Network part
@@ -426,16 +434,6 @@ public class PreferencesWrapper {
 		return getPreferenceBooleanValue(SipConfigManager.LOCK_WIFI);
 	}
 	
-	public pjmedia_srtp_use getUseSrtp() {
-		try {
-			int use_srtp = Integer.parseInt(getPreferenceStringValue(SipConfigManager.USE_SRTP));
-			pjmedia_srtp_use.swigToEnum(use_srtp);
-		}catch(NumberFormatException e) {
-			Log.e(THIS_FILE, "Transport port not well formated");
-		}
-		return pjmedia_srtp_use.PJMEDIA_SRTP_DISABLED;
-	}
-	
 	public boolean isTCPEnabled() {
 		return getPreferenceBooleanValue(SipConfigManager.ENABLE_TCP);
 	}
@@ -488,32 +486,6 @@ public class PreferencesWrapper {
 		return getPreferenceBooleanValue(SipConfigManager.ENABLE_DNS_SRV);
 	}
 	
-	public pj_str_t[] getNameservers() {
-		pj_str_t[] nameservers = null;
-		
-		if(enableDNSSRV()) {
-			String prefsDNS = getPreferenceStringValue(SipConfigManager.OVERRIDE_NAMESERVER);
-			if(TextUtils.isEmpty(prefsDNS)) {
-				String dnsName1 = getSystemProp("net.dns1");
-				String dnsName2 = getSystemProp("net.dns2");
-				Log.d(THIS_FILE, "DNS server will be set to : "+dnsName1+ " / "+dnsName2);
-				
-				if(dnsName1 == null && dnsName2 == null) {
-					//TODO : WARNING : In this case....we have probably a problem !
-					nameservers = new pj_str_t[] {};
-				}else if(dnsName1 == null) {
-					nameservers = new pj_str_t[] {pjsua.pj_str_copy(dnsName2)};
-				}else if(dnsName2 == null) {
-					nameservers = new pj_str_t[] {pjsua.pj_str_copy(dnsName1)};
-				}else {
-					nameservers = new pj_str_t[] {pjsua.pj_str_copy(dnsName1), pjsua.pj_str_copy(dnsName2)};
-				}
-			}else {
-				nameservers = new pj_str_t[] {pjsua.pj_str_copy(prefsDNS)};
-			}
-		}
-		return nameservers;
-	}
 	
 	public int getDSCPVal() {
 		return getPreferenceIntegerValue(SipConfigManager.DSCP_VAL);
@@ -536,13 +508,26 @@ public class PreferencesWrapper {
 	
 	public void addStunServer(String server) {
 		if(!hasStunServer(server)) {
-			setPreferenceStringValue(SipConfigManager.STUN_SERVER, getPreferenceStringValue(SipConfigManager.STUN_SERVER)+","+server);
+			String oldStuns = getPreferenceStringValue(SipConfigManager.STUN_SERVER);
+			Log.d(THIS_FILE, "Old stun > "+oldStuns+" vs "+STRING_PREFS.get(SipConfigManager.STUN_SERVER));
+			if(oldStuns.equalsIgnoreCase(STRING_PREFS.get(SipConfigManager.STUN_SERVER))) {
+				oldStuns = "";
+			}else {
+				oldStuns += ",";
+			}
+			
+			setPreferenceStringValue(SipConfigManager.STUN_SERVER, oldStuns + server);
 		}
 		
 	}
 
-	public String getUserAgent() {
-		return getPreferenceStringValue(USER_AGENT);
+	public String getUserAgent(Context ctx) {
+		String userAgent = getPreferenceStringValue(USER_AGENT);
+		PackageInfo pinfo = CollectLogs.getCurrentRevision(ctx);
+		if(pinfo != null) {
+			userAgent +=  " r" + pinfo.versionCode+" / "+android.os.Build.DEVICE+"-"+Compatibility.getApiLevel();
+		}
+		return userAgent;
 	}
 	
 	
@@ -762,14 +747,6 @@ public class PreferencesWrapper {
 		return ringtone;
 	}
 
-
-	public float getMicLevel() {
-		return getPreferenceFloatValue(SipConfigManager.SND_MIC_LEVEL);
-	}
-	
-	public float getSpeakerLevel() {
-		return getPreferenceFloatValue(SipConfigManager.SND_SPEAKER_LEVEL);
-	}
 	
 	public int getAudioFramePtime() {
 		return getPreferenceIntegerValue(SipConfigManager.SND_PTIME);
@@ -955,7 +932,7 @@ public class PreferencesWrapper {
 	 * @param prop property to get
 	 * @return the value of the property command line or null if failed
 	 */
-	private String getSystemProp(String prop) {
+	public String getSystemProp(String prop) {
 		//String re1 = "^\\d+(\\.\\d+){3}$";
 		//String re2 = "^[0-9a-f]+(:[0-9a-f]*)+:[0-9a-f]+$";
 		try {
@@ -979,10 +956,13 @@ public class PreferencesWrapper {
 	
 	private static File getStorageFolder() {
 		File root = Environment.getExternalStorageDirectory();
+		
 	    if (root.canWrite()){
 			File dir = new File(root.getAbsolutePath() + File.separator + "CSipSimple");
-			dir.mkdirs();
-			Log.d(THIS_FILE, "Create directory " + dir.getAbsolutePath());
+			if(!dir.exists()) {
+				dir.mkdirs();
+				Log.d(THIS_FILE, "Create directory " + dir.getAbsolutePath());
+			}
 			return dir;
 	    }
 	    return null;
@@ -1041,5 +1021,27 @@ public class PreferencesWrapper {
 		setPreferenceBooleanValue(HAS_BEEN_QUIT, quit);
 	}
 
+	
+	// Codec list management -- only internal use set at each start of the sip stack
+	private static final String CODECS_SEPARATOR = "|";
+	private static final String CODECS_LIST = "codecs_list";
+	public void setCodecList(ArrayList<String> codecs) {
+		if(codecs != null) {
+			setPreferenceStringValue(CODECS_LIST, TextUtils.join(CODECS_SEPARATOR, codecs));
+		}
+	}
 
+	public String[] getCodecList() {
+		return TextUtils.split(prefs.getString(CODECS_LIST, ""),  Pattern.quote(CODECS_SEPARATOR) );
+	}
+
+	public static final String LIB_CAP_TLS = "cap_tls";
+	public static final String LIB_CAP_SRTP = "cap_srtp";
+	public void setLibCapability(String cap, boolean canDo) {
+		setPreferenceBooleanValue("backup_" + cap, canDo);
+	}
+	public boolean getLibCapability(String cap) {
+		return prefs.getBoolean("backup_" + cap, false);
+	}
+	
 }

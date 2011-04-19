@@ -30,17 +30,13 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ImageButton;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.Toast;
@@ -60,8 +56,6 @@ import com.csipsimple.utils.Compatibility;
 import com.csipsimple.utils.CustomDistribution;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
-import com.csipsimple.utils.contacts.ContactsWrapper;
-import com.csipsimple.utils.contacts.ContactsWrapper.OnPhoneNumberSelected;
 import com.csipsimple.widgets.IndicatorTab;
 import com.csipsimple.wizards.BasePrefsWizard;
 import com.csipsimple.wizards.WizardUtils.WizardInfo;
@@ -75,6 +69,7 @@ public class SipHome extends TabActivity {
 	
 
 	public static final String LAST_KNOWN_VERSION_PREF = "last_known_version";
+	public static final String LAST_KNOWN_ANDROID_VERSION_PREF = "last_known_aos_version";
 	public static final String HAS_ALREADY_SETUP = "has_already_setup";
 
 	private static final String THIS_FILE = "SIP HOME";
@@ -83,8 +78,8 @@ public class SipHome extends TabActivity {
 	private static final String TAB_CALLLOG = "calllog";
 	private static final String TAB_MESSAGES = "messages";
 	
-	protected static final int PICKUP_PHONE = 0;
-	private static final int REQUEST_EDIT_DISTRIBUTION_ACCOUNT = PICKUP_PHONE + 1;
+//	protected static final int PICKUP_PHONE = 0;
+	private static final int REQUEST_EDIT_DISTRIBUTION_ACCOUNT = 0; //PICKUP_PHONE + 1;
 
 	private Intent serviceIntent;
 
@@ -92,7 +87,7 @@ public class SipHome extends TabActivity {
 	private PreferencesWrapper prefWrapper;
 
 	private boolean has_tried_once_to_activate_account = false;
-	private ImageButton pickupContact;
+//	private ImageButton pickupContact;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -151,11 +146,13 @@ public class SipHome extends TabActivity {
 		calllogsIntent = new Intent(this, CallLogsList.class);
 		messagesIntent = new Intent(this, ConversationList.class);
 
-		addTab(TAB_DIALER, getString(R.string.dial_tab_name_text), R.drawable.ic_tab_selected_dialer, R.drawable.ic_tab_unselected_dialer, dialerIntent);
-		addTab(TAB_CALLLOG, getString(R.string.calllog_tab_name_text), R.drawable.ic_tab_selected_recent, R.drawable.ic_tab_unselected_recent, calllogsIntent);
+		addTab(TAB_DIALER, getString(R.string.dial_tab_name_text), R.drawable.ic_tab_unselected_dialer, R.drawable.ic_tab_selected_dialer, dialerIntent);
+		addTab(TAB_CALLLOG, getString(R.string.calllog_tab_name_text), R.drawable.ic_tab_unselected_recent, R.drawable.ic_tab_selected_recent, calllogsIntent);
 		if(CustomDistribution.supportMessaging()) {
-			addTab(TAB_MESSAGES, getString(R.string.messages_tab_name_text), R.drawable.ic_tab_selected_messages, R.drawable.ic_tab_unselected_messages, messagesIntent);
+			addTab(TAB_MESSAGES, getString(R.string.messages_tab_name_text), R.drawable.ic_tab_unselected_messages, R.drawable.ic_tab_selected_messages, messagesIntent);
 		}
+		
+		/*
 		pickupContact = (ImageButton) findViewById(R.id.pickup_contacts);
 		pickupContact.setOnClickListener(new OnClickListener() {
 			@Override
@@ -163,6 +160,7 @@ public class SipHome extends TabActivity {
 				startActivityForResult(Compatibility.getContactPhoneIntent(), PICKUP_PHONE);
 			}
 		});
+		*/
 		
 		has_tried_once_to_activate_account = false;
 		
@@ -172,6 +170,19 @@ public class SipHome extends TabActivity {
 		}
 		
 		selectTabWithAction(getIntent());
+		
+		// Check for gingerbread warnings
+		/*
+		Thread t = new Thread() {
+			public void run() {
+				if(Compatibility.isCompatible(9)) {
+					// We check now if something is wrong with the gingerbread dialer integration
+					Compatibility.getDialerIntegrationState(SipHome.this);
+				}
+			};
+		};
+		t.start();
+		*/
 	}
 	
 	/**
@@ -179,28 +190,42 @@ public class SipHome extends TabActivity {
 	 * @return null if not needed, else the new version to upgrade to
 	 */
 	private Integer needUpgrade() {
+		Integer runningVersion = null;
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		// Application upgrade
 		try {
 			PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-			int runningVersion = pinfo.versionCode;
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+			runningVersion = pinfo.versionCode;
 			int lastSeenVersion = prefs.getInt(LAST_KNOWN_VERSION_PREF, 0);
 	
 			Log.d(THIS_FILE, "Last known version is " + lastSeenVersion + " and currently we are running " + runningVersion);
 			if (lastSeenVersion != runningVersion) {
 				Compatibility.updateVersion(prefWrapper, lastSeenVersion, runningVersion);
-				return runningVersion;
+			}else {
+				runningVersion = null;
 			}
-			return null;
 		} catch (NameNotFoundException e) {
 			// Should not happen....or something is wrong with android...
 			Log.e(THIS_FILE, "Not possible to find self name", e);
 		}
-		return null;
+		
+		// Android upgrade
+		{
+			int lastSeenVersion = prefs.getInt(LAST_KNOWN_ANDROID_VERSION_PREF, 0);
+			Log.d(THIS_FILE, "Last known android version "+lastSeenVersion);
+			if(lastSeenVersion != Compatibility.getApiLevel()) {
+				Compatibility.updateApiVersion(prefWrapper, lastSeenVersion, Compatibility.getApiLevel());
+				Editor editor = prefs.edit();
+				editor.putInt(SipHome.LAST_KNOWN_ANDROID_VERSION_PREF, Compatibility.getApiLevel());
+				editor.commit();
+			}
+		}
+		return runningVersion;
 	}
 
 	private void startSipService() {
 		if (serviceIntent == null) {
-			serviceIntent = new Intent(SipHome.this, SipService.class);
+			serviceIntent = new Intent(this, SipService.class);
 		}
 		Thread t = new Thread() {
 			public void run() {
@@ -455,6 +480,7 @@ public class SipHome extends TabActivity {
 		finish();
 	}
 	
+	/*
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
@@ -484,7 +510,7 @@ public class SipHome extends TabActivity {
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-
+	*/
 	
 	
 }

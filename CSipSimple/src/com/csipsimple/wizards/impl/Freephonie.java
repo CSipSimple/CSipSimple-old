@@ -20,7 +20,9 @@ package com.csipsimple.wizards.impl;
 import android.text.InputType;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipProfile;
+import com.csipsimple.utils.PreferencesWrapper;
 
 public class Freephonie extends SimpleImplementation {
 	
@@ -60,6 +62,13 @@ public class Freephonie extends SimpleImplementation {
 		account.reg_timeout = 1800;
 		account.proxies = null;
 		account.transport = SipProfile.TRANSPORT_UDP;
+		account.vm_nbr = "**1";
 		return account;
+	}
+	
+	@Override
+	public void setDefaultParams(PreferencesWrapper prefs) {
+		super.setDefaultParams(prefs);
+		prefs.setPreferenceBooleanValue(SipConfigManager.USE_COMPACT_FORM, true);
 	}
 }

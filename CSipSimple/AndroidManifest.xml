@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.csipsimple"
 	android:installLocation="auto"
-	android:versionName="0.01-01" android:versionCode="733">
-	<supports-screens android:smallScreens="true" 
+	android:versionName="0.01-01" android:versionCode="799">
+	<supports-screens  
+		android:smallScreens="true" 
 		android:normalScreens="true"
 		android:largeScreens="true"
 		/>
@@ -58,6 +59,7 @@
 		<!-- Help -->
 		<activity android:name="com.csipsimple.ui.help.Help" android:theme="@style/CupcakeDialog" android:configChanges="orientation"/>
 		<activity android:name="com.csipsimple.ui.help.Faq" android:theme="@style/CupcakeDialog" android:configChanges="orientation"/>
+		<activity android:name="com.csipsimple.ui.help.Legal" android:theme="@style/CupcakeDialog" android:configChanges="orientation"/>
 		
 		<!-- Accounts -->
 		<activity android:name="com.csipsimple.ui.AccountsList" android:label="@string/accounts" android:configChanges="orientation"/>
@@ -87,8 +89,9 @@
 		</activity>
 		<activity android:name="com.csipsimple.ui.prefs.Codecs" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.csipsimple.ui.prefs.PrefsSecurity" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
-	
-	
+		<activity android:name="com.csipsimple.ui.prefs.AudioTester" android:theme="@style/CupcakeDialog" android:screenOrientation="portrait"></activity>
+		
+		
 		<activity android:name="com.csipsimple.ui.TestVideo" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		
 
@@ -109,6 +112,7 @@
 			<intent-filter>
                 <action android:name="android.intent.action.CALL" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="csip" />
                 <data android:scheme="sip" />
                 <data android:scheme="sips" />
             </intent-filter>
@@ -116,6 +120,7 @@
 			<intent-filter android:priority="-1">
 				<action android:name="android.phone.extra.NEW_CALL_INTENT"></action>
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="csip" />
                 <data android:scheme="sip" />
                 <data android:scheme="sips" />
 			</intent-filter>
@@ -125,6 +130,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="csip" />
                 <data android:scheme="sip" />
                 <data android:scheme="sips" />
                 <data android:scheme="imto" />
@@ -222,37 +228,49 @@
 		
 		
 	</application>
-	<uses-sdk android:minSdkVersion="3" />
-	<!-- 
+	<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="9"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+	<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+	<uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
+	<uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+	<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+	<uses-permission android:name="android.permission.READ_CONTACTS"/>
+	<uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+	<uses-permission android:name="android.permission.CALL_PHONE"/>
 	<uses-permission android:name="android.permission.CALL_PRIVILEGED" />
- 	-->
- 	
-	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
-	<uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
-	<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"></uses-permission>
-	<uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"></uses-permission>
-	<uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
-	<uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
-	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
-	<uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
-	<uses-permission android:name="android.permission.WRITE_CONTACTS"></uses-permission>
-	<uses-permission android:name="android.permission.CALL_PHONE"></uses-permission>
-	<uses-permission android:name="android.permission.CALL_PRIVILEGED" />
-	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
-	<uses-permission android:name="android.permission.DISABLE_KEYGUARD"></uses-permission>
-	<uses-permission android:name="android.permission.VIBRATE"></uses-permission>
-	<uses-permission android:name="android.permission.BLUETOOTH"></uses-permission>
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+	<uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+	<uses-permission android:name="android.permission.VIBRATE"/>
+	<uses-permission android:name="android.permission.BLUETOOTH"/>
 	<uses-permission android:name="android.permission.READ_LOGS" />
-	<uses-permission android:name="android.permission.CAMERA" />
+	<uses-permission android:name="android.permission.USE_SIP" />
+	<uses-permission android:name="android.permission.CONFIGURE_SIP" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+		<uses-permission android:name="android.permission.CAMERA" />
 	 <!-- Not taken into account? -->
-	<uses-permission android:name="android.permission.RAISED_THREAD_PRIORITY"></uses-permission>
+	<uses-permission android:name="android.permission.RAISED_THREAD_PRIORITY"/>
 	
 	
 	<uses-feature android:name="android.hardware.wifi" android:required="false"></uses-feature>
 	<uses-feature android:name="android.hardware.telephony" android:required="false"></uses-feature>
 	<uses-feature android:name="android.hardware.microphone" android:required="true"></uses-feature>
 	<uses-feature android:name="android.hardware.touchscreen" android:required="false"></uses-feature>
+	
+	
+	<permission android:name="android.permission.USE_SIP"
+        android:label="@string/permlab_useSip"
+        android:description="@string/permdesc_useSip"
+        android:permissionGroup="android.permission-group.COST_MONEY"
+        android:protectionLevel="dangerous" />
+        
+    <permission android:name="android.permission.CONFIGURE_SIP"
+        android:label="@string/permlab_configureSip"
+        android:description="@string/permdesc_configureSip"
+        android:permissionGroup="android.permission-group.COST_MONEY"
+        android:protectionLevel="dangerous" />
 	
 </manifest> 

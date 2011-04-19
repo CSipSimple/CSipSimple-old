@@ -69,7 +69,6 @@ public class BasePrefsWizard extends GenericPrefs{
         //TODO : ensure this is not null...
         setWizardId(intent.getStringExtra(SipProfile.FIELD_WIZARD));
         
-        
         database = new DBAdapter(this);
 		database.open();
 		account = database.getAccount(accountId);
@@ -185,7 +184,7 @@ public class BasePrefsWizard extends GenericPrefs{
 		updateValidation();
 	}
 	
-	private void updateValidation() {
+	public void updateValidation() {
 		if(service != null) {
 			saveButton.setEnabled(wizard.canSave());
 		}else {
@@ -301,22 +300,13 @@ public class BasePrefsWizard extends GenericPrefs{
 	}
 	
 	private void restartAsync() {
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				Log.d(THIS_FILE, "Would like to restart stack");
-				if (service != null) {
-					Log.d(THIS_FILE, "Will reload the stack !");
-					try {
-						service.sipStop();
-						service.sipStart();
-					} catch (RemoteException e) {
-						Log.e(THIS_FILE, "Impossible to reload stack", e);
-					}
-				}
-			};
-		};
-		t.start();
+		if (service != null) {
+			try {
+				service.askThreadedRestart();
+			} catch (RemoteException e) {
+				Log.e(THIS_FILE, "Unable to restart sip stack", e);
+			}
+		}
 	}
 	
 	private void reloadAccountsAsync() {

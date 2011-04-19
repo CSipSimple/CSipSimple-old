@@ -18,6 +18,7 @@
 package com.csipsimple.pjsip;
 
 import org.pjsip.pjsua.pj_time_val;
+import org.pjsip.pjsua.pjsip_inv_state;
 import org.pjsip.pjsua.pjsua;
 import org.pjsip.pjsua.pjsuaConstants;
 import org.pjsip.pjsua.pjsua_call_info;
@@ -44,14 +45,7 @@ public final class PjSipCalls {
 	public static SipCallSession getCallInfo(int callId, PjSipService service) {
 		SipCallSession session = new SipCallSession();
 		session.setCallId(callId);
-		
-		try {
-			session = updateSessionFromPj(session, service);
-		} catch (UnavailableException e) {
-			session.setCallState(SipCallSession.InvState.NULL);
-			Log.e(THIS_FILE, "This account is not available anymore");
-		}
-		
+		session = updateSessionFromPj(session, service);
 		return session;
 	}
 	
@@ -74,9 +68,12 @@ public final class PjSipCalls {
 		session.setRemoteContact( pjCallInfo.getRemote_info().getPtr() );
 		session.setConfPort( pjCallInfo.getConf_slot() );
 		
-		SipProfile account = service.getAccountForPjsipId(pjCallInfo.getAcc_id());
+		int pjAccId = pjCallInfo.getAcc_id();
+		SipProfile account = service.getAccountForPjsipId(pjAccId);
 		if(account != null) {
 			session.setAccId( account.id );
+		}else {
+			session.setAccId(SipProfile.INVALID_ID);
 		}
 		pj_time_val duration = pjCallInfo.getConnect_duration();
 		session.setConnectStart( SystemClock.elapsedRealtime () - duration.getSec() * 1000 - duration.getMsec() ); 
@@ -84,19 +81,20 @@ public final class PjSipCalls {
 		return session;
 	}
 	
-	public static SipCallSession updateSessionFromPj(SipCallSession session, PjSipService service) throws UnavailableException {
+	public static SipCallSession updateSessionFromPj(SipCallSession session, PjSipService service) {
 		Log.d(THIS_FILE, "Update call "+session.getCallId());
 		pjsua_call_info pj_info = new pjsua_call_info();
-		int status = pjsua.call_get_info(session.getCallId(), pj_info);
+		int status = pjsua.PJ_FALSE;
+		status = pjsua.call_get_info(session.getCallId(), pj_info);
 		
 		if(status != pjsua.PJ_SUCCESS) {
-			//Log.e(THIS_FILE, "Error while getting Call info from stack");
-			throw new UnavailableException();
+			Log.d(THIS_FILE, "Error while getting Call info from stack "+status);
+			session.setCallState( pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED.swigValue() );
+		//	throw new UnavailableException();
+		}else {
+			session = updateSession(session, pj_info, service);
+			session.setMediaSecure(pjsua.is_call_secure(session.getCallId()) == pjsuaConstants.PJ_TRUE);
 		}
-		
-		session = updateSession(session, pj_info, service);
-		session.setMediaSecure(pjsua.is_call_secure(session.getCallId()) == pjsuaConstants.PJ_TRUE);
-		
 		return session;
 	}
 	
