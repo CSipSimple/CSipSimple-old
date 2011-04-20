@@ -239,7 +239,7 @@ public class VideoProducer {
 
                 public void surfaceCreated(SurfaceHolder holder) {
                         try {
-                                boolean useFFC = false;
+                                boolean useFFC = true;
                                 Log.d(VideoProducer.TAG, useFFC ? "Using FFC" : "Not using FFC");
                                 if (!this.producer.toggle) {
                                         if(useFFC && FFC.isAvailable()){

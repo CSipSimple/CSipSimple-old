@@ -27,81 +27,70 @@ import javax.microedition.khronos.opengles.GL10;
 
 import org.pjsip.pjsua.pjsua;
 
-
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 
 
 public class TestVideoRenderer implements Renderer {
 
-    private Context context;
+    private static final String THIS_FILE = "TestVideoRenderer";
+	private Context context;
     
-    public TestVideoRenderer(Context context)
-    {
-            this.context = context;
+    public TestVideoRenderer(Context aContext) {
+        context = aContext;
     }
     
+    private IntBuffer texturesBuffer = null;
     
-    
-    private IntBuffer texturesBuffer;
-    
-
-    private void LoadTextures(GL10 gl) {
-            // create textures
-            gl.glEnable(GL10.GL_TEXTURE_2D);
-            texturesBuffer = IntBuffer.allocate(1);
-            gl.glGenTextures(1, texturesBuffer);
-            
-            // setup video texture
-            gl.glBindTexture(GL10.GL_TEXTURE_2D, texturesBuffer.get(0));
-            gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
-            gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
-            gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
-            gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
-            
+    private void loadTextures(GL10 gl) {
+    //	if(texturesBuffer == null) {
+	        // create textures
+	        gl.glEnable(GL10.GL_TEXTURE_2D);
+	        texturesBuffer = IntBuffer.allocate(1);
+	        gl.glGenTextures(1, texturesBuffer);
+	        
+	        // setup video texture
+	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
+    //	}
     }
     
 
     private static float[] quadCoords = new float[] {
-            0, 1, 0,
-            1, 1, 0,
-            0, 0, 0,
-            1, 0, 0
+        0, 1, 0,
+        1, 1, 0,
+        0, 0, 0,
+        1, 0, 0
     };
     private static float[] quadTexCoords = new float[] {
         0, 0,
         1, 0,
         0, 1,
         1, 1
-};    
+    };    
     
-
-    private static FloatBuffer quadBuffer;
-    private static FloatBuffer quadTexBuffer;
-    
-    static
-    {
-            quadBuffer = (FloatBuffer) ByteBuffer.allocateDirect( 3 * 4 * 4 )
-            				.order(ByteOrder.nativeOrder()).asFloatBuffer()
-            				.put(quadCoords).position(0);
-            quadTexBuffer = (FloatBuffer) ByteBuffer.allocateDirect( 2 * 4 * 4 )
-							.order(ByteOrder.nativeOrder()).asFloatBuffer()
-							.put(quadTexCoords).position(0);
-    }
-
-    
-
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            gl.glShadeModel(GL10.GL_SMOOTH);
-            gl.glClearColor(0, 0, 0, 0);
+        gl.glShadeModel(GL10.GL_SMOOTH);
+        gl.glClearColor(0, 0, 0, 0);
 
-            gl.glClearDepthf(1.0f);
-            gl.glEnable(GL10.GL_DEPTH_TEST);
-            gl.glDepthFunc(GL10.GL_LEQUAL);
-            
-            gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+        gl.glClearDepthf(1.0f);
+        gl.glDisable(GL10.GL_DEPTH_TEST);
+        gl.glDepthFunc(GL10.GL_LEQUAL);
+        
+        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
     }
-
+    
+    
+    protected static FloatBuffer makeFloatBuffer(float[] arr) {
+		ByteBuffer bb = ByteBuffer.allocateDirect(arr.length*4);
+		bb.order(ByteOrder.nativeOrder());
+		FloatBuffer fb = bb.asFloatBuffer();
+		fb.put(arr);
+		fb.position(0);
+		return fb;
+    }
 
     
 	public void onDrawFrame(GL10 gl) {
@@ -115,33 +104,44 @@ public class TestVideoRenderer implements Renderer {
 		float[] w = new float[] { 1.0f };
 		float[] h = new float[] { 1.0f };
 		pjsua.pjmedia_ogl_surface_draw(w, h);
+		
+	//	Log.d(THIS_FILE, "Has been drawn at "+w[0]+","+h[0]);
 
-		quadTexBuffer.put(2, w[0]).put(6, w[0]);
-		quadTexBuffer.put(5, h[0]).put(7, h[0]);
-
-	//	gl.glTranslatef(0.0f, 0.0f, -0.5f);
+		quadTexCoords[2] = w[0];
+		quadTexCoords[6] = w[0];
+		quadTexCoords[5] = h[0];
+		quadTexCoords[7] = h[0];
 
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, quadBuffer);
-		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, quadTexBuffer);
+		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, makeFloatBuffer(quadCoords));
+		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, makeFloatBuffer(quadTexCoords));
 		gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		
 
 	}
 
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-    	LoadTextures(gl);
-            // avoid division by zero
-            if (height == 0) height = 1;
-            // draw on the entire screen
-            gl.glViewport(0, 0, width, height);
-            // setup projection matrix
-            gl.glMatrixMode(GL10.GL_PROJECTION);
-            gl.glLoadIdentity();
-            gl.glOrthof(0f, 1.0f, 0f, 1.0f, -1.0f, 1.0f);
-            //GLU.gluPerspective(gl, 45.0f, (float)width / (float)height, 1.0f, 100.0f);
+
+    	loadTextures(gl);
+        // avoid division by zero
+        if (height == 0) {
+        	height = 1;
+        }
+        // draw on the entire screen
+        gl.glViewport(0, 0, width, height);
+        // setup projection matrix
+        gl.glMatrixMode(GL10.GL_PROJECTION);
+        gl.glLoadIdentity();
+        
+        gl.glOrthof(0f, 1.0f, 0f, 1.0f, -1.0f, 1.0f);
+        
+        gl.glMatrixMode(GL10.GL_MODELVIEW);
+        gl.glLoadIdentity();
     }
+    
+    
 
 }

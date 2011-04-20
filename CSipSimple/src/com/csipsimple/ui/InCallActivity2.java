@@ -46,6 +46,7 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -64,6 +65,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
@@ -72,6 +74,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.csipsimple.R;
 import com.csipsimple.api.ISipService;
@@ -82,6 +85,7 @@ import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.pjsip.PjSipCalls;
 import com.csipsimple.service.SipService;
+import com.csipsimple.ui.camera.VideoProducer;
 import com.csipsimple.utils.CallsUtils;
 import com.csipsimple.utils.DialingFeedback;
 import com.csipsimple.utils.Log;
@@ -141,7 +145,10 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 	private ImageView holdTarget, answerTarget, xferTarget;
 	private Rect holdTargetRect, answerTargetRect, xferTargetRect;
 	private Button middleAddCall;
-	
+
+	private GLSurfaceView surface;
+	private TestVideoRenderer renderer;
+	private VideoProducer videoProducer;
 	
 
 	private static DisplayMetrics METRICS;
@@ -220,6 +227,30 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
         if(quitTimer == null) {
     		quitTimer = new Timer("Quit-timer");
         }
+        
+        
+
+		//Display video
+		surface = (GLSurfaceView) findViewById(R.id.side_remote);
+		renderer = new TestVideoRenderer(this);
+		surface.setRenderer(renderer);
+		
+		//Camera capture
+		videoProducer = new VideoProducer(this);
+		videoProducer.prepare(352, 288, 15);
+		final View local_preview = videoProducer.startPreview();
+		
+        if(local_preview != null){
+            final ViewParent viewParent = local_preview.getParent();
+            if(viewParent != null && viewParent instanceof ViewGroup){
+                    ((ViewGroup)(viewParent)).removeView(local_preview);
+            }
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(100, 100);
+            lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+	        ((RelativeLayout) findViewById(R.id.video_part) ).addView(local_preview);
+	    }
+        
 	}
 	
 	
@@ -268,6 +299,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 				*/
 			}
         }
+        videoProducer.start();
         
 
 	}
@@ -294,6 +326,8 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 			proximitySensorTracked  = true;
 		}
         dialFeedback.resume();
+		surface.onResume();
+		
         handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
 		
 	}
@@ -311,10 +345,11 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		}
 		
 		dialFeedback.pause();
-		
+		surface.onPause();
 		
 		lockOverlay.tearDown();
 	}
+	
 	
 	@Override
 	protected void onStop() {
@@ -326,6 +361,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		if(manageKeyguard) {
 			keyguardLock.reenableKeyguard();
 		}
+        videoProducer.stop();
 	}
 	
 
