@@ -35,6 +35,8 @@ import com.csipsimple.api.SipUri.ParsedSipUriInfos;
 public class SipProfile implements Parcelable {
 	private static final String THIS_FILE = "SipProfile";
 	
+	public final static String PROFILE_PREFERENCES = "profilePreferences";
+	
 	//Constants
 	public final static int INVALID_ID = -1;
 	public final static int GSM_ACCOUNT_ID = -2;
@@ -150,7 +152,7 @@ public class SipProfile implements Parcelable {
 	public int ka_interval = 0;
 	public String pidf_tuple_id = null;
 	public String force_contact = null;
-	public boolean allow_contact_rewrite = true;
+	public boolean allow_contact_rewrite = false;
 	public int contact_rewrite_method = 2;
 	public String[] proxies = null;
 	public String realm = null;

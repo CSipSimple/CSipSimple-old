@@ -56,7 +56,8 @@ public class CustomDistribution {
 	}
 	
 	public static boolean showFirstSettingScreen() {
-		return true;
+	    return false;
+//		return true;
 	}
 	
 	public static boolean supportMessaging() {

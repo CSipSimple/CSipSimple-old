@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.app.TabActivity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -41,6 +42,7 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.Toast;
 
+import com.csipsimple.Login;
 import com.csipsimple.R;
 import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
@@ -61,7 +63,8 @@ import com.csipsimple.wizards.BasePrefsWizard;
 import com.csipsimple.wizards.WizardUtils.WizardInfo;
 
 public class SipHome extends TabActivity {
-	public static final int ACCOUNTS_MENU = Menu.FIRST + 1;
+//	public static final int ACCOUNTS_MENU = Menu.FIRST + 1;
+    public static final int STATUS_MENU = Menu.FIRST + 1;
 	public static final int PARAMS_MENU = Menu.FIRST + 2;
 	public static final int CLOSE_MENU = Menu.FIRST + 3;
 	public static final int HELP_MENU = Menu.FIRST + 4;
@@ -95,6 +98,28 @@ public class SipHome extends TabActivity {
 		prefWrapper = new PreferencesWrapper(this);
 		super.onCreate(savedInstanceState);
 		
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        if (pref.getInt("accountDbId", -1) == -1) {
+            Intent i = new Intent(this, Login.class);
+            startActivity(i);
+            finish();
+            return;
+        }
+        else {
+            SharedPreferences.Editor editor = pref.edit();
+
+            //some default sip settings
+            boolean useGsm = true, integrate = false, always = true;
+            editor.putBoolean("integrate_with_native_dialer", integrate);
+            editor.putBoolean("use_3g_in", useGsm);
+            editor.putBoolean("use_3g_out", useGsm);
+            editor.putBoolean("use_gprs_in", useGsm);
+            editor.putBoolean("use_gprs_out", useGsm);
+            editor.putBoolean("use_edge_in", useGsm);
+            editor.putBoolean("use_edge_out", useGsm);
+            editor.commit();
+        }
+
 		boolean useBundle = NativeLibManager.USE_BUNDLE;
 		
 		// Check sip stack
@@ -146,11 +171,11 @@ public class SipHome extends TabActivity {
 		calllogsIntent = new Intent(this, CallLogsList.class);
 		messagesIntent = new Intent(this, ConversationList.class);
 
+        if(CustomDistribution.supportMessaging()) {
+            addTab(TAB_MESSAGES, getString(R.string.messages_tab_name_text), R.drawable.ic_tab_unselected_messages, R.drawable.ic_tab_selected_messages, messagesIntent);
+        }
 		addTab(TAB_DIALER, getString(R.string.dial_tab_name_text), R.drawable.ic_tab_unselected_dialer, R.drawable.ic_tab_selected_dialer, dialerIntent);
 		addTab(TAB_CALLLOG, getString(R.string.calllog_tab_name_text), R.drawable.ic_tab_unselected_recent, R.drawable.ic_tab_selected_recent, calllogsIntent);
-		if(CustomDistribution.supportMessaging()) {
-			addTab(TAB_MESSAGES, getString(R.string.messages_tab_name_text), R.drawable.ic_tab_unselected_messages, R.drawable.ic_tab_selected_messages, messagesIntent);
-		}
 		
 		/*
 		pickupContact = (ImageButton) findViewById(R.id.pickup_contacts);
@@ -387,16 +412,17 @@ public class SipHome extends TabActivity {
 
 
 	private void populateMenu(Menu menu) {
-		WizardInfo distribWizard = CustomDistribution.getCustomDistributionWizard();
-		if(distribWizard != null) {
-			menu.add(Menu.NONE, DISTRIB_ACCOUNT_MENU, Menu.NONE, "My " + distribWizard.label).setIcon(distribWizard.icon);
-		}
-		if(CustomDistribution.distributionWantsOtherAccounts()) {
-			menu.add(Menu.NONE, ACCOUNTS_MENU, Menu.NONE, (distribWizard == null)?R.string.accounts:R.string.other_accounts).setIcon(R.drawable.ic_menu_accounts);
-		}
+//		WizardInfo distribWizard = CustomDistribution.getCustomDistributionWizard();
+//		if(distribWizard != null) {
+//			menu.add(Menu.NONE, DISTRIB_ACCOUNT_MENU, Menu.NONE, "My " + distribWizard.label).setIcon(distribWizard.icon);
+//		}
+//		if(CustomDistribution.distributionWantsOtherAccounts()) {
+//			menu.add(Menu.NONE, ACCOUNTS_MENU, Menu.NONE, (distribWizard == null)?R.string.accounts:R.string.other_accounts).setIcon(R.drawable.ic_menu_accounts);
+//		}
+        menu.add(Menu.NONE, STATUS_MENU, Menu.NONE, R.string.status).setIcon(R.drawable.ic_menu_contact);
 		menu.add(Menu.NONE, PARAMS_MENU, Menu.NONE, R.string.prefs).setIcon(android.R.drawable.ic_menu_preferences);
 		menu.add(Menu.NONE, HELP_MENU, Menu.NONE, R.string.help).setIcon(android.R.drawable.ic_menu_help);
-		menu.add(Menu.NONE, CLOSE_MENU, Menu.NONE, R.string.menu_disconnect).setIcon(R.drawable.ic_lock_power_off);
+		menu.add(Menu.NONE, CLOSE_MENU, Menu.NONE, R.string.logout).setIcon(R.drawable.ic_lock_power_off);
 
 	}
 
@@ -418,55 +444,59 @@ public class SipHome extends TabActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		SipProfile account;
 		switch (item.getItemId()) {
-		case ACCOUNTS_MENU:
-			startActivity(new Intent(this, AccountsList.class));
-			return true;
+//		case ACCOUNTS_MENU:
+//			startActivity(new Intent(this, AccountsList.class));
+//			return true;
+	    case STATUS_MENU:
+	        return true;
 		case PARAMS_MENU:
 			startActivity(new Intent(this, MainPrefs.class));
 			return true;
 		case CLOSE_MENU:
 			Log.d(THIS_FILE, "CLOSE");
-			if(prefWrapper.isValidConnectionForIncoming()) {
-				//Alert user that we will disable for all incoming calls as he want to quit
-				new AlertDialog.Builder(this)
-					.setTitle(R.string.warning)
-					.setMessage(getString(R.string.disconnect_and_incoming_explaination))
-					.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							//prefWrapper.disableAllForIncoming();
-							prefWrapper.setQuit(true);
-							disconnectAndQuit();
-						}
-					})
-					.setNegativeButton(R.string.cancel, null)
-					.show();
-			}else {
-				ArrayList<String> networks = prefWrapper.getAllIncomingNetworks();
-				if (networks.size() > 0) {
-					String msg = getString(R.string.disconnect_and_will_restart, TextUtils.join(", ", networks));
-					Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-				}
-				disconnectAndQuit();
-			}
+			
+            new AlertDialog.Builder(this)
+            .setTitle(R.string.warning)
+            .setMessage(getString(R.string.logout_warning))
+            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+//                    prefWrapper.disableAllForIncoming();
+                    prefWrapper.setQuit(true);
+                    disconnectAndQuit();
+                }
+            })
+            .setNegativeButton(R.string.cancel, null)
+            .show();
+
+//			if(prefWrapper.isValidConnectionForIncoming()) {
+//				//Alert user that we will disable for all incoming calls as he want to quit
+//			}else {
+//				ArrayList<String> networks = prefWrapper.getAllIncomingNetworks();
+//				if (networks.size() > 0) {
+//					String msg = getString(R.string.disconnect_and_will_restart, TextUtils.join(", ", networks));
+//					Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+//				}
+//				disconnectAndQuit();
+//			}
 			return true;
 		case HELP_MENU:
 			startActivity(new Intent(this, Help.class));
 			return true;
-		case DISTRIB_ACCOUNT_MENU:
-			WizardInfo distribWizard = CustomDistribution.getCustomDistributionWizard();
-			DBAdapter db = new DBAdapter(this);
-			db.open();
-			account = db.getAccountForWizard(distribWizard.id);
-			db.close();
-			
-			Intent it = new Intent(this, BasePrefsWizard.class);
-			if(account.id != SipProfile.INVALID_ID) {
-				it.putExtra(Intent.EXTRA_UID,  (int) account.id);
-			}
-			it.putExtra(SipProfile.FIELD_WIZARD, account.wizard);
-			startActivityForResult(it, REQUEST_EDIT_DISTRIBUTION_ACCOUNT);
-			
-			return true;
+//		case DISTRIB_ACCOUNT_MENU:
+//			WizardInfo distribWizard = CustomDistribution.getCustomDistributionWizard();
+//			DBAdapter db = new DBAdapter(this);
+//			db.open();
+//			account = db.getAccountForWizard(distribWizard.id);
+//			db.close();
+//			
+//			Intent it = new Intent(this, BasePrefsWizard.class);
+//			if(account.id != SipProfile.INVALID_ID) {
+//				it.putExtra(Intent.EXTRA_UID,  (int) account.id);
+//			}
+//			it.putExtra(SipProfile.FIELD_WIZARD, account.wizard);
+//			startActivityForResult(it, REQUEST_EDIT_DISTRIBUTION_ACCOUNT);
+//			
+//			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -476,9 +506,34 @@ public class SipHome extends TabActivity {
 		if (serviceIntent != null) {
 			stopService(serviceIntent);
 		}
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        if(pref.getInt("accountDbId", -1) != -1) {
+            DBAdapter database = new DBAdapter(this);
+            database.open();
+            SipProfile account = database.getAccount(pref.getInt("accountDbId",1));
+            if(account != null) {
+                database.deleteAllCallLogs();
+                database.deleteAllConversation();
+                database.deleteAccount(account);
+            }
+            database.close();
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putInt("accountDbId", -1);
+            editor.putString("accountId", null);
+            editor.putString("userId", null);
+            editor.commit();
+        }
+
 		serviceIntent = null;
-		finish();
+//		finish();
+		showLogin();
 	}
+
+    private void showLogin() {
+        Intent i = new Intent(this, Login.class);
+        startActivity(i);
+    }
 	
 	/*
 	@Override

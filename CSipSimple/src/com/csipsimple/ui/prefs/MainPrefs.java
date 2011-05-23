@@ -20,16 +20,16 @@ package com.csipsimple.ui.prefs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.pjsip.pjsua.pjsua;
-
 import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,9 +42,12 @@ import android.widget.TextView;
 
 import com.csipsimple.R;
 import com.csipsimple.api.ISipService;
+import com.csipsimple.api.SipProfile;
+import com.csipsimple.db.DBAdapter;
 import com.csipsimple.service.SipService;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
+import com.csipsimple.wizards.BasePrefsWizard;
 
 public class MainPrefs extends ListActivity {
 	
@@ -83,6 +86,22 @@ public class MainPrefs extends ListActivity {
 		prefs_list.add(new PrefGroup(R.string.filters, R.string.filters_desc, 
 				R.drawable.ic_prefs_filter, new Intent(this, PrefsFilters.class)));
 		
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        if(pref.getInt("accountDbId", -1) != -1) {
+            DBAdapter database = new DBAdapter(this);
+            database.open();
+            SipProfile account = database.getAccount(pref.getInt("accountDbId", -1)); 
+
+            Intent intent = new Intent(this, BasePrefsWizard.class);
+            if(account.id != SipProfile.INVALID_ID) {
+                intent.putExtra(Intent.EXTRA_UID,  (int) account.id);
+                prefs_list.add(new PrefGroup(R.string.sip_settings, R.string.sip_settings_desc, 
+                        android.R.drawable.ic_menu_preferences, intent));
+            }
+            database.close();
+
+        }
+
 		adapter = new PrefGroupAdapter(this, prefs_list);
 		setListAdapter(adapter);
 		

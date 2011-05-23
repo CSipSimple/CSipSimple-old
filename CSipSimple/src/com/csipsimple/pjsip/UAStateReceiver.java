@@ -180,7 +180,7 @@ public class UAStateReceiver extends Callback {
             Log.d(THIS_FILE, "EMPTY CONTACT !!!");
         }
 
-        Log.d(THIS_FILE, "Call Id: " + call_id);
+        Log.d(THIS_FILE, "Call Id: " + call_id + ", body: " + body.getPtr());
         
         String displayName = SipUri.getDisplayedSimpleContact(from.getPtr());
 

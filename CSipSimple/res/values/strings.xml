@@ -89,4 +89,26 @@
 	<string name="permlab_configureSip">Use sip</string>
 	<string name="permdesc_configureSip">Place SIP calls, send SIP messages and control SIP communications</string>
 	
+	<!-- login page strings -->
+	<string name="login_welcome_text">Welcome to cSipSimple. \r\nPlease enter your email address and password to login. </string>
+	<string name="login_email_label">Email: </string>
+	<string name="login_password_label">Password: </string>
+	<string name="login_button_text">Login</string>
+	<string name="login_register_label">Don\'t have an account? </string>
+	<string name="login_forgot_password_label">Forgotten your password?</string>
+	<string name="login_wait_message">Signing in, please wait...</string>
+	<string name="invalid_username_password">Invalid username and/or password.</string>
+
+	<!-- new menu options -->
+	<string name="status">Status</string>
+	<string name="logout">Logout</string>
+	<string name="sip_settings">SIP Account Settings</string>
+	<string name="sip_settings_desc">Open sip settings in expert mode.</string>
+	<string name="logout_warning">Are you sure you want to logout?</string>
+	<string name="login_error">Login Error</string>
+	<string name="empty_email_message">Email field is empty.</string>
+	<string name="empty_pas_message">Password field is empty.</string>
+	<string name="no_network_connection_title">No network connection</string>
+	<string name="no_network_connection_msg">Unable to login. Please check\nyour Internet connection\nand try again...</string>
+	
 </resources>
