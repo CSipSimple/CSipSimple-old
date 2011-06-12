@@ -50,6 +50,9 @@ public class SipConfigManager {
 	public static final String USE_MODE_API = "use_mode_api";
 	public static final String SIP_AUDIO_MODE = "sip_audio_mode";
 	public static final String MICRO_SOURCE = "micro_source";
+	public static final String USE_WEBRTC_HACK = "use_webrtc_hack";
+	public static final String DO_FOCUS_AUDIO = "do_focus_audio";
+	
 	
 	//UI
 	public static final String USE_SOFT_VOLUME = "use_soft_volume";
@@ -64,7 +67,8 @@ public class SipConfigManager {
 	public static final String DIAL_PRESS_VIBRATE_MODE = "dial_press_vibrate_mode";
 	public static final String INVERT_PROXIMITY_SENSOR = "invert_proximity_sensor";
 	public static final String USE_PARTIAL_WAKE_LOCK = "use_partial_wake_lock";
-	
+	public static final String INTEGRATE_WITH_CALLLOGS = "integrate_with_native_calllogs";
+	public static final String INTEGRATE_WITH_DIALER = "integrate_with_native_dialer";
 	
 	// NETWORK
 	public static final String TURN_SERVER = "turn_server";
@@ -78,6 +82,7 @@ public class SipConfigManager {
 	public static final String ENABLE_UDP = "enable_udp";
 	public static final String ENABLE_TCP = "enable_tcp";
 	public static final String LOCK_WIFI = "lock_wifi";
+	public static final String LOCK_WIFI_PERFS = "lock_wifi_perfs";
 	public static final String ENABLE_DNS_SRV = "enable_dns_srv";
 	public static final String ENABLE_QOS = "enable_qos";
 	public static final String DSCP_VAL = "dscp_val";
@@ -85,6 +90,9 @@ public class SipConfigManager {
 	public static final String KEEP_ALIVE_INTERVAL_MOBILE = "keep_alive_interval_mobile";
 	public static final String OVERRIDE_NAMESERVER = "override_nameserver";
 	public static final String USE_COMPACT_FORM = "use_compact_form";
+	public static final String USER_AGENT = "user_agent"; 
+	public static final String KEEP_ALIVE_USE_WAKE = "ka_use_wake";
+	
 	
 	// SECURE
 	public static final String ENABLE_TLS = "enable_tls";
@@ -103,9 +111,12 @@ public class SipConfigManager {
 	// CALLS
 	public static final String AUTO_RECORD_CALLS = "auto_record_calls";
 	public static final String DEFAULT_CALLER_ID = "default_caller_id";
+	public static final String SUPPORT_MULTIPLE_CALLS = "support_multiple_calls";
 	
 	public static final String CODEC_NB = "nb";
 	public static final String CODEC_WB = "wb";
+	
+	
 	
 	
 	public static String getCodecKey(String codecName, String type) {

@@ -34,10 +34,13 @@ import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -46,7 +49,6 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -57,6 +59,7 @@ import android.os.RemoteException;
 import android.os.Vibrator;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.TextAppearanceSpan;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -65,16 +68,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewParent;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.csipsimple.R;
 import com.csipsimple.api.ISipService;
@@ -87,9 +90,11 @@ import com.csipsimple.pjsip.PjSipCalls;
 import com.csipsimple.service.SipService;
 import com.csipsimple.ui.camera.VideoProducer;
 import com.csipsimple.utils.CallsUtils;
+import com.csipsimple.utils.CustomDistribution;
 import com.csipsimple.utils.DialingFeedback;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.PreferencesWrapper;
+import com.csipsimple.utils.Theme;
 import com.csipsimple.widgets.Dialpad;
 import com.csipsimple.widgets.Dialpad.OnDialKeyListener;
 import com.csipsimple.widgets.InCallControls2;
@@ -146,8 +151,6 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 	private Rect holdTargetRect, answerTargetRect, xferTargetRect;
 	private Button middleAddCall;
 
-	private GLSurfaceView surface;
-	private TestVideoRenderer renderer;
 	private VideoProducer videoProducer;
 	
 
@@ -206,10 +209,16 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 				onTrigger(ADD_CALL, null);
 			}
 		});
+		if(!prefsWrapper.getPreferenceBooleanValue(SipConfigManager.SUPPORT_MULTIPLE_CALLS)) {
+			middleAddCall.setEnabled(false);
+			middleAddCall.setText(R.string.not_configured_multiple_calls);
+		}
+		
 		
 		//Listen to media & sip events to update the UI
 		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_SIP_CALL_CHANGED));
 		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_SIP_MEDIA_CHANGED));
+		registerReceiver(callStateReceiver, new IntentFilter(SipManager.ACTION_ZRTP_SHOW_SAS));
 		
 		// Sensor management
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -228,12 +237,9 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
     		quitTimer = new Timer("Quit-timer");
         }
         
+        applyTheme();
         
 
-		//Display video
-		surface = (GLSurfaceView) findViewById(R.id.side_remote);
-		renderer = new TestVideoRenderer(this);
-		surface.setRenderer(renderer);
 		
 		//Camera capture
 		videoProducer = new VideoProducer(this);
@@ -245,15 +251,18 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
             if(viewParent != null && viewParent instanceof ViewGroup){
                     ((ViewGroup)(viewParent)).removeView(local_preview);
             }
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(100, 100);
-            lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-            lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-	        ((RelativeLayout) findViewById(R.id.video_part) ).addView(local_preview);
+            
+            LayoutParams lp = new LayoutParams(192, 200, Gravity.BOTTOM | Gravity.RIGHT);
+            //mainFrame.addView(local_preview, 0);
+            mainFrame.addView(local_preview, 0, lp);
 	    }
         
+        
+
 	}
 	
-	
+
+
 	@Override
 	protected void onStart() {
 		Log.d(THIS_FILE, "Start in call");
@@ -326,8 +335,12 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 			proximitySensorTracked  = true;
 		}
         dialFeedback.resume();
-		surface.onResume();
-		
+
+		for( Entry<Integer, InCallInfo2> badgeSet : badges.entrySet()) {
+			InCallInfo2 badge = badgeSet.getValue();
+			badge.onResume();
+		}
+        
         handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
 		
 	}
@@ -345,7 +358,11 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		}
 		
 		dialFeedback.pause();
-		surface.onPause();
+		
+		for( Entry<Integer, InCallInfo2> badgeSet : badges.entrySet()) {
+			InCallInfo2 badge = badgeSet.getValue();
+			badge.onPause();
+		}
 		
 		lockOverlay.tearDown();
 	}
@@ -399,6 +416,10 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		}
 		
 		//Remove badges
+		for( Entry<Integer, InCallInfo2> badgeSet : badges.entrySet()) {
+			InCallInfo2 badge = badgeSet.getValue();
+			badge.onPause();
+		}
 		badges.clear();
 		
 		super.onDestroy();
@@ -414,11 +435,33 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		super.onNewIntent(intent);
 	}
 	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		updateUIFromCall();
+	}
 
+
+
+	
+	private void applyTheme() {
+		String theme = prefsWrapper.getPreferenceStringValue(SipConfigManager.THEME);
+		if(! TextUtils.isEmpty(theme)) {
+			new Theme(this, theme, new Theme.onLoadListener() {
+				@Override
+				public void onLoad(Theme t) {
+					dialPad.applyTheme(t);
+					inCallControls.applyTheme(t);
+				}
+			});
+		}
+	}
+	
 	
 	private static final int UPDATE_FROM_CALL = 1;
 	private static final int UPDATE_FROM_MEDIA = 2;
 	private static final int UPDATE_DRAGGING = 3;
+	private static final int SHOW_SAS = 4;
 	// Ui handler
 	private Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -440,6 +483,9 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 						View.VISIBLE : View.GONE);
 				xferTarget.setVisibility( ( !di.call.isBeforeConfirmed() && !di.call.isAfterEnded()  && di.isDragging ) ? 
 						View.VISIBLE : View.GONE); 
+				break;
+			case SHOW_SAS:
+				showZRTPInfo((String) msg.obj);
 				break;
 			default:
 				super.handleMessage(msg);
@@ -620,25 +666,26 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		int mainIndex = 0;
 		
 		//Add badges if necessary
-		for(SipCallSession  callInfo : callsInfo) {
-			Log.d(THIS_FILE, "We have a call "+callInfo.getCallId()+" / "+callInfo.getCallState()+"/"+callInfo.getMediaStatus());
-			
-			if ( !callInfo.isAfterEnded() && !hasBadgeForCall(callInfo) ) {
-				Log.d(THIS_FILE, "Has to add badge for "+callInfo.getCallId());
-				addBadgeForCall(callInfo);
-			}
-			
-			if( ! callInfo.isAfterEnded()) {
-				if(callInfo.isLocalHeld()) {
-					heldsCalls ++;
-				}else {
-					mainsCalls ++;
+		if(callsInfo != null) {
+			for(SipCallSession  callInfo : callsInfo) {
+				Log.d(THIS_FILE, "We have a call "+callInfo.getCallId()+" / "+callInfo.getCallState()+"/"+callInfo.getMediaStatus());
+				
+				if ( !callInfo.isAfterEnded() && !hasBadgeForCall(callInfo) ) {
+					Log.d(THIS_FILE, "Has to add badge for "+callInfo.getCallId());
+					addBadgeForCall(callInfo);
 				}
+				
+				if( ! callInfo.isAfterEnded()) {
+					if(callInfo.isLocalHeld()) {
+						heldsCalls ++;
+					}else {
+						mainsCalls ++;
+					}
+				}
+				
+				mainCallInfo = getPrioritaryCall(callInfo, mainCallInfo);
 			}
-			
-			mainCallInfo = getPrioritaryCall(callInfo, mainCallInfo);
 		}
-		
 		
 		int mainWidth = METRICS.widthPixels;
 		if(heldsCalls > 0) {
@@ -708,6 +755,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		
 		//Remove useless badges
 		for(InCallInfo2 badge : badgesToRemove) {
+			badge.onPause();
 			callInfoPanel.removeView(badge);
 			SipCallSession ci = badge.getCallInfo();
 			if(ci != null) {
@@ -817,7 +865,9 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		}
 		
 		if(mainsCalls == 0) {
-			middleAddCall.setVisibility(View.VISIBLE);
+			if(!CustomDistribution.forceNoMultipleCalls()) {
+				middleAddCall.setVisibility(View.VISIBLE);
+			}
 		}else {
 			middleAddCall.setVisibility(View.GONE);
 		}
@@ -913,6 +963,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		badge.setOnTriggerListener(this);
 		badge.setOnTouchListener(new OnBadgeTouchListener(badge, call));
 		badges.put(call.getCallId(), badge);
+		badge.onResume();
 	}
 	
 	private void layoutBadge(Rect wrap, InCallInfo2 mainBadge) {
@@ -1012,6 +1063,8 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 				handler.sendMessage(handler.obtainMessage(UPDATE_FROM_CALL));
 			}else if(action.equals(SipManager.ACTION_SIP_MEDIA_CHANGED)) {
 				handler.sendMessage(handler.obtainMessage(UPDATE_FROM_MEDIA));
+			}else if(action.equals(SipManager.ACTION_ZRTP_SHOW_SAS)) {
+				handler.sendMessage(handler.obtainMessage(SHOW_SAS, intent.getStringExtra(Intent.EXTRA_SUBJECT)));
 			}
 		}
 	};
@@ -1426,6 +1479,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 							dropOnOtherCall = true;
 							if(service != null) {
 								try {
+									// 1 = PJSUA_XFER_NO_REQUIRE_REPLACES
 									service.xferReplace(call.getCallId(), callId, 1);
 								} catch (RemoteException e) {
 									// TODO : toaster
@@ -1471,5 +1525,38 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 //			badge = aBadge;
 			call = aCall;
 		}
+	}
+	
+	
+	
+	private void showZRTPInfo(String sasString) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		Resources r = getResources();
+		builder.setTitle("ZRTP supported by remote party");
+		builder.setMessage("Do you confirm the SAS : "+sasString);
+		builder.setPositiveButton(r.getString(R.string.yes), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Log.d(THIS_FILE, "ZRTP confirmed");
+
+				if (service != null) {
+					try {
+						service.zrtpSASVerified();
+					} catch (RemoteException e) {
+						Log.e(THIS_FILE, "Error while calling service", e);
+					}
+					dialog.dismiss();
+				}
+			}
+		});
+		builder.setNegativeButton(r.getString(R.string.no), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		
+		AlertDialog backupDialog = builder.create();
+		backupDialog.show();
 	}
 }

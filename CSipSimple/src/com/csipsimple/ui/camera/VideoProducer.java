@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
@@ -48,7 +49,7 @@ import android.widget.LinearLayout;
 
 public class VideoProducer {
 
-        private static String TAG = VideoProducer.class.getCanonicalName();
+        private static String THIS_FILE = VideoProducer.class.getCanonicalName();
 
         private static int WIDTH = 352;
         private static int HEIGHT = 288;
@@ -114,7 +115,7 @@ public class VideoProducer {
                 try {
                         APILevel7.addCallbackBufferMethod.invoke(camera, buffer);
                 } catch (Exception e) {
-                        Log.e(VideoProducer.TAG, e.toString());
+                        Log.e(THIS_FILE, e.toString());
                 }
         }
 
@@ -122,7 +123,7 @@ public class VideoProducer {
                 try {
                         APILevel7.setPreviewCallbackWithBufferMethod.invoke(camera, callback);
                 } catch (Exception e) {
-                        Log.e(VideoProducer.TAG, e.toString());
+                        Log.e(THIS_FILE, e.toString());
                 }
         }
 
@@ -131,7 +132,7 @@ public class VideoProducer {
                         if(APILevel8.setDisplayOrientationMethod != null)
                                 APILevel8.setDisplayOrientationMethod.invoke(camera, degrees);
                 } catch (Exception e) {
-                        Log.e(VideoProducer.TAG, e.toString());
+                        Log.e(THIS_FILE, e.toString());
                 }
         }
 
@@ -141,7 +142,7 @@ public class VideoProducer {
                 try {
                         list = (List<Camera.Size>)APILevel5.getSupportedPreviewSizesMethod.invoke(params);
                 } catch (Exception e) {
-                        Log.e(VideoProducer.TAG, e.toString());
+                        Log.e(THIS_FILE, e.toString());
                 }
                 return list;
         }
@@ -160,25 +161,25 @@ public class VideoProducer {
         }
 
         public synchronized int pause(){
-                Log.d(VideoProducer.TAG, "pause()");
+                Log.d(THIS_FILE, "pause()");
                 return 0;
         }
 
         public synchronized int start() {
-                Log.d(VideoProducer.TAG, "start()");
+                Log.d(THIS_FILE, "start()");
                 if(this.context != null){
 
                         this.running = true;
                         return 0;
                 }
                 else{
-                        Log.e(VideoProducer.TAG, "Invalid context");
+                        Log.e(THIS_FILE, "Invalid context");
                         return -1;
                 }
         }
 
         public synchronized int stop() {
-                Log.d(VideoProducer.TAG, "stop()");
+                Log.d(THIS_FILE, "stop()");
                 this.preview = null;
                 this.context = null;
 
@@ -188,7 +189,7 @@ public class VideoProducer {
         }
 
         public synchronized int reset() {
-                Log.d(VideoProducer.TAG, "reset()");
+                Log.d(THIS_FILE, "reset()");
 
             this.preview.setVisibility(View.INVISIBLE);
                 this.running = false;
@@ -197,7 +198,7 @@ public class VideoProducer {
         }
 
         public synchronized int prepare(int width, int height, int fps){
-                Log.d(VideoProducer.TAG, String.format("prepare(%d, %d, %d)", width, height, fps));
+                Log.d(THIS_FILE, String.format("prepare(%d, %d, %d)", width, height, fps));
                 this.width = width;
                 this.height = height;
                 this.fps = fps;
@@ -240,22 +241,10 @@ public class VideoProducer {
                 public void surfaceCreated(SurfaceHolder holder) {
                         try {
                                 boolean useFFC = true;
-                                Log.d(VideoProducer.TAG, useFFC ? "Using FFC" : "Not using FFC");
-                                if (!this.producer.toggle) {
-                                        if(useFFC && FFC.isAvailable()){
-                                                this.camera = FFC.getCamera(); // Get FFC camera
-                                        }
-                                        if(this.camera == null){
-                                                this.camera = Camera.open();
-                                        }
-                                        // Switch to Front Facing Camera
-                                        if(useFFC){
-                                                FFC.switchToFFC(this.camera);
-                                        }
-                                }
-                                else {
-                                        this.camera = Camera.open();
-                                }
+                                Log.d(THIS_FILE, useFFC ? "Using FFC" : "Not using FFC");
+                                CamerasWrapper cWrapper = CamerasWrapper.getInstance();
+                                this.camera = cWrapper.getCamera(!this.producer.toggle);
+                               
                                 Camera.Parameters parameters = this.camera.getParameters();
 
                                 /*
@@ -274,7 +263,7 @@ public class VideoProducer {
                                 }
                                 catch(Exception e){
                                         // FFMpeg converter will resize the video stream
-                                        Log.d(VideoProducer.TAG, e.toString());
+                                        Log.d(THIS_FILE, e.toString());
                                 }
 
                                 this.camera.setPreviewDisplay(holder);
@@ -291,15 +280,15 @@ public class VideoProducer {
                                         this.camera.release();
                                         this.camera = null;
                                 }
-                                Log.e(VideoProducer.TAG, exception.toString());
+                                Log.e(THIS_FILE, exception.toString());
                         }
                 }
 
                 public void surfaceDestroyed(SurfaceHolder holder) {
-                        Log.d(VideoProducer.TAG,"Destroy Preview");
+                        Log.d(THIS_FILE,"Destroy Preview");
                         if(this.camera != null){
                                 // stop preview
-                                Log.d(VideoProducer.TAG,"Close Camera");
+                                Log.d(THIS_FILE,"Close Camera");
                                 this.camera.stopPreview();
                                 if(APILevel7.isAvailable()){
                                         this.producer.setPreviewCallbackWithBuffer(this.camera, null);
@@ -313,7 +302,7 @@ public class VideoProducer {
                 }
 
                 public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-                        Log.d(VideoProducer.TAG,"Surface Changed Callback");
+                        Log.d(THIS_FILE,"Surface Changed Callback");
                         if(this.camera != null && this.producer != null && this.producer.frame != null){
                                 try{
                                         Camera.Parameters parameters = this.camera.getParameters();
@@ -321,20 +310,20 @@ public class VideoProducer {
                                         this.camera.setParameters(parameters);
                                 }
                                 catch(Exception e){
-                                        Log.e(VideoProducer.TAG, e.toString());
+                                        Log.e(THIS_FILE, e.toString());
                                 }
 
                                 if(APILevel7.isAvailable()){
                                         // Camera Orientation
-                                		int orientation = Configuration.ORIENTATION_LANDSCAPE;
+                                		int orientation = Configuration.ORIENTATION_PORTRAIT;
                                         switch(orientation){
                                                 case Configuration.ORIENTATION_LANDSCAPE:
                                                         this.producer.setDisplayOrientation(this.camera, 0);
-                                                        Log.d(VideoProducer.TAG, "Orientation=landscape");
+                                                        Log.d(THIS_FILE, "Orientation=landscape");
                                                         break;
                                                 case Configuration.ORIENTATION_PORTRAIT:
                                                         this.producer.setDisplayOrientation(this.camera, 90);
-                                                        Log.d(VideoProducer.TAG, "Orientation=portrait");
+                                                        Log.d(THIS_FILE, "Orientation=portrait");
                                                         break;
                                         }
                                         // Callback Buffers
@@ -363,7 +352,7 @@ public class VideoProducer {
 
                                 APILevel8.isOK = true;
                         } catch (Exception e) {
-                                Log.d(VideoProducer.TAG, e.toString());
+                                Log.d(THIS_FILE, e.toString());
                         }
                 }
 
@@ -389,7 +378,7 @@ public class VideoProducer {
 
                                 APILevel7.isOK = true;
                         } catch (Exception e) {
-                                Log.d(VideoProducer.TAG, e.toString());
+                                Log.d(THIS_FILE, e.toString());
                         }
                 }
 
@@ -409,7 +398,7 @@ public class VideoProducer {
 
                                 APILevel5.isOK = true;
                         } catch (Exception e) {
-                                Log.d(VideoProducer.TAG, e.toString());
+                                Log.d(THIS_FILE, e.toString());
                         }
                 }
 
@@ -418,90 +407,5 @@ public class VideoProducer {
                 }
         }
 
-        /* ==================================================*/
-        static class FFC{
-                private final String className;
-                private final String methodName;
 
-                private static Method DualCameraSwitchMethod;
-                private static int ffc_index = -1;
-                static FFC FFC_VALUES[] = {
-                        new FFC("android.hardware.HtcFrontFacingCamera", "getCamera"),
-                        // Sprint: HTC EVO 4G and Samsung Epic 4G
-                        // DO not forget to change the manifest if you are using OS 1.6 and later
-                        new FFC("com.sprint.hardware.twinCamDevice.FrontFacingCamera", "getFrontFacingCamera"),
-                        // Huawei U8230
-            new FFC("android.hardware.CameraSlave", "open"),
-                        // To be continued...
-                        // Default: Used for test reflection
-                        //--new FFC("android.hardware.Camera", "open"),
-                };
-
-                static{
-
-                        //
-                        //
-                        //
-                        int index = 0;
-                        for(FFC ffc: FFC.FFC_VALUES){
-                                try{
-                                        Class.forName(ffc.className).getDeclaredMethod(ffc.methodName);
-                                        FFC.ffc_index = index;
-                                        break;
-                                }
-                                catch(Exception e){
-                                        Log.d(VideoProducer.TAG, e.toString());
-                                }
-
-                                ++index;
-                        }
-
-                        //
-                        //
-                        //
-                        try{
-                                FFC.DualCameraSwitchMethod = Class.forName("android.hardware.Camera").getMethod("DualCameraSwitch",int.class);
-                        }
-                        catch(Exception e){
-                                Log.e(VideoProducer.TAG, e.toString());
-                        }
-                }
-
-                private FFC(String className, String methodName){
-                        this.className = className;
-                        this.methodName = methodName;
-                }
-
-                static boolean isAvailable(){
-                        return (FFC.ffc_index != -1);
-                }
-
-                static Camera getCamera(){
-                        try{
-                                Method method = Class.forName(FFC.FFC_VALUES[FFC.ffc_index].className).getDeclaredMethod(FFC.FFC_VALUES[FFC.ffc_index].methodName);
-                                return (Camera)method.invoke(null);
-                        }
-                        catch(Exception e){
-                                Log.e(VideoProducer.TAG, e.toString());
-                        }
-                        return null;
-                }
-
-                static void switchToFFC(Camera camera){
-                        try{
-                                if(FFC.DualCameraSwitchMethod == null){ // Samsung Galaxy S, Epic 4G, ...
-                                        Camera.Parameters parameters = camera.getParameters();
-                                        parameters.set("camera-id", 2);
-                                        camera.setParameters(parameters);
-                                }
-                                else{ // Dell Streak, ...
-                                        FFC.DualCameraSwitchMethod.invoke(camera, (int)1);
-                                }
-                        }
-                        catch(Exception e){
-                                Log.e(VideoProducer.TAG, e.toString());
-                        }
-
-                }
-        }
 }

@@ -52,6 +52,15 @@ public class pjsua_codec_info {
     return pjsuaJNI.pjsua_codec_info_priority_get(swigCPtr, this);
   }
 
+  public void setDesc(pj_str_t value) {
+    pjsuaJNI.pjsua_codec_info_desc_set(swigCPtr, this, pj_str_t.getCPtr(value), value);
+  }
+
+  public pj_str_t getDesc() {
+    long cPtr = pjsuaJNI.pjsua_codec_info_desc_get(swigCPtr, this);
+    return (cPtr == 0) ? null : new pj_str_t(cPtr, false);
+  }
+
   public void setBuf_(String value) {
     pjsuaJNI.pjsua_codec_info_buf__set(swigCPtr, this, value);
   }

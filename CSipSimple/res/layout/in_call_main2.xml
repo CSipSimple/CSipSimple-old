@@ -109,14 +109,14 @@
 	
 	<FrameLayout android:id="@+id/callInfoPanel"
 		android:layout_width="fill_parent" android:layout_height="fill_parent" />
+<!-- 
 
-	
 	<RelativeLayout android:id="@+id/video_part" android:layout_width="fill_parent"
 		android:layout_height="300dip">
 		<android.opengl.GLSurfaceView android:id="@+id/side_remote"
 			android:layout_width="fill_parent" android:layout_height="fill_parent" />
 
-	</RelativeLayout>
+	</RelativeLayout> -->
 	
 	<com.csipsimple.widgets.ScreenLocker android:id="@+id/lockerOverlay"
 		android:layout_width="fill_parent" android:layout_height="fill_parent"

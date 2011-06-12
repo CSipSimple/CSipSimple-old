@@ -30,14 +30,16 @@ import org.pjsip.pjsua.pjsua;
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 
+//import com.csipsimple.utils.Log;
+
 
 public class TestVideoRenderer implements Renderer {
 
-    private static final String THIS_FILE = "TestVideoRenderer";
-	private Context context;
+//    private static final String THIS_FILE = "TestVideoRenderer";
+//	private Context context;
     
     public TestVideoRenderer(Context aContext) {
-        context = aContext;
+ //       context = aContext;
     }
     
     private IntBuffer texturesBuffer = null;
@@ -50,20 +52,29 @@ public class TestVideoRenderer implements Renderer {
 	        gl.glGenTextures(1, texturesBuffer);
 	        
 	        // setup video texture
+	        gl.glBindTexture(GL10.GL_TEXTURE_2D, texturesBuffer.get(0));
 	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
 	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
 	        gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
     //	}
+	        
+	        
     }
-    
+    private static float TOP_X = 1f;
+    private static float TOP_Y = 1f;
+    private static float BOT_X = 0f;
+    private static float BOT_Y = 0f;
+
+
 
     private static float[] quadCoords = new float[] {
-        0, 1, 0,
-        1, 1, 0,
-        0, 0, 0,
-        1, 0, 0
+        BOT_X, TOP_Y, 0,
+        TOP_X, TOP_Y, 0,
+        BOT_X, BOT_Y, 0,
+        TOP_X, BOT_Y, 0
     };
+    
     private static float[] quadTexCoords = new float[] {
         0, 0,
         1, 0,
@@ -72,11 +83,12 @@ public class TestVideoRenderer implements Renderer {
     };    
     
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        gl.glShadeModel(GL10.GL_SMOOTH);
+    	
+    	gl.glShadeModel(GL10.GL_SMOOTH);
         gl.glClearColor(0, 0, 0, 0);
 
         gl.glClearDepthf(1.0f);
-        gl.glDisable(GL10.GL_DEPTH_TEST);
+        gl.glEnable(GL10.GL_DEPTH_TEST);
         gl.glDepthFunc(GL10.GL_LEQUAL);
         
         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
@@ -94,36 +106,40 @@ public class TestVideoRenderer implements Renderer {
 
     
 	public void onDrawFrame(GL10 gl) {
+		// Reset for this draw seq
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-
-		gl.glMatrixMode(GL10.GL_MODELVIEW);
-		gl.glLoadIdentity();
-
+        gl.glMatrixMode(GL10.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        
+        
+        // Recompute texture 
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, texturesBuffer.get(0));
 
 		float[] w = new float[] { 1.0f };
 		float[] h = new float[] { 1.0f };
 		pjsua.pjmedia_ogl_surface_draw(w, h);
-		
 	//	Log.d(THIS_FILE, "Has been drawn at "+w[0]+","+h[0]);
-
 		quadTexCoords[2] = w[0];
 		quadTexCoords[6] = w[0];
 		quadTexCoords[5] = h[0];
 		quadTexCoords[7] = h[0];
-
-		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, makeFloatBuffer(quadCoords));
+        
+        
+        // draw quad
+        gl.glTranslatef(0, 0, -0.5f);
+        //gl.glColor4f(0.5f, 0.5f, 1.0f, 1.0f);
+        
+        gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, makeFloatBuffer(quadCoords));
 		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, makeFloatBuffer(quadTexCoords));
-		gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
+        gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-		
-
 	}
 
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+
 
     	loadTextures(gl);
         // avoid division by zero
@@ -136,12 +152,9 @@ public class TestVideoRenderer implements Renderer {
         gl.glMatrixMode(GL10.GL_PROJECTION);
         gl.glLoadIdentity();
         
+        // Switch to ortho projection
         gl.glOrthof(0f, 1.0f, 0f, 1.0f, -1.0f, 1.0f);
         
-        gl.glMatrixMode(GL10.GL_MODELVIEW);
-        gl.glLoadIdentity();
     }
-    
-    
 
 }

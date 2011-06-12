@@ -51,6 +51,7 @@ public class Expert extends BaseImplementation {
 	private EditTextPreference accountProxy;
 	private ListPreference accountUseSrtp;
 	private EditTextPreference accountRegDelayRefresh;
+	private EditTextPreference accountVm;
 	
 	private void bindFields() {
 		accountDisplayName = (EditTextPreference) parent.findPreference("display_name");
@@ -70,6 +71,7 @@ public class Expert extends BaseImplementation {
 		accountAllowContactRewrite = (CheckBoxPreference) parent.findPreference("allow_contact_rewrite");
 		accountContactRewriteMethod = (ListPreference) parent.findPreference("contact_rewrite_method");
 		accountProxy = (EditTextPreference) parent.findPreference("proxy");
+		accountVm = (EditTextPreference) parent.findPreference("vm_number");
 	}
 
 	public void fillLayout(final SipProfile account) {
@@ -88,7 +90,7 @@ public class Expert extends BaseImplementation {
 			if (scheme != null && !scheme.equals("")) {
 				accountScheme.setValue(scheme);
 			} else {
-				accountScheme.setValue("Digest");
+				accountScheme.setValue(SipProfile.CRED_SCHEME_DIGEST);
 			}
 		}
 		{
@@ -121,7 +123,11 @@ public class Expert extends BaseImplementation {
 			accountProxy.setText("");
 		}
 		Log.d(THIS_FILE, "use srtp : "+account.use_srtp);
-		accountUseSrtp.setValueIndex(account.use_srtp);
+		if(account.use_srtp >= 0) {
+			accountUseSrtp.setValueIndex(account.use_srtp);
+		}
+		
+		accountVm.setText(account.vm_nbr);
 	}
 	
 
@@ -208,7 +214,7 @@ public class Expert extends BaseImplementation {
 			account.realm = "";
 			account.username = "";
 			account.data = "";
-			account.scheme = "Digest";
+			account.scheme = SipProfile.CRED_SCHEME_DIGEST;
 			account.datatype = SipProfile.CRED_DATA_PLAIN_PASSWD;
 		}
 
@@ -235,9 +241,9 @@ public class Expert extends BaseImplementation {
 			//DO nothing
 		}
 		account.allow_contact_rewrite = accountAllowContactRewrite.isChecked();
-		String forceContact = accountForceContact.getText();
+		String forceContact = getText(accountForceContact);
 		if(!TextUtils.isEmpty(forceContact)) {
-			account.force_contact = getText(accountForceContact);
+			account.force_contact = forceContact;
 		}else {
 			account.force_contact = "";
 		}
@@ -246,6 +252,13 @@ public class Expert extends BaseImplementation {
 			account.proxies = new String[] { accountProxy.getText() };
 		} else {
 			account.proxies = null;
+		}
+		
+		String vmNbr = getText(accountVm);
+		if(!TextUtils.isEmpty(vmNbr)) {
+			account.vm_nbr = vmNbr;
+		}else {
+			account.vm_nbr = "";
 		}
 		
 		return account;

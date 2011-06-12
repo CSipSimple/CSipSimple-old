@@ -538,8 +538,6 @@ public class pjsuaJNI {
   public final static native long pjsua_acc_config_reg_uri_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_reg_hdr_list_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
   public final static native long pjsua_acc_config_reg_hdr_list_get(long jarg1, pjsua_acc_config jarg1_);
-  public final static native void pjsua_acc_config_sub_hdr_list_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
-  public final static native long pjsua_acc_config_sub_hdr_list_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_mwi_enabled_set(long jarg1, pjsua_acc_config jarg1_, int jarg2);
   public final static native int pjsua_acc_config_mwi_enabled_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_publish_enabled_set(long jarg1, pjsua_acc_config jarg1_, int jarg2);
@@ -570,8 +568,6 @@ public class pjsuaJNI {
   public final static native long[] pjsua_acc_config_proxy_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_reg_timeout_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
   public final static native long pjsua_acc_config_reg_timeout_get(long jarg1, pjsua_acc_config jarg1_);
-  public final static native void pjsua_acc_config_reg_delay_before_refresh_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
-  public final static native long pjsua_acc_config_reg_delay_before_refresh_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_unreg_timeout_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
   public final static native long pjsua_acc_config_unreg_timeout_get(long jarg1, pjsua_acc_config jarg1_);
   public final static native void pjsua_acc_config_cred_count_set(long jarg1, pjsua_acc_config jarg1_, long jarg2);
@@ -707,8 +703,6 @@ public class pjsuaJNI {
   public final static native long pjsua_call_info_total_duration_get(long jarg1, pjsua_call_info jarg1_);
   public final static native long new_pjsua_call_info();
   public final static native void delete_pjsua_call_info(long jarg1);
-  public final static native int PJSUA_CALL_UNHOLD_get();
-  public final static native int PJSUA_CALL_UPDATE_CONTACT_get();
   public final static native long call_get_max_count();
   public final static native long call_get_count();
   public final static native int enum_calls(int[] jarg1, long[] jarg2);
@@ -725,7 +719,7 @@ public class pjsuaJNI {
   public final static native int call_hangup(int jarg1, long jarg2, long jarg3, pj_str_t jarg3_, long jarg4);
   public final static native int call_process_redirect(int jarg1, int jarg2);
   public final static native int call_set_hold(int jarg1, long jarg2);
-  public final static native int call_reinvite(int jarg1, long jarg2, long jarg3);
+  public final static native int call_reinvite(int jarg1, int jarg2, long jarg3);
   public final static native int call_update(int jarg1, long jarg2, long jarg3);
   public final static native int call_xfer(int jarg1, long jarg2, pj_str_t jarg2_, long jarg3);
   public final static native int PJSUA_XFER_NO_REQUIRE_REPLACES_get();
@@ -866,6 +860,8 @@ public class pjsuaJNI {
   public final static native long pjsua_codec_info_codec_id_get(long jarg1, pjsua_codec_info jarg1_);
   public final static native void pjsua_codec_info_priority_set(long jarg1, pjsua_codec_info jarg1_, short jarg2);
   public final static native short pjsua_codec_info_priority_get(long jarg1, pjsua_codec_info jarg1_);
+  public final static native void pjsua_codec_info_desc_set(long jarg1, pjsua_codec_info jarg1_, long jarg2, pj_str_t jarg2_);
+  public final static native long pjsua_codec_info_desc_get(long jarg1, pjsua_codec_info jarg1_);
   public final static native void pjsua_codec_info_buf__set(long jarg1, pjsua_codec_info jarg1_, String jarg2);
   public final static native String pjsua_codec_info_buf__get(long jarg1, pjsua_codec_info jarg1_);
   public final static native long new_pjsua_codec_info();

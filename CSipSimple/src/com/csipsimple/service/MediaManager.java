@@ -36,6 +36,7 @@ import android.provider.Settings;
 import com.csipsimple.api.MediaState;
 import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
+import com.csipsimple.service.SipService.SameThreadException;
 import com.csipsimple.utils.Compatibility;
 import com.csipsimple.utils.Log;
 import com.csipsimple.utils.Ringer;
@@ -78,11 +79,11 @@ public class MediaManager {
 	private AudioFocusWrapper audioFocusWrapper;
 	private AccessibilityWrapper accessibilityManager;
 	
-	
-	private boolean USE_SGS_WRK_AROUND = false;
-
 
 	private SharedPreferences prefs;
+	private boolean USE_SGS_WRK_AROUND = false;
+	private boolean USE_WEBRTC_IMPL = false;
+	private boolean DO_FOCUS_AUDIO = true;
 	private static int MODE_SIP_IN_CALL = AudioManager.MODE_NORMAL;
 	
 
@@ -114,6 +115,8 @@ public class MediaManager {
 		}
 		MODE_SIP_IN_CALL = service.prefsWrapper.getInCallMode();
 		USE_SGS_WRK_AROUND = service.prefsWrapper.getPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK);
+		USE_WEBRTC_IMPL = service.prefsWrapper.getPreferenceBooleanValue(SipConfigManager.USE_WEBRTC_HACK);
+		DO_FOCUS_AUDIO = service.prefsWrapper.getPreferenceBooleanValue(SipConfigManager.DO_FOCUS_AUDIO);
 	}
 	
 	public void stopService() {
@@ -125,6 +128,12 @@ public class MediaManager {
 	
 	private int getAudioTargetMode() {
 		int targetMode = MODE_SIP_IN_CALL;
+//Manage that is BT connected part
+//		if(userWantBluetooth) {
+//			// Force normal mode for BT SCO
+//			return AudioManager.MODE_NORMAL;
+//		}
+		
 		if(service.prefsWrapper.getUseModeApi()) {
 			Log.d(THIS_FILE, "User want speaker now..."+userWantSpeaker);
 			if(!service.prefsWrapper.generateForSetCall()) {
@@ -133,6 +142,7 @@ public class MediaManager {
 				return userWantSpeaker ? AudioManager.MODE_IN_CALL: AudioManager.MODE_NORMAL ;
 			}
 		}
+		
 		return targetMode;
 	}
 	
@@ -225,47 +235,104 @@ public class MediaManager {
 			cpuLock.acquire();
 		}
 		
+
 		
-		//Audio routing
-		int targetMode = getAudioTargetMode();
-		Log.d(THIS_FILE, "Set mode audio in call to "+targetMode);
+		if(!USE_WEBRTC_IMPL) {
+			//Audio routing
+			int targetMode = getAudioTargetMode();
+			Log.d(THIS_FILE, "Set mode audio in call to "+targetMode);
+			
+			if(service.prefsWrapper.generateForSetCall()) {
+				ToneGenerator toneGenerator = new ToneGenerator( AudioManager.STREAM_VOICE_CALL, 1);
+				toneGenerator.startTone(ToneGenerator.TONE_CDMA_CONFIRM);
+				toneGenerator.stopTone();
+				toneGenerator.release();
+			}
+			
+			//Set mode
+			if(targetMode != AudioManager.MODE_IN_CALL && USE_SGS_WRK_AROUND) {
+				//For galaxy S we need to set in call mode before to reset stack
+				audioManager.setMode(AudioManager.MODE_IN_CALL);
+			}
+			
+			
+			audioManager.setMode(targetMode);
+			
+			//Routing
+			if(service.prefsWrapper.getUseRoutingApi()) {
+				audioManager.setRouting(targetMode, userWantSpeaker?AudioManager.ROUTE_SPEAKER:AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
+			}else {
+				audioManager.setSpeakerphoneOn(userWantSpeaker ? true : false);
+			}
+			
+			audioManager.setMicrophoneMute(false);
+			if(bluetoothWrapper != null && userWantBluetooth && bluetoothWrapper.canBluetooth()) {
+				Log.d(THIS_FILE, "Try to enable bluetooth");
+				bluetoothWrapper.setBluetoothOn(true);
+			}
 		
-		if(service.prefsWrapper.generateForSetCall()) {
-			ToneGenerator toneGenerator = new ToneGenerator( AudioManager.STREAM_VOICE_CALL, 1);
-			toneGenerator.startTone(ToneGenerator.TONE_CDMA_CONFIRM);
-			toneGenerator.stopTone();
-			toneGenerator.release();
-		}
-		
-		//Set mode
-		if(targetMode != AudioManager.MODE_IN_CALL && USE_SGS_WRK_AROUND) {
-			//For galaxy S we need to set in call mode before to reset stack
-			audioManager.setMode(AudioManager.MODE_IN_CALL);
-		}
-		
-		
-		audioManager.setMode(targetMode);
-		
-		//Routing
-		if(service.prefsWrapper.getUseRoutingApi()) {
-			audioManager.setRouting(targetMode, userWantSpeaker?AudioManager.ROUTE_SPEAKER:AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
 		}else {
-			audioManager.setSpeakerphoneOn(userWantSpeaker ? true : false);
-		}
-		
-		audioManager.setMicrophoneMute(false);
-		if(bluetoothWrapper != null && userWantBluetooth && bluetoothWrapper.canBluetooth()) {
-			Log.d(THIS_FILE, "Try to enable bluetooth");
-			bluetoothWrapper.setBluetoothOn(true);
+			//WebRTC implementation for routing
+			int apiLevel = Compatibility.getApiLevel();
+			
+			//SetAudioMode
+			// ***IMPORTANT*** When the API level for honeycomb (H) has been
+	        // decided,
+	        // the condition should be changed to include API level 8 to H-1.
+	        if ( android.os.Build.BRAND.equalsIgnoreCase("Samsung") && (8 == apiLevel)) {
+	            // Set Samsung specific VoIP mode for 2.2 devices
+	            int mode = 4;
+	            audioManager.setMode(mode);
+	            if (audioManager.getMode() != mode) {
+	                Log.e(THIS_FILE, "Could not set audio mode for Samsung device");
+	            }
+	        }
+
+			
+			
+			//SetPlayoutSpeaker
+	        if ((3 == apiLevel) || (4 == apiLevel)) {
+	            // 1.5 and 1.6 devices
+	            if (userWantSpeaker) {
+	                // route audio to back speaker
+	            	audioManager.setMode(AudioManager.MODE_NORMAL);
+	            } else {
+	                // route audio to earpiece
+	            	audioManager.setMode(AudioManager.MODE_IN_CALL);
+	            }
+	        } else {
+	            // 2.x devices
+	            if ((android.os.Build.BRAND.equalsIgnoreCase("samsung")) &&
+	                            ((5 == apiLevel) || (6 == apiLevel) ||
+	                            (7 == apiLevel))) {
+	                // Samsung 2.0, 2.0.1 and 2.1 devices
+	                if (userWantSpeaker) {
+	                    // route audio to back speaker
+	                	audioManager.setMode(AudioManager.MODE_IN_CALL);
+	                	audioManager.setSpeakerphoneOn(userWantSpeaker);
+	                } else {
+	                    // route audio to earpiece
+	                	audioManager.setSpeakerphoneOn(userWantSpeaker);
+	                	audioManager.setMode(AudioManager.MODE_NORMAL);
+	                }
+	            } else {
+	                // Non-Samsung and Samsung 2.2 and up devices
+	            	audioManager.setSpeakerphoneOn(userWantSpeaker);
+	            }
+	        }
+
+			
 		}
 		
 		//Set stream solo/volume/focus
+
 		int inCallStream = Compatibility.getInCallStream();
-		if(!accessibilityManager.isEnabled()) {
-			audioManager.setStreamSolo(inCallStream, true);
+		if(DO_FOCUS_AUDIO) {
+			if(!accessibilityManager.isEnabled()) {
+				audioManager.setStreamSolo(inCallStream, true);
+			}
+			audioFocusWrapper.focus();
 		}
-		audioFocusWrapper.focus();
-		
 		setStreamVolume(inCallStream,  (int) (audioManager.getStreamMaxVolume(inCallStream)*service.prefsWrapper.getInitialVolumeLevel()),  0);
 		
 		
@@ -354,8 +421,10 @@ public class MediaManager {
 			bluetoothWrapper.setBluetoothOn(false);
 		}
 		audioManager.setMicrophoneMute(false);
-		audioManager.setStreamSolo(inCallStream, false);
-		
+		if(DO_FOCUS_AUDIO) {
+			audioManager.setStreamSolo(inCallStream, false);
+			audioFocusWrapper.unFocus();
+		}
 		restoreAudioState();
 		
 		if(wifiLock != null && wifiLock.isHeld()) {
@@ -369,7 +438,6 @@ public class MediaManager {
 			cpuLock.release();
 		}
 		
-		audioFocusWrapper.unFocus();
 		
 		isSetAudioMode = false;
 	}
@@ -399,17 +467,17 @@ public class MediaManager {
 	}
 	
 	public void resetSettings() {
-		userWantBluetooth = false;
+		userWantBluetooth = true;
 		userWantMicrophoneMute = false;
 		userWantSpeaker = false;
 	}
 
 
-	public void toggleMute() {
+	public void toggleMute() throws SameThreadException {
 		setMicrophoneMute(!userWantMicrophoneMute);
 	}
 	
-	public synchronized void setMicrophoneMute(boolean on) {
+	public void setMicrophoneMute(boolean on) {
 		if(on != userWantMicrophoneMute ) {
 			userWantMicrophoneMute = on;
 			setSoftwareVolume();
@@ -417,7 +485,7 @@ public class MediaManager {
 		}
 	}
 	
-	public synchronized void setSpeakerphoneOn(boolean on) {
+	public void setSpeakerphoneOn(boolean on) throws SameThreadException {
 		if(service != null) {
 			service.setNoSnd();
 			userWantSpeaker = on;
@@ -426,7 +494,7 @@ public class MediaManager {
 		broadcastMediaChanged();
 	}
 	
-	public synchronized void setBluetoothOn(boolean on) {
+	public void setBluetoothOn(boolean on) throws SameThreadException {
 		Log.d(THIS_FILE, "Set BT "+on);
 		if(service != null) {
 			service.setNoSnd();
@@ -465,21 +533,31 @@ public class MediaManager {
 	
 	/**
 	 * Change the audio volume amplification according to the fact we are using bluetooth
-	 * @param useBluetooth
 	 */
-	public void setSoftwareVolume() {
+	public void setSoftwareVolume(){
 		
 		if(service != null) {
-			boolean useBT = (bluetoothWrapper != null && bluetoothWrapper.isBluetoothOn());
-			
-			String speaker_key = useBT ? SipConfigManager.SND_BT_SPEAKER_LEVEL : SipConfigManager.SND_SPEAKER_LEVEL;
-			String mic_key = useBT ? SipConfigManager.SND_BT_MIC_LEVEL : SipConfigManager.SND_MIC_LEVEL;
-			
-			float speakVolume = service.prefsWrapper.getPreferenceFloatValue(speaker_key);
-			float micVolume = userWantMicrophoneMute? 0 : service.prefsWrapper.getPreferenceFloatValue(mic_key);
+			service.getExecutor().execute(service.new SipRunnable() {
+				
+				@Override
+				protected void doRun() throws SameThreadException {
+					boolean useBT = (bluetoothWrapper != null && bluetoothWrapper.isBluetoothOn());
+					
+					String speaker_key = useBT ? SipConfigManager.SND_BT_SPEAKER_LEVEL : SipConfigManager.SND_SPEAKER_LEVEL;
+					String mic_key = useBT ? SipConfigManager.SND_BT_MIC_LEVEL : SipConfigManager.SND_MIC_LEVEL;
+					
+					float speakVolume = service.prefsWrapper.getPreferenceFloatValue(speaker_key);
+					float micVolume = userWantMicrophoneMute? 0 : service.prefsWrapper.getPreferenceFloatValue(mic_key);
 
-			service.confAdjustTxLevel(speakVolume);
-			service.confAdjustRxLevel(micVolume);
+					service.confAdjustTxLevel(speakVolume);
+					service.confAdjustRxLevel(micVolume);
+					
+					// Force the BT mode to normal
+					if(useBT) {
+						audioManager.setMode(AudioManager.MODE_NORMAL);
+					}
+				}
+			});
 		}
 	}
 	

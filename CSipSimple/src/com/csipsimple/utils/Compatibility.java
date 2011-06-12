@@ -29,6 +29,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.media.MediaRecorder.AudioSource;
 import android.net.Uri;
@@ -130,7 +131,8 @@ public class Compatibility {
 		}
 		//Huawei
 		if(android.os.Build.DEVICE.equalsIgnoreCase("U8150") ||
-				android.os.Build.DEVICE.equalsIgnoreCase("U8110") ) {
+				android.os.Build.DEVICE.equalsIgnoreCase("U8110") ||
+				android.os.Build.DEVICE.equalsIgnoreCase("U8120") ) {
 			return true;
 		}
 		
@@ -139,7 +141,13 @@ public class Compatibility {
 
 
 	public static String guessInCallMode() {
-		if (android.os.Build.BRAND.equalsIgnoreCase("sdg") || isCompatible(9)) {
+		// New api for 2.3.3 is not available on galaxy S II :(
+		if(!isCompatible(11) && android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9100")) {
+			return Integer.toString(AudioManager.MODE_NORMAL);
+		}
+		
+		if (android.os.Build.BRAND.equalsIgnoreCase("sdg") || isCompatible(10)) {
+			// Note that in APIs this is only available from level 11.
 			return "3";
 		}
 		if(android.os.Build.DEVICE.equalsIgnoreCase("blade")) {
@@ -154,6 +162,11 @@ public class Compatibility {
 	}
 	
 	public static String getDefaultMicroSource() {
+		// Except for galaxy S II :(
+		if(!isCompatible(11) && android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9100")) {
+			return Integer.toString(AudioSource.MIC);
+		}
+		
 		if(isCompatible(10)) {
 			// Note that in APIs this is only available from level 11.
 			// VOICE_COMMUNICATION
@@ -166,13 +179,20 @@ public class Compatibility {
 			return 0x4;
 		}
 		*/
+		/*
+		if(android.os.Build.MODEL.equalsIgnoreCase("X10i")) {
+			// VOICE_CALL
+			return Integer.toString(0x4);
+		}
+		*/
+		
 		if(android.os.Build.DEVICE.equalsIgnoreCase("olympus")) {
 			//Motorola atrix bug
 			// CAMCORDER
 			return Integer.toString(0x5);
 		}
 		
-		return Integer.toString(AudioSource.DEFAULT);
+		return Integer.toString(AudioSource.MIC);
 	}
 	
 	public static String getDefaultFrequency() {
@@ -197,19 +217,22 @@ public class Compatibility {
 		return "armeabi";
 	}
 	
-	private static boolean needPspWorkaround(PreferencesWrapper preferencesWrapper) {
-		if(isCompatible(9)) {
+	private static boolean needPspWorkaround( ) {
+		// New api for 2.3 does not work on Incredible S
+		if(android.os.Build.DEVICE.equalsIgnoreCase("vivo") ) {
+			return true;
+		}
+		
+		// New API for android 2.3 should be able to manage this
+		if(isCompatible(10)) {
 			return false;
 		}
 		
-		//Nexus one is impacted
-		if(android.os.Build.DEVICE.equalsIgnoreCase("passion")){
-			return true;
-		}
 		//All htc except....
 		if(android.os.Build.PRODUCT.toLowerCase().startsWith("htc") 
 				|| android.os.Build.BRAND.toLowerCase().startsWith("htc") 
-				|| android.os.Build.PRODUCT.toLowerCase().equalsIgnoreCase("inc") /* For Incredible */ ) {
+				|| android.os.Build.PRODUCT.toLowerCase().equalsIgnoreCase("inc") /* For Incredible */ 
+				|| android.os.Build.DEVICE.equalsIgnoreCase("passion") /* N1 */) {
 			if(android.os.Build.DEVICE.equalsIgnoreCase("hero") /* HTC HERO */ 
 					|| android.os.Build.DEVICE.equalsIgnoreCase("magic") /* Magic Aka Dev G2 */
 					|| android.os.Build.DEVICE.equalsIgnoreCase("tatoo") /* Tatoo */
@@ -219,18 +242,33 @@ public class Compatibility {
 					) {
 				return false;
 			}
-			return true;
+			
+			// Older than 2.3 has no chance to have the new full perf wifi mode working since does not exists
+			if(!isCompatible(9)) {
+				return true;
+			}else {
+				// Htc sensation
+				 if( ( android.os.Build.DEVICE.equalsIgnoreCase("pyramid") )
+						 && !isCompatible(11) /* For the future we hope that ice cream will have this working */
+				 ) {
+					 return true;
+				 }
+				 // Guess HTC did things the good way with rest of all 2.3 device 
+				 return false;
+			}
+			
 		}
 		//Dell streak
 		if(android.os.Build.BRAND.toLowerCase().startsWith("dell") &&
 				android.os.Build.DEVICE.equalsIgnoreCase("streak")) {
 			return true;
 		}
-		//Motorola milestone 1 and 2 & motorola droid
+		//Motorola milestone 1 and 2 & motorola droid & defy
 		if(android.os.Build.DEVICE.toLowerCase().contains("milestone2") ||
 				android.os.Build.BOARD.toLowerCase().contains("sholes") ||
 				android.os.Build.PRODUCT.toLowerCase().contains("sholes") ||
-				android.os.Build.DEVICE.equalsIgnoreCase("olympus") ) {
+				android.os.Build.DEVICE.equalsIgnoreCase("olympus") ||
+				android.os.Build.DEVICE.toLowerCase().contains("umts_jordan")) {
 			return true;
 		}
 		
@@ -238,7 +276,7 @@ public class Compatibility {
 	}
 	
 
-	private static boolean needToneWorkaround(PreferencesWrapper prefWrapper) {
+	private static boolean needToneWorkaround( ) {
 		if(android.os.Build.PRODUCT.toLowerCase().startsWith("gt-i5800") ||
 				android.os.Build.PRODUCT.toLowerCase().startsWith("gt-i5801") ) {
 			return true;
@@ -246,7 +284,7 @@ public class Compatibility {
 		return false;
 	}
 
-	private static boolean needSGSWorkaround(PreferencesWrapper preferencesWrapper) {
+	private static boolean needSGSWorkaround() {
 		if(isCompatible(9)) {
 			return false;
 		}
@@ -259,7 +297,7 @@ public class Compatibility {
 	
 	private static void resetCodecsSettings(PreferencesWrapper preferencesWrapper) {
 		//Disable iLBC if not armv7
-		boolean supportFloating = getCpuAbi().equalsIgnoreCase("armeabi-v7a");
+	//	boolean supportFloating = getCpuAbi().equalsIgnoreCase("armeabi-v7a");
 		
 		
 		//For Narrowband
@@ -271,12 +309,14 @@ public class Compatibility {
 		preferencesWrapper.setCodecPriority("GSM/8000/1", SipConfigManager.CODEC_NB, "230");
 		preferencesWrapper.setCodecPriority("G722/16000/1", SipConfigManager.CODEC_NB, "0");
 		preferencesWrapper.setCodecPriority("G729/8000/1", SipConfigManager.CODEC_NB, "0");
-		preferencesWrapper.setCodecPriority("iLBC/8000/1", SipConfigManager.CODEC_NB, supportFloating ? "240" : "0");
+		preferencesWrapper.setCodecPriority("iLBC/8000/1", SipConfigManager.CODEC_NB,  "0"); /* Disable by default */
 		preferencesWrapper.setCodecPriority("SILK/8000/1", SipConfigManager.CODEC_NB, "235");
 		preferencesWrapper.setCodecPriority("SILK/12000/1", SipConfigManager.CODEC_NB, "0");
 		preferencesWrapper.setCodecPriority("SILK/16000/1", SipConfigManager.CODEC_NB, "0");
 		preferencesWrapper.setCodecPriority("SILK/24000/1", SipConfigManager.CODEC_NB, "0");
 		preferencesWrapper.setCodecPriority("CODEC2/8000/1", SipConfigManager.CODEC_NB, "0");
+		preferencesWrapper.setCodecPriority("G7221/16000/1", SipConfigManager.CODEC_WB, "0");
+		preferencesWrapper.setCodecPriority("G7221/32000/1", SipConfigManager.CODEC_WB, "0");
 		
 		
 		//For Wideband
@@ -288,12 +328,14 @@ public class Compatibility {
 		preferencesWrapper.setCodecPriority("GSM/8000/1", SipConfigManager.CODEC_WB, "0");
 		preferencesWrapper.setCodecPriority("G722/16000/1", SipConfigManager.CODEC_WB, "235");
 		preferencesWrapper.setCodecPriority("G729/8000/1", SipConfigManager.CODEC_WB, "0");
-		preferencesWrapper.setCodecPriority("iLBC/8000/1", SipConfigManager.CODEC_WB, supportFloating ? "100" : "0");
+		preferencesWrapper.setCodecPriority("iLBC/8000/1", SipConfigManager.CODEC_WB,  "0"); /* Disable by default */
 		preferencesWrapper.setCodecPriority("SILK/8000/1", SipConfigManager.CODEC_WB, "0");
 		preferencesWrapper.setCodecPriority("SILK/12000/1", SipConfigManager.CODEC_WB, "0");
 		preferencesWrapper.setCodecPriority("SILK/16000/1", SipConfigManager.CODEC_WB, "0");
 		preferencesWrapper.setCodecPriority("SILK/24000/1", SipConfigManager.CODEC_WB, "0");
 		preferencesWrapper.setCodecPriority("CODEC2/8000/1", SipConfigManager.CODEC_WB, "0");
+		preferencesWrapper.setCodecPriority("G7221/16000/1", SipConfigManager.CODEC_WB, "0");
+		preferencesWrapper.setCodecPriority("G7221/32000/1", SipConfigManager.CODEC_WB, "0");
 		
 		
 		// Bands repartition
@@ -313,12 +355,15 @@ public class Compatibility {
 		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SND_CLOCK_RATE, getDefaultFrequency());
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.ECHO_CANCELLATION, isCompatible(4) ? true : false);
 		//HTC PSP mode hack
-		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(preferencesWrapper));
+		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround());
 		
 		//Proximity sensor inverted
 		if( android.os.Build.PRODUCT.equalsIgnoreCase("SPH-M900") /*Sgs moment*/) {
 			preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.INVERT_PROXIMITY_SENSOR, true);
 		}
+		
+		// Tablet settings
+		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.PREVENT_SCREEN_ROTATION, !Compatibility.isTabletScreen(preferencesWrapper.getContext()));
 		
 		// Galaxy S default settings
 		if (android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9000") && !isCompatible(9)) {
@@ -336,8 +381,8 @@ public class Compatibility {
 		//Api to use for routing
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ROUTING_API, shouldUseRoutingApi());
 		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_MODE_API, shouldUseModeApi());
-		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround(preferencesWrapper));
-		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround(preferencesWrapper));
+		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround());
+		preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround());
 		preferencesWrapper.setPreferenceStringValue(SipConfigManager.SIP_AUDIO_MODE, guessInCallMode());
 		preferencesWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
 		
@@ -466,21 +511,13 @@ public class Compatibility {
 		}
 		
 		if(lastSeenVersion < 385) {
-			if(needPspWorkaround(prefWrapper)) {
-				prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, true);
-			}
 			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ROUTING_API, shouldUseRoutingApi());
 			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_MODE_API, shouldUseModeApi());
 			prefWrapper.setPreferenceStringValue(SipConfigManager.SIP_AUDIO_MODE, guessInCallMode());
 		}
-		
-		if(lastSeenVersion < 394) {
-			//HTC PSP mode hack
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
-		}
 		if(lastSeenVersion < 575) {
 			prefWrapper.setPreferenceStringValue(SipConfigManager.THREAD_COUNT, "3");
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround());
 
 			if(lastSeenVersion > 0) {
 				prefWrapper.setPreferenceBooleanValue(PreferencesWrapper.HAS_ALREADY_SETUP_SERVICE, true);
@@ -493,7 +530,7 @@ public class Compatibility {
 				prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ROUTING_API, true);
 			}
 			
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround());
 			//Proximity sensor inverted
 			if( android.os.Build.PRODUCT.equalsIgnoreCase("SPH-M900") /*Sgs moment*/) {
 				prefWrapper.setPreferenceBooleanValue(SipConfigManager.INVERT_PROXIMITY_SENSOR, true);
@@ -509,12 +546,37 @@ public class Compatibility {
 			resetCodecsSettings(prefWrapper);
 		}
 		if(lastSeenVersion < 704) {
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround());
 		}
 		if(lastSeenVersion < 794) {
 			prefWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
 			prefWrapper.setPreferenceStringValue(SipConfigManager.SND_CLOCK_RATE, getDefaultFrequency());
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround());
+		}
+		if(lastSeenVersion < 814) {
+			//Now default is to get a random port for local binding of tcp, tls and udp
+			prefWrapper.setPreferenceStringValue(SipConfigManager.TCP_TRANSPORT_PORT, "0");
+			prefWrapper.setPreferenceStringValue(SipConfigManager.UDP_TRANSPORT_PORT, "0");
+			prefWrapper.setPreferenceStringValue(SipConfigManager.TLS_TRANSPORT_PORT, "0");
+		}
+		
+		if(lastSeenVersion < 882) {
+			prefWrapper.setCodecPriority("G7221/16000/1", SipConfigManager.CODEC_WB, "0");
+			prefWrapper.setCodecPriority("G7221/32000/1", SipConfigManager.CODEC_WB, "0");
+		}
+		if(lastSeenVersion < 906) {
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.PREVENT_SCREEN_ROTATION, !Compatibility.isTabletScreen(prefWrapper.getContext()));
+		}
+		if(lastSeenVersion < 911 && android.os.Build.DEVICE.toUpperCase().startsWith("GT-I9100")) {
+			prefWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
+			prefWrapper.setPreferenceStringValue(SipConfigManager.SIP_AUDIO_MODE, guessInCallMode());
+			
+		}
+		if(lastSeenVersion < 913 && 
+				(android.os.Build.DEVICE.equalsIgnoreCase("pyramid")
+				||android.os.Build.DEVICE.equalsIgnoreCase("umts_jordan") ) ) {
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround());
+			
 		}
 	}
 
@@ -524,8 +586,8 @@ public class Compatibility {
 			//Reset media settings since now interface is clean and works (should work...)
 			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ROUTING_API, shouldUseRoutingApi());
 			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_MODE_API, shouldUseModeApi());
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround(prefWrapper));
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.SET_AUDIO_GENERATE_TONE, needToneWorkaround());
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SGS_CALL_HACK, needSGSWorkaround());
 			prefWrapper.setPreferenceStringValue(SipConfigManager.SIP_AUDIO_MODE, guessInCallMode());
 			prefWrapper.setPreferenceStringValue(SipConfigManager.MICRO_SOURCE, getDefaultMicroSource());
 			if(isCompatible(9)) {
@@ -534,9 +596,34 @@ public class Compatibility {
 				prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_SOFT_VOLUME, false);
 			}
 			
-			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround(prefWrapper));
+			prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL, needPspWorkaround());
 
 	//	}
+	}
+	
+	
+	public static boolean isTabletScreen(Context ctxt) {
+		boolean isTablet = false;
+		if(!isCompatible(4)) {
+			return false;
+		}
+		Configuration cfg = ctxt.getResources().getConfiguration();
+		int screenLayoutVal = 0;
+		try {
+			Field f = Configuration.class.getDeclaredField("screenLayout");
+			screenLayoutVal = (Integer) f.get(cfg);
+		} catch (Exception e) {
+			return false;
+		}
+		int screenLayout = (screenLayoutVal &  0xF);
+		// 0xF = SCREENLAYOUT_SIZE_MASK but avoid 1.5 incompat doing that
+		if (screenLayout == 0x3 || screenLayout == 0x4) {
+			// 0x3 = SCREENLAYOUT_SIZE_LARGE but avoid 1.5 incompat doing that
+			// 0x4 = SCREENLAYOUT_SIZE_XLARGE but avoid 1.5 incompat doing that
+			isTablet = true;
+		}
+		
+		return isTablet;
 	}
 }
 

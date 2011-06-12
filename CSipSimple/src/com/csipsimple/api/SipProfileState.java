@@ -62,7 +62,7 @@ public class SipProfileState implements Parcelable, Serializable{
 		//Set default values
 		addedStatus = -1;
 		pjsuaId = -1;
-		statusCode = SipCallSession.StatusCode.NOT_FOUND;
+		statusCode = -1;
 		statusText = "";
 		expires = 0;
 		
@@ -264,8 +264,9 @@ public class SipProfileState implements Parcelable, Serializable{
 		return regUri;
 	}
 
-	
-	
+	public boolean isAddedToStack() {
+		return pjsuaId != -1;
+	}
 	
 	public boolean isValidForCall() {
 		if(active) {

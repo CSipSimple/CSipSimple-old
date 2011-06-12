@@ -24,11 +24,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.text.format.DateFormat;
 
@@ -158,22 +156,14 @@ public class CollectLogs {
 		String result = "";
 		result += "Based on the GPL CSipSimple version : ";
 		
-		PackageInfo pinfo = getCurrentRevision(ctx);
+		PackageInfo pinfo = PreferencesWrapper.getCurrentPackageInfos(ctx);
 		if(pinfo != null) {
 			result += pinfo.versionName + " r" + pinfo.versionCode;
 		}
 		return result;
 	}
 	
-	public final static PackageInfo getCurrentRevision(Context ctx) {
-		PackageInfo pinfo = null;
-		try {
-			pinfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-		} catch (NameNotFoundException e) {
-			Log.e(THIS_FILE, "Impossible to find version of current package !!");
-		}
-		return pinfo;
-	}
+	
 	
 	public static Intent getLogReportIntent(String userComment, Context ctx) {
 		LogResult logs = getLogs();

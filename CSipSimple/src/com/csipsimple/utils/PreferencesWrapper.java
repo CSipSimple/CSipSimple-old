@@ -25,14 +25,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
-
-import com.csipsimple.api.SipConfigManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -42,6 +43,9 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
+import com.csipsimple.api.SipConfigManager;
+import com.csipsimple.ui.SipHome;
+
 
 public class PreferencesWrapper {
 	
@@ -49,7 +53,6 @@ public class PreferencesWrapper {
 	
 	//Internal use
 	public static final String HAS_BEEN_QUIT = "has_been_quit";
-	public static final String USER_AGENT = "user_agent"; 
 	public static final String IS_ADVANCED_USER = "is_advanced_user";
 	public static final String HAS_ALREADY_SETUP = "has_already_setup";
 	public static final String HAS_ALREADY_SETUP_SERVICE = "has_already_setup_service";
@@ -59,6 +62,7 @@ public class PreferencesWrapper {
 	private SharedPreferences prefs;
 	private ConnectivityManager connectivityManager;
 	private ContentResolver resolver;
+	private Context context;
 
 	
 	
@@ -66,15 +70,15 @@ public class PreferencesWrapper {
 		private static final long serialVersionUID = 1L;
 	{
 		
-		put(USER_AGENT, CustomDistribution.getUserAgent());
+		put(SipConfigManager.USER_AGENT, CustomDistribution.getUserAgent());
 		put(SipConfigManager.LOG_LEVEL, "1");
 		
 		put(SipConfigManager.USE_SRTP, "0");
 		put(SipConfigManager.USE_ZRTP, "1"); /* 1 is no zrtp */
-		put(SipConfigManager.UDP_TRANSPORT_PORT, "5060");
-		put(SipConfigManager.TCP_TRANSPORT_PORT, "5060");
-		put(SipConfigManager.TLS_TRANSPORT_PORT, "5061");
-		put(SipConfigManager.KEEP_ALIVE_INTERVAL_WIFI, "80");
+		put(SipConfigManager.UDP_TRANSPORT_PORT, "0");
+		put(SipConfigManager.TCP_TRANSPORT_PORT, "0");
+		put(SipConfigManager.TLS_TRANSPORT_PORT, "0");
+		put(SipConfigManager.KEEP_ALIVE_INTERVAL_WIFI, "60");
 		put(SipConfigManager.KEEP_ALIVE_INTERVAL_MOBILE, "40");
 		put(SipConfigManager.RTP_PORT, "4000");
 		put(SipConfigManager.OVERRIDE_NAMESERVER, "");
@@ -120,6 +124,7 @@ public class PreferencesWrapper {
 	{
 		//Network
 		put(SipConfigManager.LOCK_WIFI, true);
+		put(SipConfigManager.LOCK_WIFI_PERFS, false);
 		put(SipConfigManager.ENABLE_TCP, true);
 		put(SipConfigManager.ENABLE_UDP, true);
 		put(SipConfigManager.ENABLE_TLS, false);
@@ -141,6 +146,7 @@ public class PreferencesWrapper {
 		put("use_gprs_out", false);
 		put("use_edge_in", false);
 		put("use_edge_out", false);
+		put(SipConfigManager.KEEP_ALIVE_USE_WAKE, true);
 		
 		//Media
 		put(SipConfigManager.ECHO_CANCELLATION, false);
@@ -149,8 +155,10 @@ public class PreferencesWrapper {
 		put(SipConfigManager.USE_ROUTING_API, false);
 		put(SipConfigManager.USE_MODE_API, false);
 		put(SipConfigManager.HAS_IO_QUEUE, false);
-		put(SipConfigManager.SET_AUDIO_GENERATE_TONE, true);
+		put(SipConfigManager.SET_AUDIO_GENERATE_TONE, false);
 		put(SipConfigManager.USE_SGS_CALL_HACK, false);
+		put(SipConfigManager.USE_WEBRTC_HACK, false);
+		put(SipConfigManager.DO_FOCUS_AUDIO, false);
 		
 		//UI
 		put(SipConfigManager.PREVENT_SCREEN_ROTATION, true);
@@ -159,9 +167,12 @@ public class PreferencesWrapper {
 		put(SipConfigManager.ICON_IN_STATUS_BAR, true);
 		put(SipConfigManager.USE_PARTIAL_WAKE_LOCK, false);
 		put(SipConfigManager.ICON_IN_STATUS_BAR_NBR, false);
+		put(SipConfigManager.INTEGRATE_WITH_CALLLOGS, true);
+		put(SipConfigManager.INTEGRATE_WITH_DIALER, true);
 		
 		//Calls
 		put(SipConfigManager.AUTO_RECORD_CALLS, false);
+		put(SipConfigManager.SUPPORT_MULTIPLE_CALLS, false);
 	}};
 	
 	private final static HashMap<String, Float> FLOAT_PREFS = new HashMap<String, Float>(){
@@ -175,6 +186,7 @@ public class PreferencesWrapper {
 	
 	
 	public PreferencesWrapper(Context aContext) {
+		context = aContext;
 		prefs = PreferenceManager.getDefaultSharedPreferences(aContext);
 		connectivityManager = (ConnectivityManager) aContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		resolver = aContext.getContentResolver();
@@ -298,6 +310,90 @@ public class PreferencesWrapper {
 		}
 		Compatibility.setFirstRunParameters(this);
 	}
+	
+	
+	public JSONObject serializeSipSettings() {
+		JSONObject jsonSipSettings = new JSONObject();
+		for(String key : STRING_PREFS.keySet() ) {
+			try {
+				jsonSipSettings.put(key, getPreferenceStringValue(key));
+			} catch (JSONException e) {
+				Log.e(THIS_FILE, "Not able to add preference "+key);
+			}
+		}
+		for(String key : BOOLEAN_PREFS.keySet() ) {
+			try {
+				jsonSipSettings.put(key, getPreferenceBooleanValue(key));
+			} catch (JSONException e) {
+				Log.e(THIS_FILE, "Not able to add preference "+key);
+			}
+		}
+		for(String key : FLOAT_PREFS.keySet() ) {
+			try {
+				jsonSipSettings.put(key, getPreferenceFloatValue(key).doubleValue());
+			} catch (JSONException e) {
+				Log.e(THIS_FILE, "Not able to add preference "+key);
+			}
+		}
+		
+		
+		// And get latest known version so that restore will be able to apply necessary patches
+		int lastSeenVersion = prefs.getInt(SipHome.LAST_KNOWN_VERSION_PREF, 0);
+		try {
+			jsonSipSettings.put(SipHome.LAST_KNOWN_VERSION_PREF, lastSeenVersion);
+		} catch (JSONException e) {
+			Log.e(THIS_FILE, "Not able to add last known version pref");
+		}
+		return jsonSipSettings;
+	}
+	
+	public void restoreSipSettings(JSONObject jsonSipSettings) {
+		for(String key : STRING_PREFS.keySet() ) {
+			try {
+				String val = jsonSipSettings.getString(key);
+				if(val != null) {
+					setPreferenceStringValue(key, val);
+				}
+			} catch (JSONException e) {
+				Log.e(THIS_FILE, "Not able to get preference "+key);
+			}
+		}
+		for(String key : BOOLEAN_PREFS.keySet() ) {
+			try {
+				Boolean val = jsonSipSettings.getBoolean(key);
+				if(val != null) {
+					setPreferenceBooleanValue(key, val);
+				}
+			} catch (JSONException e) {
+				Log.e(THIS_FILE, "Not able to get preference "+key);
+			}
+		}
+		for(String key : FLOAT_PREFS.keySet() ) {
+			try {
+				Double val = jsonSipSettings.getDouble(key);
+				if(val != null) {
+					setPreferenceFloatValue(key, val.floatValue());
+				}
+			} catch (JSONException e) {
+				Log.e(THIS_FILE, "Not able to get preference "+key);
+			}
+			
+			getPreferenceFloatValue(key);
+		}
+		
+		// And get latest known version so that restore will be able to apply necessary patches
+		try {
+			Integer lastSeenVersion = jsonSipSettings.getInt(SipHome.LAST_KNOWN_VERSION_PREF);
+			if(lastSeenVersion != null) {
+				Editor editor = prefs.edit();
+				editor.putInt(SipHome.LAST_KNOWN_VERSION_PREF, lastSeenVersion);
+				editor.commit();
+			}
+		} catch (JSONException e) {
+			Log.e(THIS_FILE, "Not able to add last known version pref");
+		}
+	}
+	
 	
 	public SharedPreferences getDirectPrefs() {
 		return prefs;
@@ -430,10 +526,6 @@ public class PreferencesWrapper {
 		}
 	}
 	
-	public boolean getLockWifi() {
-		return getPreferenceBooleanValue(SipConfigManager.LOCK_WIFI);
-	}
-	
 	public boolean isTCPEnabled() {
 		return getPreferenceBooleanValue(SipConfigManager.ENABLE_TCP);
 	}
@@ -522,14 +614,27 @@ public class PreferencesWrapper {
 	}
 
 	public String getUserAgent(Context ctx) {
-		String userAgent = getPreferenceStringValue(USER_AGENT);
-		PackageInfo pinfo = CollectLogs.getCurrentRevision(ctx);
-		if(pinfo != null) {
-			userAgent +=  " r" + pinfo.versionCode+" / "+android.os.Build.DEVICE+"-"+Compatibility.getApiLevel();
+		String userAgent = getPreferenceStringValue(SipConfigManager.USER_AGENT);
+		if(userAgent.equalsIgnoreCase(CustomDistribution.getUserAgent())) {
+			//If that's the official -not custom- user agent, send the release, the device and the api level
+			PackageInfo pinfo = getCurrentPackageInfos(ctx);
+			if(pinfo != null) {
+				userAgent +=  " r" + pinfo.versionCode+" / "+android.os.Build.DEVICE+"-"+Compatibility.getApiLevel();
+			}
 		}
 		return userAgent;
 	}
 	
+	
+	public final static PackageInfo getCurrentPackageInfos(Context ctx) {
+		PackageInfo pinfo = null;
+		try {
+			pinfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
+		} catch (NameNotFoundException e) {
+			Log.e(THIS_FILE, "Impossible to find version of current package !!");
+		}
+		return pinfo;
+	}
 	
 	//Media part
 	
@@ -832,10 +937,10 @@ public class PreferencesWrapper {
 	}
 	
 	public boolean useIntegrateDialer() {
-		return prefs.getBoolean("integrate_with_native_dialer", true);
+		return getPreferenceBooleanValue(SipConfigManager.INTEGRATE_WITH_DIALER);
 	}
 	public boolean useIntegrateCallLogs() {
-		return prefs.getBoolean("integrate_with_native_calllogs", true);
+		return getPreferenceBooleanValue(SipConfigManager.INTEGRATE_WITH_CALLLOGS);
 	}
 
 
@@ -924,7 +1029,7 @@ public class PreferencesWrapper {
 	 * Check TCP/UDP validity of a network port
 	 */
 	private boolean isValidPort(int port) {
-		return (port>0 && port < 65535);
+		return (port>=0 && port < 65535);
 	}
 
 	/**
@@ -1042,6 +1147,11 @@ public class PreferencesWrapper {
 	}
 	public boolean getLibCapability(String cap) {
 		return prefs.getBoolean("backup_" + cap, false);
+	}
+
+
+	public Context getContext() {
+		return context;
 	}
 	
 }

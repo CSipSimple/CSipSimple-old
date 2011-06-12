@@ -87,7 +87,7 @@ public class PjSipAccount {
 			cfg.setReg_timeout(profile.reg_timeout);
 		}
 		if(profile.reg_delay_before_refresh != -1) {
-			cfg.setReg_delay_before_refresh(profile.reg_delay_before_refresh);
+	//		cfg.setReg_delay_before_refresh(profile.reg_delay_before_refresh);
 		}
 		if(profile.ka_interval != -1) {
 			cfg.setKa_interval(profile.ka_interval);
@@ -107,7 +107,7 @@ public class PjSipAccount {
 			cfg.setUse_srtp(pjmedia_srtp_use.swigToEnum(profile.use_srtp));
 			cfg.setSrtp_secure_signaling(0);
 		}
-		if(profile.use_zrtp != -1 && profile.use_zrtp > 0) {
+		if(profile.use_zrtp > 0) {
 			cfg.setUse_zrtp(pjmedia_zrtp_use.swigToEnum(profile.use_zrtp));
 			hasZrtpValue = true;
 		}

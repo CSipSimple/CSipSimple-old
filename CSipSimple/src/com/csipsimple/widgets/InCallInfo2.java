@@ -21,6 +21,7 @@ package com.csipsimple.widgets;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -62,7 +63,10 @@ public class InCallInfo2 extends ExtensibleBadge {
 //	private TextView remotePhoneNumber;
 	private DBAdapter db;
 	//private TextView label;
-//	private ImageView secure;
+	private ImageView secure;
+	
+	private GLSurfaceView surface;
+	private VideoRenderer renderer;
 	
 
 	public InCallInfo2(Context context, AttributeSet attrs) {
@@ -84,8 +88,7 @@ public class InCallInfo2 extends ExtensibleBadge {
 		elapsedTime = (Chronometer) findViewById(R.id.elapsedTime);
 		status = (TextView) findViewById(R.id.card_status);
 		callIcon = (ImageView) findViewById(R.id.callStatusIcon);
-		
-		//secure = (ImageView) findViewById(R.id.secureIndicator);
+		secure = (ImageView) findViewById(R.id.secureIndicator);
 		
 //		currentInfo = (LinearLayout) findViewById(R.id.currentCallInfo);
 //		currentDetailedInfo = (LinearLayout) findViewById(R.id.currentCallDetailedInfo);
@@ -96,6 +99,14 @@ public class InCallInfo2 extends ExtensibleBadge {
 		colorEnd = Color.parseColor("#FF6072");
 		
 //		secure.bringToFront();
+		
+		// Video
+
+		//Display video
+		surface = (GLSurfaceView) findViewById(R.id.side_remote);
+		renderer = new VideoRenderer(getContext());
+		surface.setRenderer(renderer);
+	
 		
 	}
 	
@@ -111,9 +122,6 @@ public class InCallInfo2 extends ExtensibleBadge {
 		updateTitle();
 		updateQuickActions();
 		updateElapsedTimer();
-		
-		
-		
 		
 		cachedInvState = callInfo.getCallState();
 		cachedMediaState = callInfo.getMediaStatus();
@@ -275,7 +283,7 @@ public class InCallInfo2 extends ExtensibleBadge {
 			return;
 		}
 		elapsedTime.setBase(callInfo.getConnectStart());
-	//	secure.setVisibility(callInfo.isSecure()?View.VISIBLE:View.GONE);
+		secure.setVisibility(callInfo.isSecure()?View.VISIBLE:View.GONE);
 		
 		int state = callInfo.getCallState();
 		switch (state) {
@@ -369,7 +377,7 @@ public class InCallInfo2 extends ExtensibleBadge {
 		lp.height = s - cstH;
 		
 		photo.setLayoutParams(lp);
-		
+		surface.setLayoutParams(lp);
 		return new Rect(0, 0, s, s);
 	}
 	
@@ -381,6 +389,29 @@ public class InCallInfo2 extends ExtensibleBadge {
 	public void setOnTouchListener(OnBadgeTouchListener l) {
 		dragListener = l;
 		super.setOnTouchListener(l);
+	}
+	
+	@Override
+	protected void onVisibilityChanged(View changedView, int visibility) {
+		Log.d(THIS_FILE, "VISIBILITY CHANGED >> "+visibility);
+		super.onVisibilityChanged(changedView, visibility);
+	}
+
+	public void onPause() {
+		Log.d(THIS_FILE, "pause surface");
+		
+		if(surface != null) {
+	//		surface.onPause();
+		}
+	}
+	
+
+	public void onResume() {
+		
+		if(surface != null) {
+			surface.onResume();
+		}
+		
 	}
 
 }

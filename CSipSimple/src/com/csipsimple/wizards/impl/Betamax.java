@@ -21,6 +21,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -30,6 +32,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.ListPreference;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -48,17 +51,11 @@ public class Betamax extends AuthorizationImplementation {
 
 	protected static final String THIS_FILE = "BetamaxW";
 	
-	private static final String URL_BALANCE = "/myaccount/getbalance.php";
-	
-	private LinearLayout customWizard;
-	private TextView customWizardText;
-	protected static final int DID_SUCCEED = 0;
-	protected static final int DID_ERROR = 1;
 	
 	
 	ListPreference providerListPref;
 	
-	static HashMap<String, String[]> providers = new HashMap<String, String[]>(){
+	static SortedMap<String, String[]> providers = new TreeMap<String, String[]>(){
 		private static final long serialVersionUID = 4984940975243241784L;
 	{
 		put("FreeCall", new String[] {"sip.voiparound.com", "stun.voiparound.com"});
@@ -89,7 +86,32 @@ public class Betamax extends AuthorizationImplementation {
 		put("Rynga", new String[] {"sip.rynga.com", "stun.rynga.com"});
 		put("PowerVoIP", new String[] {"sip.powervoip.com", "stun.powervoip.com"});
 		put("Voice Trading", new String[] {"sip.voicetrading.com", "stun.voicetrading.com"});
-		 
+		put("EasyVoip", new String[] {"sip.easyvoip.com", "stun.easyvoip.com"});
+		put("VoipBlast", new String[] {"sip.voipblast.com", "stun.voipblast.com"});
+		put("FreeVoipDeal", new String[] {"sip.freevoipdeal.com", "stun.freevoipdeal.com"});
+		put("VoipAlot", new String[] {"sip.voipalot.com", ""});
+		put("CosmoVoip", new String[] {"sip.cosmovoip.com", "stun.cosmovoip.com"});
+		put("BudgetVoipCall", new String[] {"sip.budgetvoipcall.com", "stun.budgetvoipcall.com"});
+		put("CheapBuzzer", new String[] {"sip.cheapbuzzer.com", "stun.cheapbuzzer.com"});
+		put("CallPirates", new String[] {"sip.callpirates.com", "stun.callpirates.com"});
+		put("CheapVoipCall", new String[] {"sip.cheapvoipcall.com", "stun.cheapvoipcall.com"});
+		put("DialCheap", new String[] {"sip.dialcheap.com", "stun.dialcheap.com"});
+		put("DiscountCalling", new String[] {"sip.discountcalling.com", "stun.discountcalling.com"});
+		put("Frynga", new String[] {"sip.frynga.com", "stun.frynga.com"});
+		put("GlobalFreeCall", new String[] {"sip.globalfreecall.com", "stun.globalfreecall.com"});
+		put("HotVoip", new String[] {"sip.hotvoip.com", "stun.hotvoip.com"});
+		put("MEGAvoip", new String[] {"sip.megavoip.com", "stun.megavoip.com"});
+		put("PennyConnect", new String[] {"sip.pennyconnect.com", "stun.pennyconnect.com"});
+		put("Rebvoice", new String[] {"sip.rebvoice.com", "stun.rebvoice.com"});
+		put("StuntCalls", new String[] {"sip.stuntcalls.com", "stun.stuntcalls.com"});
+		put("VoipBlazer", new String[] {"sip.voipblazer.com", "stun.voipblazer.com"});
+		put("VoipCaptain", new String[] {"sip.voipcaptain.com", "stun.voipcaptain.com"});
+		put("VoipChief", new String[] {"sip.voipchief.com", "stun.voipchief.com"});
+		put("VoipJumper", new String[] {"sip.voipjumper.com", "stun.voipjumper.com"});
+		put("VoipMove", new String[] {"sip.voipmove.com", "stun.voipmove.com"});
+		put("VoipSmash", new String[] {"sip.voipsmash.com", "stun.voipsmash.com"});
+		
+		
 		/*
 		put("InternetCalls", new String[] {"", ""});
 		*/
@@ -101,7 +123,7 @@ public class Betamax extends AuthorizationImplementation {
 	}
 	
 	
-	
+	private static final String PROVIDER_LIST_KEY = "provider_list";
 	@Override
 	public void fillLayout(final SipProfile account) {
 		super.fillLayout(account);
@@ -109,8 +131,16 @@ public class Betamax extends AuthorizationImplementation {
 		accountUsername.setTitle(R.string.w_advanced_caller_id);
 		accountUsername.setDialogTitle(R.string.w_advanced_caller_id_desc);
 		
-		
-        providerListPref = new ListPreference(parent);
+		boolean recycle = true;
+		providerListPref = (ListPreference) parent.findPreference(PROVIDER_LIST_KEY);
+		if(providerListPref == null) {
+			Log.d(THIS_FILE, "Create new list pref");
+			providerListPref = new ListPreference(parent);
+			providerListPref.setKey(PROVIDER_LIST_KEY);
+			recycle = false;
+		}else {
+			Log.d(THIS_FILE, "Recycle existing list pref");
+		}
         
         CharSequence[] v = new CharSequence[providers.size()];
         int i = 0;
@@ -125,19 +155,27 @@ public class Betamax extends AuthorizationImplementation {
         providerListPref.setDialogTitle("Provider");
         providerListPref.setTitle("Provider");
         providerListPref.setSummary("Betamax clone provider");
-        providerListPref.setDefaultValue("FreeCall");
-        String domain = account.getDefaultDomain();
-        for(Entry<String, String[]> entry : providers.entrySet()) {
-        	String[] val = entry.getValue();
-        	if(val[0] == domain) {
-        		providerListPref.setValue(entry.getKey());
-        	}
+        providerListPref.setDefaultValue("12VoIP");
+        
+
+        if(!recycle) {
+        	parent.getPreferenceScreen().addPreference(providerListPref);
         }
-        
-        parent.getPreferenceScreen().addPreference(providerListPref);
-        
         hidePreference(null, SERVER);
         
+        
+        String domain = account.getDefaultDomain();
+        if( domain != null ) {
+	        for(Entry<String, String[]> entry : providers.entrySet()) {
+	        	String[] val = entry.getValue();
+	        	if( val[0].equalsIgnoreCase(domain) ) {
+	        		Log.d(THIS_FILE, "Set provider list pref value to "+entry.getKey());
+	        		providerListPref.setValue(entry.getKey());
+	        		break;
+	        	}
+	        }
+        }
+        Log.d(THIS_FILE, providerListPref.getValue());
 
 		//Get wizard specific row
 		customWizardText = (TextView) parent.findViewById(R.id.custom_wizard_text);
@@ -220,7 +258,7 @@ public class Betamax extends AuthorizationImplementation {
 		String provider = providerListPref.getValue();
 		if(provider != null) {
 			String[] set = providers.get(provider);
-			if(set[1] != null) {
+			if( !TextUtils.isEmpty(set[1]) ) {
 				prefs.addStunServer(set[1]);
 			}
 		}
@@ -231,6 +269,12 @@ public class Betamax extends AuthorizationImplementation {
 	
 	// Balance consulting
 
+	private static final String URL_BALANCE = "/myaccount/getbalance.php";
+	
+	private LinearLayout customWizard;
+	private TextView customWizardText;
+	protected static final int DID_SUCCEED = 0;
+	protected static final int DID_ERROR = 1;
 	private Handler creditHandler = new Handler() {
 		public void handleMessage(Message message) {
 			switch (message.what) {

@@ -128,7 +128,8 @@ public class ContactsUtils5 extends ContactsWrapper {
              while (pCur.moveToNext()) {
                  // Could also use some other IM type but may be confusing. Are there phones with no 'custom' IM type?
             	 phones.add(new Phone(pCur.getString(pCur.getColumnIndex(ContactsContract.Data.DATA1)), "sip"));
-             } 
+             }
+             pCur.close();
         }
 
  		return(phones);
@@ -272,9 +273,11 @@ public class ContactsUtils5 extends ContactsWrapper {
 	@Override
 	public void bindAutoCompleteView(View view, Context context, Cursor cursor) {
 		TextView name = (TextView) view.findViewById(R.id.name);
-		name.setText(cursor.getString(NAME_INDEX));
-
 		TextView label = (TextView) view.findViewById(R.id.label);
+		TextView number = (TextView) view.findViewById(R.id.number);
+		
+		name.setText(cursor.getString(NAME_INDEX));
+		
 		int type = cursor.getInt(TYPE_INDEX);
 		CharSequence labelText = android.provider.Contacts.Phones.getDisplayLabel(context, type, cursor.getString(LABEL_INDEX));
 		// When there's no label, getDisplayLabel() returns a CharSequence of
@@ -288,7 +291,6 @@ public class ContactsUtils5 extends ContactsWrapper {
 			label.setVisibility(View.VISIBLE);
 		}
 
-		TextView number = (TextView) view.findViewById(R.id.number);
 		number.setText(cursor.getString(NUMBER_INDEX));
 	}
 
@@ -298,7 +300,7 @@ public class ContactsUtils5 extends ContactsWrapper {
 		//TODO : throw error if holders length != correct length
 		
 		Uri uri = Uri.withAppendedPath(ContactsContract.Data.CONTENT_URI, "");
-		Cursor resCursor = ctxt.getContentResolver().query(uri, 
+		Cursor resCursor = ctxt.managedQuery(uri, 
 				new String[] {
 					ContactsContract.Data._ID,
 			    	RawContacts.CONTACT_ID,
