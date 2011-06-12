@@ -1,4 +1,4 @@
-/* $Id: videodev.c 3420 2011-02-24 07:47:55Z nanang $ */
+/* $Id: videodev.c 3579 2011-06-09 04:05:44Z ming $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -104,7 +104,7 @@ struct driver
     int			     rend_dev_idx;  /* Default render device	    */
 };
 
-/* The video subsystem */
+/* The video device subsystem */
 static struct vid_subsys
 {
     unsigned	     init_count;	/* How many times init() is called  */
@@ -308,8 +308,8 @@ static void deinit_driver(unsigned drv_idx)
     drv->rend_dev_idx = drv->cap_dev_idx = -1;
 }
 
-/* API: Initialize the video subsystem. */
-PJ_DEF(pj_status_t) pjmedia_vid_subsys_init(pj_pool_factory *pf)
+/* API: Initialize the video device subsystem. */
+PJ_DEF(pj_status_t) pjmedia_vid_dev_subsys_init(pj_pool_factory *pf)
 {
     unsigned i;
     pj_status_t status = PJ_SUCCESS;
@@ -366,7 +366,7 @@ PJ_DEF(pj_status_t) pjmedia_vid_subsys_init(pj_pool_factory *pf)
     return vid_subsys.dev_cnt ? PJ_SUCCESS : status;
 }
 
-/* API: register an video device factory to the video subsystem. */
+/* API: register a video device factory to the video device subsystem. */
 PJ_DEF(pj_status_t)
 pjmedia_vid_register_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
 {
@@ -386,7 +386,7 @@ pjmedia_vid_register_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
     return status;
 }
 
-/* API: unregister an video device factory from the video subsystem. */
+/* API: unregister a video device factory from the video device subsystem. */
 PJ_DEF(pj_status_t)
 pjmedia_vid_unregister_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
 {
@@ -413,14 +413,14 @@ pjmedia_vid_unregister_factory(pjmedia_vid_dev_factory_create_func_ptr adf)
     return PJMEDIA_EVID_ERR;
 }
 
-/* API: get the pool factory registered to the video subsystem. */
-PJ_DEF(pj_pool_factory*) pjmedia_vid_subsys_get_pool_factory(void)
+/* API: get the pool factory registered to the video device subsystem. */
+PJ_DEF(pj_pool_factory*) pjmedia_vid_dev_subsys_get_pool_factory(void)
 {
     return vid_subsys.pf;
 }
 
-/* API: Shutdown the video subsystem. */
-PJ_DEF(pj_status_t) pjmedia_vid_subsys_shutdown(void)
+/* API: Shutdown the video device subsystem. */
+PJ_DEF(pj_status_t) pjmedia_vid_dev_subsys_shutdown(void)
 {
     unsigned i;
 
@@ -432,11 +432,13 @@ PJ_DEF(pj_status_t) pjmedia_vid_subsys_shutdown(void)
     }
     --vid_subsys.init_count;
 
-    for (i=0; i<vid_subsys.drv_cnt; ++i) {
-	deinit_driver(i);
-    }
+    if (vid_subsys.init_count == 0) {
+        for (i=0; i<vid_subsys.drv_cnt; ++i) {
+	    deinit_driver(i);
+        }
 
-    vid_subsys.pf = NULL;
+        vid_subsys.pf = NULL;
+    }
     return PJ_SUCCESS;
 }
 
@@ -609,13 +611,12 @@ PJ_DEF(pj_status_t) pjmedia_vid_dev_default_param(pj_pool_t *pool,
 
 /* API: Open video stream object using the specified parameters. */
 PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_create(
-					const pjmedia_vid_param *prm,
+					pjmedia_vid_param *prm,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm)
 {
     pjmedia_vid_dev_factory *cap_f=NULL, *rend_f=NULL, *f=NULL;
-    pjmedia_vid_param param;
     pj_status_t status;
 
     PJ_ASSERT_RETURN(prm && prm->dir && p_vid_strm, PJ_EINVAL);
@@ -625,48 +626,45 @@ PJ_DEF(pj_status_t) pjmedia_vid_dev_stream_create(
 		     prm->dir==PJMEDIA_DIR_CAPTURE_RENDER,
 		     PJ_EINVAL);
 
-    /* Must make copy of param because we're changing device ID */
-    pj_memcpy(&param, prm, sizeof(param));
-
     /* Normalize cap_id */
-    if (param.dir & PJMEDIA_DIR_CAPTURE) {
+    if (prm->dir & PJMEDIA_DIR_CAPTURE) {
 	unsigned index;
 
-	if (param.cap_id < 0)
-	    param.cap_id = PJMEDIA_VID_DEFAULT_CAPTURE_DEV;
+	if (prm->cap_id < 0)
+	    prm->cap_id = PJMEDIA_VID_DEFAULT_CAPTURE_DEV;
 
-	status = lookup_dev(param.cap_id, &cap_f, &index);
+	status = lookup_dev(prm->cap_id, &cap_f, &index);
 	if (status != PJ_SUCCESS)
 	    return status;
 
-	param.cap_id = index;
+	prm->cap_id = index;
 	f = cap_f;
     }
 
     /* Normalize rend_id */
-    if (param.dir & PJMEDIA_DIR_RENDER) {
+    if (prm->dir & PJMEDIA_DIR_RENDER) {
 	unsigned index;
 
-	if (param.rend_id < 0)
-	    param.rend_id = PJMEDIA_VID_DEFAULT_RENDER_DEV;
+	if (prm->rend_id < 0)
+	    prm->rend_id = PJMEDIA_VID_DEFAULT_RENDER_DEV;
 
-	status = lookup_dev(param.rend_id, &rend_f, &index);
+	status = lookup_dev(prm->rend_id, &rend_f, &index);
 	if (status != PJ_SUCCESS)
 	    return status;
 
-	param.rend_id = index;
+	prm->rend_id = index;
 	f = rend_f;
     }
 
     PJ_ASSERT_RETURN(f != NULL, PJ_EBUG);
 
     /* For now, cap_id and rend_id must belong to the same factory */
-    PJ_ASSERT_RETURN((param.dir != PJMEDIA_DIR_CAPTURE_RENDER) || 
+    PJ_ASSERT_RETURN((prm->dir != PJMEDIA_DIR_CAPTURE_RENDER) ||
 		     (cap_f == rend_f),
 		     PJMEDIA_EVID_INVDEV);
 
     /* Create the stream */
-    status = f->op->create_stream(f, &param, cb,
+    status = f->op->create_stream(f, prm, cb,
 				  user_data, p_vid_strm);
     if (status != PJ_SUCCESS)
 	return status;

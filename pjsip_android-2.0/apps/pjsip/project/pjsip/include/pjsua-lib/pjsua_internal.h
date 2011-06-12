@@ -1,4 +1,4 @@
-/* $Id: pjsua_internal.h 3471 2011-03-22 09:49:23Z nanang $ */
+/* $Id: pjsua_internal.h 3560 2011-05-10 05:42:28Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -39,7 +39,10 @@ typedef enum pjsua_med_tp_st
     PJSUA_MED_TP_INIT,
 
     /** Running (media_start() has been called) */
-    PJSUA_MED_TP_RUNNING
+    PJSUA_MED_TP_RUNNING,
+
+    /** Disabled (transport is initialized, but media is being disabled) */
+    PJSUA_MED_TP_DISABLED
 
 } pjsua_med_tp_st;
 

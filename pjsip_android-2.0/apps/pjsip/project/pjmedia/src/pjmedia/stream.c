@@ -1,4 +1,4 @@
-/* $Id: stream.c 3446 2011-03-15 11:20:35Z bennylp $ */
+/* $Id: stream.c 3536 2011-04-13 20:23:54Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -1885,16 +1885,17 @@ static pj_status_t create_channel( pj_pool_t *pool,
     
     /* Allocate buffer for outgoing packet. */
 
-    if (param->type == PJMEDIA_TYPE_VIDEO) {
-        channel->out_pkt_size = sizeof(pjmedia_rtp_hdr) + 
-                                stream->frame_size;
-    } else if (param->type == PJMEDIA_TYPE_AUDIO) {
+    if (param->type == PJMEDIA_TYPE_AUDIO) {
         channel->out_pkt_size = sizeof(pjmedia_rtp_hdr) + 
 			        stream->codec_param.info.max_bps * 
 			        PJMEDIA_MAX_FRAME_DURATION_MS / 
 			        8 / 1000;
-        if (channel->out_pkt_size > PJMEDIA_MAX_MTU)
-	    channel->out_pkt_size = PJMEDIA_MAX_MTU;
+        if (channel->out_pkt_size > PJMEDIA_MAX_MTU -
+				    PJMEDIA_STREAM_RESV_PAYLOAD_LEN)
+	{
+	    channel->out_pkt_size = PJMEDIA_MAX_MTU -
+				    PJMEDIA_STREAM_RESV_PAYLOAD_LEN;
+	}
     } else {
         return PJ_ENOTSUP;
     }
@@ -2947,7 +2948,7 @@ static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
 				   &si->param->setting.enc_fmtp);
 
     /* Get local fmtp for our decoder. */
-    pjmedia_stream_info_parse_fmtp(pool, local_m, si->fmt.pt, 
+    pjmedia_stream_info_parse_fmtp(pool, local_m, si->fmt.pt,
 				   &si->param->setting.dec_fmtp);
 
     /* Get the remote ptime for our encoder. */

@@ -42,7 +42,7 @@ LOCAL_SRC_FILES := $(PJLIB_SRC_DIR)/alaw_ulaw.c $(PJLIB_SRC_DIR)/alaw_ulaw_table
 	$(PJLIB_SRC_DIR)/stream_common.c $(PJLIB_SRC_DIR)/vid_stream.c \
 	$(PJLIB_SRC_DIR)/transport_ice.c $(PJLIB_SRC_DIR)/transport_loop.c \
 	$(PJLIB_SRC_DIR)/transport_srtp.c $(PJLIB_SRC_DIR)/transport_udp.c \
-	$(PJLIB_SRC_DIR)/vid_codec.c $(PJLIB_SRC_DIR)/videoport.c \
+	$(PJLIB_SRC_DIR)/vid_codec.c $(PJLIB_SRC_DIR)/videoport.c $(PJLIB_SRC_DIR)/vid_codec_util.c \
 	$(PJLIB_SRC_DIR)/wav_player.c $(PJLIB_SRC_DIR)/wav_playlist.c $(PJLIB_SRC_DIR)/wav_writer.c $(PJLIB_SRC_DIR)/wave.c \
 	$(PJLIB_SRC_DIR)/wsola.c \
 	$(PJMEDIADEV_SRC_DIR)/audiodev.c $(PJMEDIADEV_SRC_DIR)/audiotest.c $(PJMEDIADEV_SRC_DIR)/errno.c  \
@@ -72,7 +72,7 @@ ifeq ($(MY_USE_CODEC2),1)
 	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/codec2.c 
 endif
 ifeq ($(MY_USE_VIDEO),1)
-	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/ffmpeg_codecs.c 
+	LOCAL_SRC_FILES += $(PJMEDIACODEC_SRC_DIR)/ffmpeg_codecs.c  $(PJMEDIACODEC_SRC_DIR)/h263_packetizer.c $(PJMEDIACODEC_SRC_DIR)/h264_packetizer.c 
 endif
 
 

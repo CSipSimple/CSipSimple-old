@@ -1,4 +1,4 @@
-/* $Id: config.h 3395 2010-12-14 13:03:10Z ming $ */
+/* $Id: config.h 3499 2011-04-06 11:30:18Z ming $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -48,6 +48,7 @@ PJ_BEGIN_DECL
  */
 #ifndef PJMEDIA_VIDEO_DEV_HAS_SDL
 #   define PJMEDIA_VIDEO_DEV_HAS_SDL		0
+#   define PJMEDIA_VIDEO_DEV_SDL_HAS_OPENGL	0
 #endif
 
 

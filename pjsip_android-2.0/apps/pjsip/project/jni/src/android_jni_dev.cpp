@@ -19,10 +19,12 @@
 // It's deeply inspired from port audio
 
 #include "android_dev.h"
+#include "audio_dev_wrap.h"
+#include <sys/system_properties.h>
 
 #if PJMEDIA_AUDIO_DEV_HAS_ANDROID
 
-
+#define USE_CSIPSIMPLE 1
 #define COMPATIBLE_ALSA 1
 
 
@@ -76,7 +78,6 @@ struct android_aud_stream
 
 //	pj_sem_t *audio_launch_sem;
 
-	jclass ua_class;
 
 
 
@@ -85,6 +86,7 @@ struct android_aud_stream
 /* Factory prototypes */
 static pj_status_t android_init(pjmedia_aud_dev_factory *f);
 static pj_status_t android_destroy(pjmedia_aud_dev_factory *f);
+static pj_status_t android_refresh(pjmedia_aud_dev_factory *f);
 static unsigned android_get_dev_count(pjmedia_aud_dev_factory *f);
 static pj_status_t android_get_dev_info(pjmedia_aud_dev_factory *f,
 		unsigned index,
@@ -119,7 +121,8 @@ static pjmedia_aud_dev_factory_op android_op =
 	&android_get_dev_count,
 	&android_get_dev_info,
 	&android_default_param,
-	&android_create_stream
+	&android_create_stream,
+  //  &android_refresh
 };
 
 static pjmedia_aud_stream_op android_strm_op =
@@ -441,6 +444,15 @@ static pj_status_t android_init(pjmedia_aud_dev_factory *f)
 	return PJ_SUCCESS;
 }
 
+
+/* API: refresh the list of devices */
+static pj_status_t android_refresh(pjmedia_aud_dev_factory *f)
+{
+    PJ_UNUSED_ARG(f);
+    return PJ_SUCCESS;
+}
+
+
 /* API: Destroy factory */
 static pj_status_t android_destroy(pjmedia_aud_dev_factory *f)
 {
@@ -590,6 +602,12 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 	jmethodID constructor_method=0, get_min_buffer_size_method = 0;
 
 
+	status = on_setup_audio_wrapper(param->clock_rate);
+	if(status != PJ_SUCCESS){
+		return PJMEDIA_EAUD_INVOP;
+	}
+	has_set_in_call = 1;
+
 /*
 	if (attachResult != 0) {
 		PJ_LOG(1, (THIS_FILE, "Not able to attach the jvm"));
@@ -608,24 +626,6 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 
 	PJ_LOG(3, (THIS_FILE, "Sample format is : %d for %d ", sampleFormat, param->bits_per_sample));
 
-
-	stream->ua_class = (jclass)jni_env->NewGlobalRef(jni_env->FindClass("com/csipsimple/service/SipService"));
-	if (stream->ua_class == 0) {
-		PJ_LOG(1, (THIS_FILE, "Not able to find sipservice class"));
-		goto on_error;
-	}
-
-	//Set media in call
-	{
-
-		jmethodID setincall_method = jni_env->GetStaticMethodID(stream->ua_class, "setAudioInCall", "()V");
-		if(setincall_method == 0){
-			goto on_error;
-		}
-		jni_env->CallStaticVoidMethod(stream->ua_class, setincall_method);
-	}
-
-	has_set_in_call = 1;
 
 
 	if (stream->dir & PJMEDIA_DIR_CAPTURE) {
@@ -657,10 +657,12 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 		if(inputBuffSizeRec <= 4096){
 			inputBuffSizeRec = 4096 * 3/2;
 		}
+		int frameSizeInBytes = (param->bits_per_sample == 8) ? 1 : 2;
+		if ( inputBuffSizeRec % frameSizeInBytes != 0 ){
+			inputBuffSizeRec ++;
+		}
 
 		PJ_LOG(3, (THIS_FILE, "Min record buffer %d", inputBuffSizeRec));
-
-
 
 		if(inputBuffSizeRec > inputBuffSize){
 			inputBuffSize = inputBuffSizeRec;
@@ -700,10 +702,13 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 			inputBuffSizePlay = 2*2*1024*param->clock_rate/8000;
 		}
 
+		int frameSizeInBytes = (param->bits_per_sample == 8) ? 1 : 2;
+		if ( inputBuffSizePlay % frameSizeInBytes != 0 ){
+			inputBuffSizePlay ++;
+		}
 
 		//inputBuffSizePlay = inputBuffSizePlay << 1;
 		PJ_LOG(3, (THIS_FILE, "Min play buffer %d", inputBuffSizePlay));
-
 
 		if(inputBuffSizePlay > inputBuffSize){
 			inputBuffSize = inputBuffSizePlay;
@@ -722,8 +727,22 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 			goto on_error;
 		}
 
+		int mic_source = on_set_micro_source_wrapper();
+		if(mic_source == 0){
+			mic_source = 1;
+			char sdk_version[PROP_VALUE_MAX];
+			__system_property_get("ro.build.version.sdk", sdk_version);
+
+			pj_str_t pj_sdk_version = pj_str(sdk_version);
+			int sdk_v = pj_strtoul(&pj_sdk_version);
+			if(sdk_v >= 10){
+				mic_source = 7;
+			}
+		}
+		PJ_LOG(3, (THIS_FILE, "Use micro source : %d", mic_source));
+
 		stream->record =  jni_env->NewObject(stream->record_class, constructor_method,
-					1, // Mic input source
+					mic_source, // Mic input source 1 : MIC - 7 : VOICE_COMMUNICATION
 					param->clock_rate,
 					2, // CHANNEL_CONFIGURATION_MONO
 					sampleFormat,
@@ -735,10 +754,7 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 			PJ_LOG(1, (THIS_FILE, "Not able to instantiate record class"));
 			goto on_error;
 		}
-
-		//TODO check if initialized properly
-
-		PJ_LOG(3, (THIS_FILE, "We have the instance done"));
+		PJ_LOG(3, (THIS_FILE, "We have capture the instance done"));
 
 	}
 
@@ -772,7 +788,7 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 
 		//TODO check if initialized properly
 
-		PJ_LOG(3, (THIS_FILE, "We have the instance done"));
+		PJ_LOG(3, (THIS_FILE, "We have the track instance done"));
 
 	}
 
@@ -787,19 +803,10 @@ static pj_status_t android_create_stream(pjmedia_aud_dev_factory *f,
 	return PJ_SUCCESS;
 
 on_error:
-	if(has_set_in_call == 1){
-		//Unset media in call
-		{
-			jmethodID unsetincall_method = jni_env->GetStaticMethodID(stream->ua_class, "unsetAudioInCall", "()V");
-			if(unsetincall_method == 0){
-				DETACH_JVM(jni_env);
-				pj_pool_release(pool);
-				return PJ_ENOMEM;
-			}
-			jni_env->CallStaticVoidMethod(stream->ua_class, unsetincall_method);
-		}
-	}
 
+	if(has_set_in_call == 1){
+		on_teardown_audio_wrapper();
+	}
 	DETACH_JVM(jni_env);
 	pj_pool_release(pool);
 	return PJ_ENOMEM;
@@ -862,30 +869,17 @@ static pj_status_t strm_start(pjmedia_aud_stream *s)
 {
 	struct android_aud_stream *stream = (struct android_aud_stream*)s;
 
+
 	PJ_LOG(4,(THIS_FILE, "Starting %s stream..", stream->name.ptr));
 	stream->quit_flag = 0;
 
 	JNIEnv *jni_env = 0;
 	ATTACH_JVM(jni_env);
 
-	//Set media in call
-	/*
-	{
-
-		jmethodID setincall_method = jni_env->GetStaticMethodID(stream->ua_class, "setAudioInCall", "()V");
-		if(setincall_method == 0){
-			return PJ_ENOMEM;
-		}
-		jni_env->CallStaticVoidMethod(stream->ua_class, setincall_method);
-	}
-	*/
-
-
 	pj_status_t status;
 
 	//Start threads
 	if(stream->record){
-
 
 		status = pj_thread_create(stream->pool, "android_recorder", &AndroidRecorderCallback, stream, 0, 0,  &stream->rec_thread);
 		if (status != PJ_SUCCESS) {
@@ -967,15 +961,6 @@ static pj_status_t strm_stop(pjmedia_aud_stream *s)
 	}
 
 
-	//Unset media in call
-	{
-		jmethodID unsetincall_method = jni_env->GetStaticMethodID(stream->ua_class, "unsetAudioInCall", "()V");
-		if(unsetincall_method == 0){
-			DETACH_JVM(jni_env);
-			return PJ_ENOMEM;
-		}
-		jni_env->CallStaticVoidMethod(stream->ua_class, unsetincall_method);
-	}
 
 	PJ_LOG(4,(THIS_FILE, "Stopping Done"));
 
@@ -1025,6 +1010,9 @@ static pj_status_t strm_destroy(pjmedia_aud_stream *s)
 	}else{
 		PJ_LOG(2,(THIS_FILE, "Nothing to release !!! track"));
 	}
+
+	//Unset media in call
+	on_teardown_audio_wrapper();
 
 //	pj_sem_destroy(stream->audio_launch_sem);
 	pj_pool_release(stream->pool);

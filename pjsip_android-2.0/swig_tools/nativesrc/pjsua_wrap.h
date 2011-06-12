@@ -36,16 +36,20 @@ public:
     virtual void on_pager_status2(pjsua_call_id call_id, pj_str_t const *to, pj_str_t const *body, pjsip_status_code status, pj_str_t const *reason, pjsip_tx_data *tdata, pjsip_rx_data *rdata);
     virtual void on_typing(pjsua_call_id call_id, pj_str_t const *from, pj_str_t const *to, pj_str_t const *contact, pj_bool_t is_typing);
     virtual void on_nat_detect(pj_stun_nat_detect_result const *res);
+    virtual pjsip_redirect_op on_call_redirected(pjsua_call_id call_id, pj_str_t const *target);
     virtual void on_mwi_info(pjsua_acc_id acc_id, pj_str_t const *mime_type, pj_str_t const *body);
+    virtual pj_status_t on_setup_audio(int clock_rate);
+    virtual void on_teardown_audio();
+    virtual int on_set_micro_source();
     virtual void on_zrtp_show_sas(pj_str_t const *sas, int verified);
     virtual void on_zrtp_secure_on(pj_str_t const *cipher);
     virtual void on_zrtp_secure_off();
 public:
     bool swig_overrides(int n) {
-      return (n < 23 ? swig_override[n] : false);
+      return (n < 27 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[23];
+    bool swig_override[27];
 };
 
 

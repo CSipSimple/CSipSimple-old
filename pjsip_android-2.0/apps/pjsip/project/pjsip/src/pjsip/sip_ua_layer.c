@@ -1,4 +1,4 @@
-/* $Id: sip_ua_layer.c 2724 2009-05-29 13:04:03Z bennylp $ */
+/* $Id: sip_ua_layer.c 3504 2011-04-07 05:16:09Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -584,6 +584,10 @@ static pj_bool_t mod_ua_on_rx_request(pjsip_rx_data *rdata)
     {
 	return PJ_FALSE;
     }
+
+    /* Incoming REGISTER may have tags in it */
+    if (rdata->msg_info.msg->line.req.method.id == PJSIP_REGISTER_METHOD)
+	return PJ_FALSE;
 
 retry_on_deadlock:
 

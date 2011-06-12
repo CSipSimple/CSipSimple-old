@@ -1,4 +1,4 @@
-/* $Id: colorbar_dev.c 3459 2011-03-17 11:25:19Z bennylp $ */
+/* $Id: colorbar_dev.c 3580 2011-06-09 04:08:47Z ming $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -109,7 +109,7 @@ static pj_status_t cbar_factory_default_param(pj_pool_t *pool,
 					      pjmedia_vid_param *param);
 static pj_status_t cbar_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm);
@@ -362,7 +362,7 @@ static void fill_first_line(pj_uint8_t *first_lines[],
 /* API: create stream */
 static pj_status_t cbar_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm)
@@ -378,7 +378,8 @@ static pj_status_t cbar_factory_create_stream(
 
     PJ_ASSERT_RETURN(f && param && p_vid_strm, PJ_EINVAL);
     PJ_ASSERT_RETURN(param->fmt.type == PJMEDIA_TYPE_VIDEO &&
-		     param->fmt.detail_type == PJMEDIA_FORMAT_DETAIL_VIDEO,
+		     param->fmt.detail_type == PJMEDIA_FORMAT_DETAIL_VIDEO &&
+                     param->dir == PJMEDIA_DIR_CAPTURE,
 		     PJ_EINVAL);
 
     pj_bzero(&vafp, sizeof(vafp));

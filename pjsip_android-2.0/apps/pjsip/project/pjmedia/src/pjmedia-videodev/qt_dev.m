@@ -1,4 +1,4 @@
-/* $Id: qt_dev.m 3467 2011-03-19 05:33:21Z ming $ */
+/* $Id: qt_dev.m 3581 2011-06-09 04:13:50Z ming $ */
 /*
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -23,6 +23,7 @@
 
 #if PJMEDIA_VIDEO_DEV_HAS_QT
 
+#include <Foundation/NSAutoreleasePool.h>
 #include <QTKit/QTKit.h>
 
 #define THIS_FILE		"qt_dev.c"
@@ -41,7 +42,8 @@ typedef struct qt_fmt_info
 
 static qt_fmt_info qt_fmts[] =
 {
-    {PJMEDIA_FORMAT_YUY2, kCVPixelFormatType_422YpCbCr8_yuvs} ,
+    {PJMEDIA_FORMAT_YUY2, kCVPixelFormatType_422YpCbCr8_yuvs},
+    {PJMEDIA_FORMAT_UYVY, kCVPixelFormatType_422YpCbCr8},
 };
 
 /* qt device info */
@@ -82,6 +84,12 @@ struct qt_stream
     pjmedia_vid_cb	    vid_cb;         /**< Stream callback.      */
     void		   *user_data;      /**< Application data.     */
 
+    pj_bool_t		    cap_thread_exited;
+    pj_bool_t		    cap_thread_initialized;
+    pj_thread_desc	    cap_thread_desc;
+    pj_thread_t		   *cap_thread;
+    
+    NSAutoreleasePool			*apool;
     QTCaptureSession			*cap_session;
     QTCaptureDeviceInput		*dev_input;
     QTCaptureDecompressedVideoOutput	*video_output;
@@ -102,7 +110,7 @@ static pj_status_t qt_factory_default_param(pj_pool_t *pool,
 					    pjmedia_vid_param *param);
 static pj_status_t qt_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm);
@@ -170,6 +178,7 @@ static pj_status_t qt_factory_init(pjmedia_vid_dev_factory *f)
     struct qt_factory *qf = (struct qt_factory*)f;
     struct qt_dev_info *qdi;
     unsigned i, dev_count = 0;
+    NSAutoreleasePool *apool = [[NSAutoreleasePool alloc]init];
     NSArray *dev_array;
 
     dev_array = [QTCaptureDevice inputDevices];
@@ -244,6 +253,8 @@ static pj_status_t qt_factory_init(pjmedia_vid_dev_factory *f)
 	}
     }
 
+    [apool release];
+    
     PJ_LOG(4, (THIS_FILE, "qt video initialized with %d devices",
 	       qf->dev_count));
     
@@ -316,6 +327,14 @@ static pj_status_t qt_factory_default_param(pj_pool_t *pool,
     unsigned size = [sampleBuffer lengthForAllSamples];
     pjmedia_frame frame;
 
+    if (stream->cap_thread_initialized == 0 || !pj_thread_is_registered())
+    {
+	pj_thread_register("qt_cap", stream->cap_thread_desc,
+			   &stream->cap_thread);
+	stream->cap_thread_initialized = 1;
+	PJ_LOG(5,(THIS_FILE, "Capture thread started"));
+    }
+    
     if (!videoFrame)
 	return;
     
@@ -348,7 +367,7 @@ static qt_fmt_info* get_qt_format_info(pjmedia_format_id id)
 /* API: create stream */
 static pj_status_t qt_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm)
@@ -363,7 +382,8 @@ static pj_status_t qt_factory_create_stream(
 
     PJ_ASSERT_RETURN(f && param && p_vid_strm, PJ_EINVAL);
     PJ_ASSERT_RETURN(param->fmt.type == PJMEDIA_TYPE_VIDEO &&
-		     param->fmt.detail_type == PJMEDIA_FORMAT_DETAIL_VIDEO,
+		     param->fmt.detail_type == PJMEDIA_FORMAT_DETAIL_VIDEO &&
+                     param->dir == PJMEDIA_DIR_RENDER,
 		     PJ_EINVAL);
 
     vfi = pjmedia_get_video_format_info(NULL, param->fmt.id);
@@ -379,11 +399,8 @@ static pj_status_t qt_factory_create_stream(
     strm->pool = pool;
     pj_memcpy(&strm->vid_cb, cb, sizeof(*cb));
     strm->user_data = user_data;
-    
-    /* Create player stream here */
-    if (param->dir & PJMEDIA_DIR_PLAYBACK) {
-    }
-    
+    strm->apool = [[NSAutoreleasePool alloc]init];
+
     /* Create capture stream here */
     if (param->dir & PJMEDIA_DIR_CAPTURE) {
 	const pjmedia_video_format_detail *vfd;
@@ -446,10 +463,15 @@ static pj_status_t qt_factory_create_stream(
 	pj_assert(vfd->fps.num);
 	strm->cap_ts_inc = PJMEDIA_SPF2(strm->param.clock_rate, &vfd->fps, 1);
 	
-	[strm->video_output setMinimumVideoFrameInterval:
-			    (1.0f * vfd->fps.denum / (double)vfd->fps.num)];
+	if ([strm->video_output
+	     respondsToSelector:@selector(setMinimumVideoFrameInterval)])
+	{
+	    [strm->video_output setMinimumVideoFrameInterval:
+				(1.0f * vfd->fps.denum /
+				 (double)vfd->fps.num)];
+	}
 	
-	strm->vout_delegate = [VOutDelegate alloc];
+	strm->vout_delegate = [[VOutDelegate alloc]init];
 	strm->vout_delegate->stream = strm;
 	[strm->video_output setDelegate:strm->vout_delegate];
     }
@@ -546,8 +568,10 @@ static pj_status_t qt_stream_start(pjmedia_vid_dev_stream *strm)
     
 	if (![stream->cap_session isRunning])
 	    return PJ_EUNKNOWN;
+	
+	CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, false);
     }
-    
+
     return PJ_SUCCESS;
 }
 
@@ -596,6 +620,7 @@ static pj_status_t qt_stream_destroy(pjmedia_vid_dev_stream *strm)
 	stream->video_output = NULL;
     }
 
+//    [stream->apool release];
     pj_pool_release(stream->pool);
 
     return PJ_SUCCESS;

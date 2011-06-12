@@ -22,8 +22,11 @@
 #include <GLES/gl.h>
 #include <GLES/glext.h>
 
-#include <pjmedia/converter.h>
+#define USE_CONVERTER 0
 
+#if USE_CONVERTER
+#include <pjmedia/converter.h>
+#endif
 
 
 #define THIS_FILE		"android_video_dev.c"
@@ -115,10 +118,11 @@ struct ogl_stream
     void* imageData;
     pj_size_t imageSize;
 
-
+#if USE_CONVERTER
     pjmedia_converter	*cap_conv;
     void		*cap_conv_buf;
     pj_size_t		 cap_conv_buf_size;
+#endif
 };
 
 //TODO : stream should be get from the application as an argument
@@ -138,7 +142,7 @@ static pj_status_t ogl_factory_default_param(pj_pool_t *pool,
 					     pjmedia_vid_param *param);
 static pj_status_t ogl_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm);
@@ -330,7 +334,7 @@ static ogl_fmt_info* get_ogl_format_info(pjmedia_format_id id)
 /* API: create stream */
 static pj_status_t ogl_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm)
@@ -343,10 +347,10 @@ static pj_status_t ogl_factory_create_stream(
     const pjmedia_video_format_info *vfi;
     ogl_fmt_info *ogl_fmt_info;
 
-
+#if USE_CONVERTER
     pjmedia_conversion_param conv_param;
     pjmedia_video_apply_fmt_param vafp;
-
+#endif
     /* Create and Initialize stream descriptor */
     pool = pj_pool_create(sf->pf, "opengl-dev", 1000, 1000, NULL);
     PJ_ASSERT_RETURN(pool != NULL, PJ_ENOMEM);
@@ -374,6 +378,7 @@ static pj_status_t ogl_factory_create_stream(
 		PJ_LOG(3, (THIS_FILE, "Requiring format : %d", strm->param.fmt.id));
 
 		if(ogl_fmt_info == NULL){
+#if USE_CONVERTER
 		    //Reset vfi to be valid for first choosen value
 		    ogl_fmt_info = get_ogl_format_info(sf->dev_info[0].info.fmt[0].id);
 
@@ -407,9 +412,14 @@ static pj_status_t ogl_factory_create_stream(
 
 		    strm->cap_conv_buf = pj_pool_alloc(pool, vafp.framebytes);
 		    strm->cap_conv_buf_size = vafp.framebytes;
+#endif
+	    	status = PJMEDIA_EVID_BADFORMAT;
+	    	goto on_error;
+#if USE_CONVERTER
 		}else{
 		    strm->cap_conv_buf_size = 0;
 
+#endif
 		}
 
 		vfi = pjmedia_get_video_format_info(pjmedia_video_format_mgr_instance(), ogl_fmt_info->fmt_id);
@@ -542,7 +552,7 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
     if (frame->size==0 || frame->buf==NULL){
     	goto on_return;
     }
-
+#if USE_CONVERTER
     if(stream->cap_conv_buf_size > 0){
     	pjmedia_frame frame_src;
     	pjmedia_frame frame_dst;
@@ -561,11 +571,14 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
 		pj_mutex_unlock(stream->frame_mutex);
 
     }else{
+#endif
 		PJ_LOG(5, (THIS_FILE, "Direct frame"));
 		pj_mutex_lock(stream->frame_mutex);
 		pj_memcpy(stream->imageData, frame->buf, frame->size);
 		pj_mutex_unlock(stream->frame_mutex);
+#if USE_CONVERTER
     }
+#endif
 
 on_return:
     return status;
@@ -662,7 +675,8 @@ PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappin
 					current_stream->glInternalFormat,
 					current_stream->textureWidth, current_stream->textureHeight, 0,
 					current_stream->glFormat, current_stream->glType, (GLvoid *) NULL);
-			current_stream->need_glTex_init = PJ_FALSE;
+			//current_stream->need_glTex_init = PJ_FALSE;
+			// Sounds this is always necessary, else android probably consider the texture as invalid... weird... to investigate
 		}
 
 

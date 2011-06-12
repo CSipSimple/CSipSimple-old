@@ -1,4 +1,4 @@
-/* $Id: format.h 3461 2011-03-17 11:33:34Z bennylp $ */
+/* $Id: format.h 3493 2011-03-31 17:29:54Z nanang $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -462,12 +462,12 @@ PJ_INLINE(unsigned) PJMEDIA_SPF2(unsigned clock_rate, const pjmedia_ratio *fr,
 				 unsigned channel_count)
 {
 #if PJ_HAS_INT64
-    return ((unsigned)((pj_uint64_t)clock_rate * fr->num \
-		       / fr->denum / channel_count));
+    return ((unsigned)((pj_uint64_t)clock_rate * fr->denum \
+		       / fr->num / channel_count));
 #elif PJ_HAS_FLOATING_POINT
-    return ((unsigned)(1.0 * clock_rate * fr->num /fr->denum /channel_count));
+    return ((unsigned)(1.0* clock_rate * fr->denum / fr->num /channel_count));
 #else
-    return ((unsigned)(1L * clock_rate * fr->num / fr->denum / channel_count));
+    return ((unsigned)(1L * clock_rate * fr->denum / fr->num / channel_count));
 #endif
 }
 

@@ -1,4 +1,4 @@
-/* $Id: pjsua_call.c 3463 2011-03-18 07:54:50Z nanang $ */
+/* $Id: pjsua_call.c 3573 2011-05-20 08:47:14Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -2467,7 +2467,7 @@ static void dump_media_session(const char *indent,
 
 	    pjmedia_stream_get_info(stream, &info);
 	    pj_ansi_snprintf(codec_info, sizeof(codec_info), " %.*s @%dkHz",
-			     info.fmt.encoding_name.slen,
+			     (int)info.fmt.encoding_name.slen,
 			     info.fmt.encoding_name.ptr,
 			     info.fmt.clock_rate / 1000);
 	    pj_ansi_snprintf(rx_info, sizeof(rx_info), "pt=%d,",
@@ -2485,7 +2485,7 @@ static void dump_media_session(const char *indent,
 
 	    pjmedia_vid_stream_get_info(stream, &info);
 	    pj_ansi_snprintf(codec_info, sizeof(codec_info), " %.*s",
-			     info.codec_info.encoding_name.slen,
+	                     (int)info.codec_info.encoding_name.slen,
 			     info.codec_info.encoding_name.ptr);
 	    if (call_med->dir & PJMEDIA_DIR_DECODING) {
 		pjmedia_video_format_detail *vfd;
@@ -2525,6 +2525,53 @@ static void dump_media_session(const char *indent,
 	}
 	p += len;
 
+	/* Get and ICE SRTP status */
+	if (call_med->tp) {
+	    pjmedia_transport_info tp_info;
+
+	    pjmedia_transport_info_init(&tp_info);
+	    pjmedia_transport_get_info(call_med->tp, &tp_info);
+	    if (tp_info.specific_info_cnt > 0) {
+		unsigned j;
+		for (j = 0; j < tp_info.specific_info_cnt; ++j) {
+		    if (tp_info.spc_info[j].type == PJMEDIA_TRANSPORT_TYPE_SRTP)
+		    {
+			pjmedia_srtp_info *srtp_info =
+				    (pjmedia_srtp_info*) tp_info.spc_info[j].buffer;
+
+			len = pj_ansi_snprintf(p, end-p,
+					       "   %s  SRTP status: %s Crypto-suite: %s",
+					       indent,
+					       (srtp_info->active?"Active":"Not active"),
+					       srtp_info->tx_policy.name.ptr);
+			if (len > 0 && len < end-p) {
+			    p += len;
+			    *p++ = '\n';
+			    *p = '\0';
+			}
+		    } else if (tp_info.spc_info[j].type==PJMEDIA_TRANSPORT_TYPE_ICE) {
+			const pjmedia_ice_transport_info *ii;
+
+			ii = (const pjmedia_ice_transport_info*)
+			     tp_info.spc_info[j].buffer;
+
+			len = pj_ansi_snprintf(p, end-p,
+					       "   %s  ICE role: %s, state: %s, comp_cnt: %u",
+					       indent,
+					       pj_ice_sess_role_name(ii->role),
+					       pj_ice_strans_state_name(ii->sess_state),
+					       ii->comp_cnt);
+			if (len > 0 && len < end-p) {
+			    p += len;
+			    *p++ = '\n';
+			    *p = '\0';
+			}
+		    }
+		}
+	    }
+	}
+
+
 	if (has_stat) {
 	    len = dump_media_stat(indent, p, end-p, &stat,
 				  rx_info, tx_info);
@@ -2553,7 +2600,9 @@ static void dump_media_session(const char *indent,
 	p += len; *p++ = '\n'; *p = '\0'
 
 
-	do {
+	if (call_med->type == PJMEDIA_TYPE_AUDIO) {
+	    pjmedia_stream_info info;
+	    char last_update[64];
 	    char loss[16], dup[16];
 	    char jitter[80];
 	    char toh[80];
@@ -2562,14 +2611,22 @@ static void dump_media_session(const char *indent,
 	    char r_factor[16], ext_r_factor[16], mos_lq[16], mos_cq[16];
 	    pjmedia_rtcp_xr_stat xr_stat;
 	    unsigned clock_rate;
+	    pj_time_val now;
 
-	    if (pjmedia_session_get_stream_stat_xr(session, i, &xr_stat) != 
-		PJ_SUCCESS)
+	    if (pjmedia_stream_get_stat_xr(call_med->strm.a.stream,
+	                                   &xr_stat) != PJ_SUCCESS)
 	    {
-		break;
+		continue;
+	    }
+
+	    if (pjmedia_stream_get_info(call_med->strm.a.stream, &info)
+		    != PJ_SUCCESS)
+	    {
+		continue;
 	    }
 
 	    clock_rate = info.fmt.clock_rate;
+	    pj_gettimeofday(&now);
 
 	    len = pj_ansi_snprintf(p, end-p, "\n%s  Extended reports:", indent);
 	    VALIDATE_PRINT_BUF();
@@ -2929,7 +2986,7 @@ static void dump_media_session(const char *indent,
 		    pj_math_stat_get_stddev(&xr_stat.rtt) / 1000.0
 		   );
 	    VALIDATE_PRINT_BUF();
-	} while(0);
+	} /* if audio */;
 #endif
 
     }
@@ -2982,7 +3039,6 @@ PJ_DEF(pj_status_t) pjsua_call_dump( pjsua_call_id call_id,
     char *p, *end;
     pj_status_t status;
     int len;
-    pjmedia_transport_info tp_info;
 
     PJ_ASSERT_RETURN(call_id>=0 && call_id<(int)pjsua_var.ua_cfg.max_calls,
 		     PJ_EINVAL);
@@ -3040,50 +3096,6 @@ PJ_DEF(pj_status_t) pjsua_call_dump( pjsua_call_id call_id,
 	*p++ = '\n';
 	*p = '\0';
     }
-
-    /* Get and ICE SRTP status */
-#if DISABLED_FOR_TICKET_1185
-    pjmedia_transport_info_init(&tp_info);
-    pjmedia_transport_get_info(call->tp, &tp_info);
-    if (tp_info.specific_info_cnt > 0) {
-	unsigned i;
-	for (i = 0; i < tp_info.specific_info_cnt; ++i) {
-	    if (tp_info.spc_info[i].type == PJMEDIA_TRANSPORT_TYPE_SRTP) 
-	    {
-		pjmedia_srtp_info *srtp_info = 
-			    (pjmedia_srtp_info*) tp_info.spc_info[i].buffer;
-
-		len = pj_ansi_snprintf(p, end-p, 
-				       "%s  SRTP status: %s Crypto-suite: %s",
-				       indent,
-				       (srtp_info->active?"Active":"Not active"),
-				       srtp_info->tx_policy.name.ptr);
-		if (len > 0 && len < end-p) {
-		    p += len;
-		    *p++ = '\n';
-		    *p = '\0';
-		}
-	    } else if (tp_info.spc_info[i].type==PJMEDIA_TRANSPORT_TYPE_ICE) {
-		const pjmedia_ice_transport_info *ii;
-
-		ii = (const pjmedia_ice_transport_info*) 
-		     tp_info.spc_info[i].buffer;
-
-		len = pj_ansi_snprintf(p, end-p, 
-				       "%s  ICE role: %s, state: %s, comp_cnt: %u",
-				       indent,
-				       pj_ice_sess_role_name(ii->role),
-				       pj_ice_strans_state_name(ii->sess_state),
-				       ii->comp_cnt);
-		if (len > 0 && len < end-p) {
-		    p += len;
-		    *p++ = '\n';
-		    *p = '\0';
-		}
-	    }
-	}
-    }
-#endif	/* DISABLED_FOR_TICKET_1185 */
 
     /* Dump session statistics */
     if (with_media && pjsua_call_has_media(call_id))
@@ -3162,11 +3174,9 @@ static pj_status_t perform_lock_codec(pjsua_call *call)
 {
     const pj_str_t STR_UPDATE = {"UPDATE", 6};
     const pjmedia_sdp_session *local_sdp = NULL, *new_sdp;
-    const pjmedia_sdp_media *ref_m;
-    pjmedia_sdp_media *m;
-    pjsua_call_media *call_med = &call->media[call->audio_idx];
-    unsigned i, codec_cnt = 0;
+    unsigned i;
     pj_bool_t rem_can_update;
+    pj_bool_t need_lock_codec = PJ_FALSE;
     pjsip_tx_data *tdata;
     pj_status_t status;
 
@@ -3198,14 +3208,6 @@ static pj_status_t perform_lock_codec(pjsua_call *call)
     if (local_sdp->origin.version > call->lock_codec.sdp_ver)
 	return PJMEDIA_SDP_EINVER;
 
-    /* Verify if media is deactivated */
-    if (call_med->state == PJSUA_CALL_MEDIA_NONE ||
-	call_med->state == PJSUA_CALL_MEDIA_ERROR ||
-	call_med->dir == PJMEDIA_DIR_NONE)
-    {
-        return PJ_EINVALIDOP;
-    }
-
     PJ_LOG(3, (THIS_FILE, "Updating media session to use only one codec.."));
 
     /* Update the new offer so it contains only a codec. Note that formats
@@ -3213,35 +3215,54 @@ static pj_status_t perform_lock_codec(pjsua_call *call)
      * just directly update the offer without looking-up the answer.
      */
     new_sdp = pjmedia_sdp_session_clone(call->inv->pool_prov, local_sdp);
-    m = new_sdp->media[call->audio_idx];
-    ref_m = local_sdp->media[call->audio_idx];
-    pj_assert(ref_m->desc.port);
-    codec_cnt = 0;
-    i = 0;
-    while (i < m->desc.fmt_count) {
-	pjmedia_sdp_attr *a;
-	pj_str_t *fmt = &m->desc.fmt[i];
 
-	if (is_non_av_fmt(m, fmt) || (++codec_cnt == 1)) {
-	    ++i;
+    for (i = 0; i < call->med_cnt; ++i) {
+	unsigned j = 0, codec_cnt = 0;
+	const pjmedia_sdp_media *ref_m;
+	pjmedia_sdp_media *m;
+	pjsua_call_media *call_med = &call->media[i];
+
+	/* Verify if media is deactivated */
+	if (call_med->state == PJSUA_CALL_MEDIA_NONE ||
+	    call_med->state == PJSUA_CALL_MEDIA_ERROR ||
+	    call_med->dir == PJMEDIA_DIR_NONE)
+	{
 	    continue;
 	}
 
-	/* Remove format */
-	a = pjmedia_sdp_attr_find2(m->attr_count, m->attr, "rtpmap", fmt);
-	if (a) pjmedia_sdp_attr_remove(&m->attr_count, m->attr, a);
-	a = pjmedia_sdp_attr_find2(m->attr_count, m->attr, "fmtp", fmt);
-	if (a) pjmedia_sdp_attr_remove(&m->attr_count, m->attr, a);
-	pj_array_erase(m->desc.fmt, sizeof(m->desc.fmt[0]),
-		       m->desc.fmt_count, i);
-	--m->desc.fmt_count;
+	ref_m = local_sdp->media[i];
+	m = new_sdp->media[i];
+
+	/* Verify that media must be active. */
+	pj_assert(ref_m->desc.port);
+
+	while (j < m->desc.fmt_count) {
+	    pjmedia_sdp_attr *a;
+	    pj_str_t *fmt = &m->desc.fmt[j];
+
+	    if (is_non_av_fmt(m, fmt) || (++codec_cnt == 1)) {
+		++j;
+		continue;
+	    }
+
+	    /* Remove format */
+	    a = pjmedia_sdp_attr_find2(m->attr_count, m->attr, "rtpmap", fmt);
+	    if (a) pjmedia_sdp_attr_remove(&m->attr_count, m->attr, a);
+	    a = pjmedia_sdp_attr_find2(m->attr_count, m->attr, "fmtp", fmt);
+	    if (a) pjmedia_sdp_attr_remove(&m->attr_count, m->attr, a);
+	    pj_array_erase(m->desc.fmt, sizeof(m->desc.fmt[0]),
+			   m->desc.fmt_count, j);
+	    --m->desc.fmt_count;
+	}
+	
+	need_lock_codec |= (ref_m->desc.fmt_count > m->desc.fmt_count);
     }
 
     /* Last check if SDP trully needs to be updated. It is possible that OA
      * negotiations have completed and SDP has changed but we didn't
      * increase the SDP version (should not happen!).
      */
-    if (ref_m->desc.fmt_count == m->desc.fmt_count)
+    if (!need_lock_codec)
 	return PJ_SUCCESS;
 
     /* Send UPDATE or re-INVITE */
@@ -3289,11 +3310,10 @@ static pj_status_t lock_codec(pjsua_call *call)
 {
     pjsip_inv_session *inv = call->inv;
     const pjmedia_sdp_session *local_sdp, *remote_sdp;
-    const pjmedia_sdp_media *rem_m, *loc_m;
-    unsigned codec_cnt=0, i;
-    pjsua_call_media *call_med = &call->media[call->audio_idx];
     pj_time_val delay = {0, 0};
     const pj_str_t st_update = {"UPDATE", 6};
+    unsigned i;
+    pj_bool_t has_mult_fmt = PJ_FALSE;
     pj_status_t status;
 
     /* Stop lock codec timer, if it is active */
@@ -3305,14 +3325,6 @@ static pj_status_t lock_codec(pjsua_call *call)
 
     /* Skip this if we are the answerer */
     if (!inv->neg || !pjmedia_sdp_neg_was_answer_remote(inv->neg)) {
-        return PJ_SUCCESS;
-    }
-
-    /* Skip this if the media is inactive or error */
-    if (call_med->state == PJSUA_CALL_MEDIA_NONE ||
-	call_med->state == PJSUA_CALL_MEDIA_ERROR ||
-	call_med->dir == PJMEDIA_DIR_NONE)
-    {
         return PJ_SUCCESS;
     }
 
@@ -3334,28 +3346,50 @@ static pj_status_t lock_codec(pjsua_call *call)
     if (status != PJ_SUCCESS)
 	return status;
 
-    PJ_ASSERT_RETURN(call->audio_idx>=0 &&
-		     call->audio_idx < (int)remote_sdp->media_count,
-		     PJ_EINVALIDOP);
+    /* Find multiple codecs answer in all media */
+    for (i = 0; i < call->med_cnt; ++i) {
+	pjsua_call_media *call_med = &call->media[i];
+	const pjmedia_sdp_media *rem_m, *loc_m;
+	unsigned codec_cnt = 0;
 
-    rem_m = remote_sdp->media[call->audio_idx];
-    loc_m = local_sdp->media[call->audio_idx];
+	/* Skip this if the media is inactive or error */
+	if (call_med->state == PJSUA_CALL_MEDIA_NONE ||
+	    call_med->state == PJSUA_CALL_MEDIA_ERROR ||
+	    call_med->dir == PJMEDIA_DIR_NONE)
+	{
+	    continue;
+	}
 
-    /* Verify that media must be active. */
-    pj_assert(loc_m->desc.port && rem_m->desc.port);
+	/* Remote may answer with less media lines. */
+	if (i >= remote_sdp->media_count)
+	    continue;
 
-    /* Count the formats in the answer. */
-    if (rem_m->desc.fmt_count==1) {
-        codec_cnt = 1;
-    } else {
-        for (i=0; i<rem_m->desc.fmt_count && codec_cnt <= 1; ++i) {
-	    if (!is_non_av_fmt(rem_m, &rem_m->desc.fmt[i]))
-	        ++codec_cnt;
-        }
+	rem_m = remote_sdp->media[i];
+	loc_m = local_sdp->media[i];
+
+	/* Verify that media must be active. */
+	pj_assert(loc_m->desc.port && rem_m->desc.port);
+
+	/* Count the formats in the answer. */
+	if (rem_m->desc.fmt_count==1) {
+	    codec_cnt = 1;
+	} else {
+	    unsigned j;
+	    for (j=0; j<rem_m->desc.fmt_count && codec_cnt <= 1; ++j) {
+		if (!is_non_av_fmt(rem_m, &rem_m->desc.fmt[j]))
+		    ++codec_cnt;
+	    }
+	}
+
+	if (codec_cnt > 1) {
+	    has_mult_fmt = PJ_TRUE;
+	    break;
+	}
     }
-    if (codec_cnt <= 1) {
-	/* Answer contains single codec. */
-        call->lock_codec.retry_cnt = 0;
+
+    /* Each media in the answer already contains single codec. */
+    if (!has_mult_fmt) {
+	call->lock_codec.retry_cnt = 0;
 	return PJ_SUCCESS;
     }
 
@@ -3751,7 +3785,7 @@ static pj_status_t modify_sdp_of_call_hold(pjsua_call *call,
 					   pj_pool_t *pool,
 					   pjmedia_sdp_session *sdp)
 {
-    pjmedia_sdp_media *m;
+    unsigned mi;
 
     /* Call-hold is done by set the media direction to 'sendonly' 
      * (PJMEDIA_DIR_ENCODING), except when current media direction is 
@@ -3765,48 +3799,50 @@ static pj_status_t modify_sdp_of_call_hold(pjsua_call *call,
      *  configuration to use c=0.0.0.0 for call hold.
      */
 
-    m = sdp->media[call->audio_idx];
+    for (mi=0; mi<sdp->media_count; ++mi) {
+	pjmedia_sdp_media *m = sdp->media[mi];
 
-    if (call->call_hold_type == PJSUA_CALL_HOLD_TYPE_RFC2543) {
-	pjmedia_sdp_conn *conn;
-	pjmedia_sdp_attr *attr;
+	if (call->call_hold_type == PJSUA_CALL_HOLD_TYPE_RFC2543) {
+	    pjmedia_sdp_conn *conn;
+	    pjmedia_sdp_attr *attr;
 
-	/* Get SDP media connection line */
-	conn = m->conn;
-	if (!conn)
-	    conn = sdp->conn;
+	    /* Get SDP media connection line */
+	    conn = m->conn;
+	    if (!conn)
+		conn = sdp->conn;
 
-	/* Modify address */
-	conn->addr = pj_str("0.0.0.0");
+	    /* Modify address */
+	    conn->addr = pj_str("0.0.0.0");
 
-	/* Remove existing directions attributes */
-	pjmedia_sdp_media_remove_all_attr(m, "sendrecv");
-	pjmedia_sdp_media_remove_all_attr(m, "sendonly");
-	pjmedia_sdp_media_remove_all_attr(m, "recvonly");
-	pjmedia_sdp_media_remove_all_attr(m, "inactive");
+	    /* Remove existing directions attributes */
+	    pjmedia_sdp_media_remove_all_attr(m, "sendrecv");
+	    pjmedia_sdp_media_remove_all_attr(m, "sendonly");
+	    pjmedia_sdp_media_remove_all_attr(m, "recvonly");
+	    pjmedia_sdp_media_remove_all_attr(m, "inactive");
 
-	/* Add inactive attribute */
-	attr = pjmedia_sdp_attr_create(pool, "inactive", NULL);
-	pjmedia_sdp_media_add_attr(m, attr);
-
-
-    } else {
-	pjmedia_sdp_attr *attr;
-
-	/* Remove existing directions attributes */
-	pjmedia_sdp_media_remove_all_attr(m, "sendrecv");
-	pjmedia_sdp_media_remove_all_attr(m, "sendonly");
-	pjmedia_sdp_media_remove_all_attr(m, "recvonly");
-	pjmedia_sdp_media_remove_all_attr(m, "inactive");
-
-	if (call->media[call->audio_idx].dir & PJMEDIA_DIR_ENCODING) {
-	    /* Add sendonly attribute */
-	    attr = pjmedia_sdp_attr_create(pool, "sendonly", NULL);
-	    pjmedia_sdp_media_add_attr(m, attr);
-	} else {
 	    /* Add inactive attribute */
 	    attr = pjmedia_sdp_attr_create(pool, "inactive", NULL);
 	    pjmedia_sdp_media_add_attr(m, attr);
+
+
+	} else {
+	    pjmedia_sdp_attr *attr;
+
+	    /* Remove existing directions attributes */
+	    pjmedia_sdp_media_remove_all_attr(m, "sendrecv");
+	    pjmedia_sdp_media_remove_all_attr(m, "sendonly");
+	    pjmedia_sdp_media_remove_all_attr(m, "recvonly");
+	    pjmedia_sdp_media_remove_all_attr(m, "inactive");
+
+	    if (call->media[mi].dir & PJMEDIA_DIR_ENCODING) {
+		/* Add sendonly attribute */
+		attr = pjmedia_sdp_attr_create(pool, "sendonly", NULL);
+		pjmedia_sdp_media_add_attr(m, attr);
+	    } else {
+		/* Add inactive attribute */
+		attr = pjmedia_sdp_attr_create(pool, "inactive", NULL);
+		pjmedia_sdp_media_add_attr(m, attr);
+	    }
 	}
     }
 
@@ -3848,19 +3884,13 @@ static void pjsua_call_on_rx_offer(pjsip_inv_session *inv,
 				   const pjmedia_sdp_session *offer)
 {
     pjsua_call *call;
-    pjmedia_sdp_conn *conn = NULL;
     pjmedia_sdp_session *answer;
+    unsigned i;
     pj_status_t status;
 
     PJSUA_LOCK();
 
     call = (pjsua_call*) inv->dlg->mod_data[pjsua_var.mod.id];
-
-    if (call->audio_idx < (int)offer->media_count)
-	conn = offer->media[call->audio_idx]->conn;
-
-    if (!conn)
-	conn = offer->conn;
 
     /* Supply candidate answer */
     PJ_LOG(4,(THIS_FILE, "Call %d: received updated media offer",
@@ -3875,12 +3905,36 @@ static void pjsua_call_on_rx_offer(pjsip_inv_session *inv,
 	return;
     }
 
+    /* Validate media count in the generated answer */
+    pj_assert(answer->media_count == offer->media_count);
+
     /* Check if offer's conn address is zero */
-    if (pj_strcmp2(&conn->addr, "0.0.0.0")==0 ||
-	pj_strcmp2(&conn->addr, "0")==0)
-    {
-	/* Modify address */
-	answer->conn->addr = pj_str("0.0.0.0");
+    for (i = 0; i < answer->media_count; ++i) {
+	pjmedia_sdp_conn *conn;
+
+	conn = offer->media[i]->conn;
+	if (!conn)
+	    conn = offer->conn;
+
+	if (pj_strcmp2(&conn->addr, "0.0.0.0")==0 ||
+	    pj_strcmp2(&conn->addr, "0")==0)
+	{
+	    pjmedia_sdp_conn *a_conn = answer->media[i]->conn;
+
+	    /* Modify answer address */
+	    if (a_conn) {
+		a_conn->addr = pj_str("0.0.0.0");
+	    } else if (answer->conn == NULL ||
+		       pj_strcmp2(&answer->conn->addr, "0.0.0.0") != 0)
+	    {
+		a_conn = PJ_POOL_ZALLOC_T(call->inv->pool_prov,
+					  pjmedia_sdp_conn);
+		a_conn->net_type = pj_str("IN");
+		a_conn->addr_type = pj_str("IP4");
+		a_conn->addr = pj_str("0.0.0.0");
+		answer->media[i]->conn = a_conn;
+	    }
+	}
     }
 
     /* Check if call is on-hold */

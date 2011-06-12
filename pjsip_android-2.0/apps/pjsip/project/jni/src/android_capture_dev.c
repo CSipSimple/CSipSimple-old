@@ -100,7 +100,7 @@ static pj_status_t android_cam_factory_default_param(pj_pool_t *pool,
 					         unsigned index,
 					         pjmedia_vid_param *param);
 static pj_status_t android_cam_factory_create_stream(pjmedia_vid_dev_factory *f,
-						 const pjmedia_vid_param *prm,
+						 	 pjmedia_vid_param *prm,
 					         const pjmedia_vid_cb *cb,
 					         void *user_data,
 					         pjmedia_vid_dev_stream **p);
@@ -129,6 +129,7 @@ static pjmedia_vid_dev_factory_op factory_op =
     &android_cam_factory_default_param,
     &android_cam_factory_create_stream
 };
+
 
 static pjmedia_vid_dev_stream_op stream_op =
 {
@@ -274,7 +275,7 @@ static pj_status_t android_cam_factory_default_param(pj_pool_t *pool,
 
 /* API: create stream */
 static pj_status_t android_cam_factory_create_stream(pjmedia_vid_dev_factory *f,
-				      const pjmedia_vid_param *param,
+				      pjmedia_vid_param *param,
 				      const pjmedia_vid_cb *cb,
 				      void *user_data,
 				      pjmedia_vid_dev_stream **p_vid_strm)
@@ -418,7 +419,7 @@ static pj_status_t android_cam_stream_get_frame(pjmedia_vid_dev_stream *strm,
 
     frame->type = PJMEDIA_FRAME_TYPE_VIDEO;
 
-    PJ_LOG(4, (THIS_FILE, "Ask for frame size : %d -- we have %d", frame->size, stream->vafp.framebytes));
+    PJ_LOG(5, (THIS_FILE, "Ask for frame size : %d -- we have %d", frame->size, stream->vafp.framebytes));
 
     PJ_ASSERT_RETURN(frame->size == stream->vafp.framebytes, PJ_ENOMEM);
 
@@ -519,7 +520,7 @@ JNIEXPORT void JNICALL Java_com_csipsimple_ui_camera_CameraPreview_pushToNative
 JNIEXPORT void JNICALL Java_com_csipsimple_ui_camera_VideoProducer_pushToNative
   (JNIEnv* env, jobject object, jbyteArray pinArray, jint size) {
 
-    	PJ_LOG(4, (THIS_FILE, "Cb from java << "));
+    	PJ_LOG(5, (THIS_FILE, "Cb from java << "));
 
         jbyte *inArray;
         //Do not copy since copy is done in current stream
@@ -529,7 +530,7 @@ JNIEXPORT void JNICALL Java_com_csipsimple_ui_camera_VideoProducer_pushToNative
 
 
     		pj_mutex_lock(current_capture_stream->frame_mutex);
-    		PJ_LOG(4, (THIS_FILE, "We have a stream here push data into it : size %d vs %d", current_capture_stream->vafp.framebytes, size));
+    		PJ_LOG(5, (THIS_FILE, "We have a stream here push data into it : size %d vs %d", current_capture_stream->vafp.framebytes, size));
     		pj_memcpy(current_capture_stream->imageData, inArray, current_capture_stream->vafp.framebytes);
     		pj_mutex_unlock(current_capture_stream->frame_mutex);
     	}

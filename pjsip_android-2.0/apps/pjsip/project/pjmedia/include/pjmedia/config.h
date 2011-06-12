@@ -1,4 +1,4 @@
-/* $Id: config.h 3451 2011-03-15 11:29:53Z bennylp $ */
+/* $Id: config.h 3534 2011-04-13 19:41:41Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -515,6 +515,15 @@
 #endif
 
 /**
+ * Reserve some space for application extra data, e.g: SRTP auth tag,
+ * in RTP payload, so the total payload length will not exceed the MTU.
+ */
+#ifndef PJMEDIA_STREAM_RESV_PAYLOAD_LEN
+#   define PJMEDIA_STREAM_RESV_PAYLOAD_LEN	20
+#endif
+
+
+/**
  * Specify the maximum duration of silence period in the codec, in msec. 
  * This is useful for example to keep NAT binding open in the firewall
  * and to prevent server from disconnecting the call because no 
@@ -568,6 +577,16 @@
 
 
 /**
+ * Maximum number of parameters in SDP fmtp attribute.
+ *
+ * Default: 16
+ */
+#ifndef PJMEDIA_CODEC_MAX_FMTP_CNT
+#   define PJMEDIA_CODEC_MAX_FMTP_CNT		16
+#endif
+
+
+/**
  * This specifies the behavior of the SDP negotiator when responding to an
  * offer, whether it should rather use the codec preference as set by
  * remote, or should it rather use the codec preference as specified by
@@ -588,6 +607,15 @@
  */
 #ifndef PJMEDIA_SDP_NEG_PREFER_REMOTE_CODEC_ORDER
 #   define PJMEDIA_SDP_NEG_PREFER_REMOTE_CODEC_ORDER	1
+#endif
+
+
+/**
+ * This specifies the maximum number of the customized SDP format
+ * negotiation callbacks.
+ */
+#ifndef PJMEDIA_SDP_NEG_MAX_CUSTOM_FMT_NEG_CB
+#   define PJMEDIA_SDP_NEG_MAX_CUSTOM_FMT_NEG_CB	8
 #endif
 
 

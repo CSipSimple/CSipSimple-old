@@ -1,4 +1,4 @@
-/* $Id: sdp.h 3419 2011-02-24 07:16:31Z nanang $ */
+/* $Id: sdp.h 3497 2011-04-06 07:00:02Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -268,18 +268,11 @@ pjmedia_sdp_rtpmap_to_attr( pj_pool_t *pool,
 /**
  * This structure describes SDP \a fmtp attribute.
  */
-struct pjmedia_sdp_fmtp
+typedef struct pjmedia_sdp_fmtp
 {
     pj_str_t		fmt;	    /**< Format type.		    */
     pj_str_t		fmt_param;  /**< Format specific parameter. */
-};
-
-
-/**
- * @see pjmedia_sdp_fmtp
- */
-typedef struct pjmedia_sdp_fmtp pjmedia_sdp_fmtp;
-
+} pjmedia_sdp_fmtp;
 
 
 /**

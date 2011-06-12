@@ -1,4 +1,4 @@
-/* $Id: converter_libswscale.c 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: converter_libswscale.c 3487 2011-03-25 08:13:43Z bennylp $ */
 /*
  * Copyright (C) 2010-2011 Teluu Inc. (http://www.teluu.com)
  *
@@ -176,11 +176,9 @@ static pjmedia_converter_factory libswscale_factory =
 };
 
 PJ_DEF(pj_status_t)
-pjmedia_libswscale_converter_init(pjmedia_converter_mgr *mgr,
-				  pj_pool_t *pool)
+pjmedia_libswscale_converter_init(pjmedia_converter_mgr *mgr)
 {
     libswscale_factory.op = &libswscale_factory_op;
-    PJ_UNUSED_ARG(pool);
     return pjmedia_converter_mgr_register_factory(mgr, &libswscale_factory);
 }
 

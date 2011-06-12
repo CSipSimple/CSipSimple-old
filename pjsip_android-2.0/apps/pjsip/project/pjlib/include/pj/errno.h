@@ -1,4 +1,4 @@
-/* $Id: errno.h 2992 2009-11-09 04:09:13Z bennylp $ */
+/* $Id: errno.h 3516 2011-04-10 23:54:07Z ming $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -468,6 +468,8 @@ PJ_DECL(pj_status_t) pj_register_strerror(pj_status_t start_code,
  *  - PJLIB_UTIL_ERRNO_START	(PJ_ERRNO_START_USER + PJ_ERRNO_SPACE_SIZE*3)
  *  - PJNATH_ERRNO_START	(PJ_ERRNO_START_USER + PJ_ERRNO_SPACE_SIZE*4)
  *  - PJMEDIA_AUDIODEV_ERRNO_START (PJ_ERRNO_START_USER + PJ_ERRNO_SPACE_SIZE*5)
+ *  - PJ_SSL_ERRNO_START	   (PJ_ERRNO_START_USER + PJ_ERRNO_SPACE_SIZE*6)
+ *  - PJMEDIA_VIDEODEV_ERRNO_START (PJ_ERRNO_START_USER + PJ_ERRNO_SPACE_SIZE*7)
  */
 
 /* Internal */

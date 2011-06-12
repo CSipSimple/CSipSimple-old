@@ -1,4 +1,4 @@
-/* $Id: ffmpeg_dev.c 3420 2011-02-24 07:47:55Z nanang $ */
+/* $Id: ffmpeg_dev.c 3489 2011-03-25 08:38:26Z bennylp $ */
 /*
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -88,7 +88,7 @@ static pj_status_t ffmpeg_factory_default_param(pj_pool_t *pool,
 					        pjmedia_vid_param *param);
 static pj_status_t ffmpeg_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm);
@@ -336,7 +336,7 @@ static pj_status_t ffmpeg_factory_default_param(pj_pool_t *pool,
 /* API: create stream */
 static pj_status_t ffmpeg_factory_create_stream(
 					pjmedia_vid_dev_factory *f,
-					const pjmedia_vid_param *param,
+					pjmedia_vid_param *param,
 					const pjmedia_vid_cb *cb,
 					void *user_data,
 					pjmedia_vid_dev_stream **p_vid_strm)

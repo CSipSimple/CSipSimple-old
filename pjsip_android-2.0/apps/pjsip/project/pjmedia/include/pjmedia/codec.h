@@ -1,4 +1,4 @@
-/* $Id: codec.h 3199 2010-06-07 05:23:56Z nanang $ */
+/* $Id: codec.h 3498 2011-04-06 07:01:55Z bennylp $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -239,8 +239,6 @@ typedef struct pjmedia_codec_info
     unsigned	    clock_rate;	    /**< Sampling rate.			*/
     unsigned	    channel_cnt;    /**< Channel count.			*/
 } pjmedia_codec_info;
-
-#define PJMEDIA_CODEC_MAX_FMTP_CNT  8
 
 /** 
  * Structure of codec specific parameters which contains name=value pairs.

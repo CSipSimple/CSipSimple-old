@@ -17,6 +17,9 @@
 #define PJMEDIA_RTP_PT_TELEPHONE_EVENTS          101
 #define PJMEDIA_RTP_PT_TELEPHONE_EVENTS_STR      "101"
 
+// For H264 video increase max MTU
+//#define PJMEDIA_MAX_MTU 6000
+
 #if defined(PJ_ANDROID) && PJ_ANDROID!=0
 //    #define PJ_LOG_USE_STACK_BUFFER             1
 	//#define PJSUA_DEFAULT_AUDIO_FRAME_PTIME 30

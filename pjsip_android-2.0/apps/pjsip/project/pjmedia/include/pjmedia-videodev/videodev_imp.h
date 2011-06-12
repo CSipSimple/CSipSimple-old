@@ -1,4 +1,4 @@
-/* $Id: videodev_imp.h 3420 2011-02-24 07:47:55Z nanang $ */
+/* $Id: videodev_imp.h 3489 2011-03-25 08:38:26Z bennylp $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -86,7 +86,7 @@ typedef struct pjmedia_vid_dev_factory_op
      * #pjmedia_vid_dev_stream_create()
      */
     pj_status_t (*create_stream)(pjmedia_vid_dev_factory *f,
-				 const pjmedia_vid_param *param,
+				 pjmedia_vid_param *param,
 				 const pjmedia_vid_cb *cb,
 				 void *user_data,
 				 pjmedia_vid_dev_stream **p_vid_strm);

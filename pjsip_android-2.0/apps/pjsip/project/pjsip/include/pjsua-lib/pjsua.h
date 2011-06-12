@@ -1,4 +1,4 @@
-/* $Id: pjsua.h 3471 2011-03-22 09:49:23Z nanang $ */
+/* $Id: pjsua.h 3500 2011-04-06 13:55:01Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -4428,9 +4428,14 @@ typedef struct pjsua_codec_info
     pj_uint8_t		priority;
 
     /**
+     * Codec description.
+     */
+    pj_str_t		desc;
+
+    /**
      * Internal buffer.
      */
-    char		buf_[32];
+    char		buf_[64];
 
 } pjsua_codec_info;
 

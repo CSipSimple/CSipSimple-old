@@ -1,4 +1,4 @@
-/* $Id: pjmedia_videodev.h 3392 2010-12-10 11:04:30Z bennylp $ */
+/* $Id: pjmedia_videodev.h 3484 2011-03-24 15:20:05Z ming $ */
 /* 
  * Copyright (C) 2008-2010 Teluu Inc. (http://www.teluu.com)
  *
@@ -26,5 +26,11 @@
 
 #include <pjmedia-videodev/videodev.h>
 #include <pjmedia-videodev/videodev_imp.h>
+
+#if defined(PJ_DARWINOS) && PJ_DARWINOS!=0
+#   if PJMEDIA_VIDEO_DEV_HAS_SDL
+#	include <SDL.h>
+#endif
+#endif
 
 #endif	/* __PJMEDIA_VIDEODEV_H__ */

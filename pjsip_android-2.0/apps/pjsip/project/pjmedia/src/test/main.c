@@ -1,4 +1,4 @@
-/* $Id: main.c 2408 2009-01-01 22:08:21Z bennylp $ */
+/* $Id: main.c 3484 2011-03-24 15:20:05Z ming $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 #include "test.h"
+#include <pjmedia_videodev.h>
 
  
 /* Any tests that want to build a linked executable for RTEMS must include
