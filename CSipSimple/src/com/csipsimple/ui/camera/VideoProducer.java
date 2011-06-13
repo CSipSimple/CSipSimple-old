@@ -36,7 +36,6 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
@@ -247,6 +246,7 @@ public class VideoProducer {
                                 this.camera = cWrapper.getCamera(!this.producer.toggle);
                                
                                 Camera.Parameters parameters = this.camera.getParameters();
+                                Log.d(THIS_FILE, "Parameter of camera "+parameters.flatten());
 
                                 /*
                                  * http://developer.android.com/reference/android/graphics/ImageFormat.html#NV21
