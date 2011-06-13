@@ -36,6 +36,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
@@ -253,6 +254,7 @@ public class VideoProducer {
                                  * This is the default format for camera preview images, when not otherwise set with setPreviewFormat(int).
                                  */
                                 parameters.setPreviewFormat(PixelFormat.YCbCr_420_SP);
+                               // parameters.setPreviewFormat(ImageFormat.NV21);
                                 parameters.setPreviewFrameRate(this.producer.fps);
                                 // parameters.set("rotation", degree)
                                 this.camera.setParameters(parameters);
@@ -315,7 +317,7 @@ public class VideoProducer {
 
                                 if(APILevel7.isAvailable()){
                                         // Camera Orientation
-                                		int orientation = Configuration.ORIENTATION_PORTRAIT;
+                                		int orientation = Configuration.ORIENTATION_LANDSCAPE;
                                         switch(orientation){
                                                 case Configuration.ORIENTATION_LANDSCAPE:
                                                         this.producer.setDisplayOrientation(this.camera, 0);

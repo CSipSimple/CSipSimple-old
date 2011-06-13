@@ -90,6 +90,7 @@ import com.csipsimple.pjsip.PjSipCalls;
 import com.csipsimple.service.SipService;
 import com.csipsimple.ui.camera.VideoProducer;
 import com.csipsimple.utils.CallsUtils;
+import com.csipsimple.utils.Compatibility;
 import com.csipsimple.utils.CustomDistribution;
 import com.csipsimple.utils.DialingFeedback;
 import com.csipsimple.utils.Log;
@@ -159,6 +160,8 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 	private final static int PICKUP_SIP_URI_XFER = 0;
 	private final static int PICKUP_SIP_URI_NEW_CALL = 1;
 	
+	private final boolean USE_VIDEO = true;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -222,9 +225,10 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		
 		// Sensor management
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-		Log.d(THIS_FILE, "Proximty sensor : "+proximitySensor);
-		
+		if(!USE_VIDEO) {
+			proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+			Log.d(THIS_FILE, "Proximty sensor : "+proximitySensor);
+		}
 		dialFeedback = new DialingFeedback(this, true);
 		
 
@@ -252,9 +256,9 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
                     ((ViewGroup)(viewParent)).removeView(local_preview);
             }
             
-            LayoutParams lp = new LayoutParams(192, 200, Gravity.BOTTOM | Gravity.RIGHT);
+            LayoutParams lp = new LayoutParams(192, 200, Gravity.BOTTOM | Gravity.LEFT);
             //mainFrame.addView(local_preview, 0);
-            mainFrame.addView(local_preview, 0, lp);
+            ((ViewGroup) mainFrame.getParent()).addView(local_preview, 1, lp);
 	    }
         
         
@@ -307,6 +311,9 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 				}
 				*/
 			}
+        }
+        if(USE_VIDEO) {
+        	// TODO lock screen
         }
         videoProducer.start();
         
@@ -687,14 +694,27 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 			}
 		}
 		
-		int mainWidth = METRICS.widthPixels;
+		
+		Configuration config = getResources().getConfiguration();
+		int orientation = config.orientation;
+		int mWidth = METRICS.widthPixels;
+		int mHeight =  METRICS.heightPixels;
+		if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			mWidth = METRICS.heightPixels;
+			mHeight =  METRICS.widthPixels;
+			
+		}
+		
+		
+		int mainWidth = mWidth;
 		if(heldsCalls > 0) {
 			//In this case available width for MAIN part is 2/3 of the view
-			mainWidth -= METRICS.widthPixels/3;
+			mainWidth -= mWidth/3;
 		}
 		//this is not the good way to do that -- FIXME 
-		int mainHeight = METRICS.heightPixels * 7/15;
+		int mainHeight = mHeight * 7/15;
 		
+
 		
 		//Update each badges
 		ArrayList<InCallInfo2> badgesToRemove = new ArrayList<InCallInfo2>();
@@ -793,7 +813,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 				}
 				
 				
-				if(proximitySensor == null && proximityWakeLock == null) {
+				if(shouldUseLockOverlay()) {
 					if(mainCallInfo.isIncoming()) {
 						lockOverlay.hide();
 					}else {
@@ -824,7 +844,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 					Log.d(THIS_FILE, "Releasing wake up lock - confirmed");
 	                wakeLock.release();
 	            }
-				if(proximitySensor == null && proximityWakeLock == null) {
+				if(shouldUseLockOverlay()) {
 					lockOverlay.delayedLock(ScreenLocker.WAIT_BEFORE_LOCK_START);
 				}
 				
@@ -1121,7 +1141,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		}
 		
 		//Reset proximity sensor timer
-		if(proximitySensor == null && proximityWakeLock == null) {
+		if(shouldUseLockOverlay()) {
 			lockOverlay.delayedLock(ScreenLocker.WAIT_BEFORE_LOCK_LONG);
 		}
 		
@@ -1243,10 +1263,13 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 		}
 	}
 	
+	private boolean shouldUseLockOverlay() {
+		return proximitySensor == null && proximityWakeLock == null && !Compatibility.isTabletScreen(this) && !USE_VIDEO;
+	}
 
 	@Override
 	public void onTrigger(int keyCode, int dialTone) {
-		if(proximitySensor == null && proximityWakeLock == null) {
+		if(shouldUseLockOverlay()) {
 			lockOverlay.delayedLock(ScreenLocker.WAIT_BEFORE_LOCK_LONG);
 		}
 		
@@ -1369,7 +1392,7 @@ public class InCallActivity2 extends Activity implements OnTriggerListener, OnDi
 	        int Y = (int)event.getRawY();
 	        
 	        // Reset the not proximity sensor lock overlay
-			if(proximitySensor == null && proximityWakeLock == null) {
+			if(shouldUseLockOverlay()) {
 				lockOverlay.delayedLock(ScreenLocker.WAIT_BEFORE_LOCK_LONG);
 			}
 	        

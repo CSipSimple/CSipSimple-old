@@ -94,10 +94,13 @@ public class VideoRenderer implements Renderer {
 		gl.glClearColor(0, 0, 0, 0);
 
 		gl.glClearDepthf(1.0f);
-		gl.glEnable(GL10.GL_DEPTH_TEST);
-		gl.glDepthFunc(GL10.GL_LEQUAL);
+		//gl.glEnable(GL10.GL_DEPTH_TEST);
+		//gl.glDepthFunc(GL10.GL_LEQUAL);
+		
+		//Disable unnessary things
+		gl.glDisable(GL10.GL_LIGHTING);
 
-		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+		//gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
 	}
 	
 
@@ -127,7 +130,10 @@ public class VideoRenderer implements Renderer {
 		return fb;
 	}
 
+	private boolean isRendering = false;
+	
 	public void onDrawFrame(GL10 gl) {
+		
 		// Reset for this draw seq
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL10.GL_MODELVIEW);
@@ -137,8 +143,8 @@ public class VideoRenderer implements Renderer {
         // Recompute texture 
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, texturesBuffer.get(0));
 
-		float[] w = new float[] { 1.0f };
-		float[] h = new float[] { 1.0f };
+		float[] w = new float[] { 0.0f };
+		float[] h = new float[] { 0.0f };
 		
 		// TODO : use stream id here to manage several streams 
 		if(streamId == null) {
@@ -147,24 +153,48 @@ public class VideoRenderer implements Renderer {
 		// -- end of placeholder
 		
 		pjsua.pjmedia_ogl_surface_draw(w, h);
-	//	Log.d("VideoRenderer", "Has been drawn at "+w[0]+","+h[0]);
-		quadTexCoords[2] = w[0];
-		quadTexCoords[6] = w[0];
-		quadTexCoords[5] = h[0];
-		quadTexCoords[7] = h[0];
-
-		// draw quad
-		gl.glTranslatef(0, 0, -0.5f);
-		gl.glColor4f(0.5f, 0.5f, 1.0f, 1.0f);
-
-		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, makeFloatBuffer(quadCoords));
-		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, makeFloatBuffer(quadTexCoords));
-		gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		
+		if(w[0] > 0 && h[0] > 0) {
+			if(!isRendering) {
+				if(renderListener != null ) {
+					renderListener.onRenderDisplayed(true);
+				}
+				isRendering = true;
+			}
+		//	Log.d("VideoRenderer", "Has been drawn at "+w[0]+","+h[0]);
+			quadTexCoords[2] = w[0];
+			quadTexCoords[6] = w[0];
+			quadTexCoords[5] = h[0];
+			quadTexCoords[7] = h[0];
+			
+			// draw quad
+			gl.glTranslatef(0, 0, -0.5f);
+		//	gl.glColor4f(0.5f, 0.5f, 1.0f, 1.0f);
+	
+			gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+			gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+			gl.glVertexPointer(3, GL10.GL_FLOAT, 0, makeFloatBuffer(quadCoords));
+			gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, makeFloatBuffer(quadTexCoords));
+			gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
+			gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+			gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		}else {
+			if(isRendering) {
+				if(renderListener != null ) {
+					renderListener.onRenderDisplayed(false);
+				}
+				isRendering = false;
+			}
+		}
 	}
 
+	private OnRenderListener renderListener = null;
+	public interface OnRenderListener {
+		public void onRenderDisplayed(boolean show);
+	}
+	
+	public void setRenderListener(OnRenderListener renderListener) {
+		this.renderListener = renderListener;
+	}
 
 }

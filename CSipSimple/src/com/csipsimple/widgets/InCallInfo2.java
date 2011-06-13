@@ -43,8 +43,9 @@ import com.csipsimple.ui.InCallActivity2.OnBadgeTouchListener;
 import com.csipsimple.utils.ContactsAsyncHelper;
 import com.csipsimple.utils.Log;
 import com.csipsimple.widgets.InCallControls2.OnTriggerListener;
+import com.csipsimple.widgets.VideoRenderer.OnRenderListener;
 
-public class InCallInfo2 extends ExtensibleBadge {
+public class InCallInfo2 extends ExtensibleBadge implements OnRenderListener {
 	
 
 
@@ -105,7 +106,9 @@ public class InCallInfo2 extends ExtensibleBadge {
 		//Display video
 		surface = (GLSurfaceView) findViewById(R.id.side_remote);
 		renderer = new VideoRenderer(getContext());
+		renderer.setRenderListener(this);
 		surface.setRenderer(renderer);
+		
 	
 		
 	}
@@ -412,6 +415,14 @@ public class InCallInfo2 extends ExtensibleBadge {
 			surface.onResume();
 		}
 		
+	}
+
+	@Override
+	public void onRenderDisplayed(boolean show) {
+		if(surface !=null) {
+			//TODO : do that from the UI thread so post to handler instead
+			//surface.setVisibility(show? View.VISIBLE : View.GONE);
+		}
 	}
 
 }

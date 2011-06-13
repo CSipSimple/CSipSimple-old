@@ -5,7 +5,7 @@
   android:layout_height="match_parent">
     <android.opengl.GLSurfaceView android:id="@+id/side_remote" android:layout_alignParentLeft="true" 
     	android:layout_width="fill_parent" android:layout_height="fill_parent"/>
-    <com.csipsimple.ui.camera.CameraPreview android:layout_alignParentRight="true" android:layout_alignParentBottom="true" 
+    <com.csipsimple.ui.camera.VideoProducer android:layout_alignParentRight="true" android:layout_alignParentBottom="true" 
     	android:id="@+id/side_local" 
     	android:layout_height="100dip" android:layout_width="100dip" />
 </RelativeLayout>
