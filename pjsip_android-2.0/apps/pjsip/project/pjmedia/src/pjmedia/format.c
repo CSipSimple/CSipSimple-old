@@ -22,11 +22,15 @@
 #include <pj/errno.h>
 #include <pj/pool.h>
 #include <pj/string.h>
+#include <pj/log.h>
 
 static pj_status_t apply_packed_fmt(const pjmedia_video_format_info *fi,
 	                            pjmedia_video_apply_fmt_param *aparam);
 
 static pj_status_t apply_planar_420(const pjmedia_video_format_info *fi,
+	                            pjmedia_video_apply_fmt_param *aparam);
+
+static pj_status_t apply_planar_420_sp(const pjmedia_video_format_info *fi,
 	                            pjmedia_video_apply_fmt_param *aparam);
 
 static pj_status_t apply_planar_422(const pjmedia_video_format_info *fi,
@@ -54,7 +58,7 @@ static pjmedia_video_format_info built_in_vid_fmt_info[] =
     {PJMEDIA_FORMAT_YV12,  "YV12", PJMEDIA_COLOR_MODEL_YUV, 16, 3, &apply_planar_422},
     {PJMEDIA_FORMAT_I420JPEG, "I420JPG", PJMEDIA_COLOR_MODEL_YUV, 12, 3, &apply_planar_420},
     {PJMEDIA_FORMAT_I422JPEG, "I422JPG", PJMEDIA_COLOR_MODEL_YUV, 16, 3, &apply_planar_422},
-    {PJMEDIA_FORMAT_NV21,  "NV21", PJMEDIA_COLOR_MODEL_YUV, 12, 3, &apply_planar_420},
+    {PJMEDIA_FORMAT_NV21,  "NV21", PJMEDIA_COLOR_MODEL_YUV, 12, 2, &apply_planar_420_sp},
 };
 
 
@@ -194,6 +198,38 @@ static pj_status_t apply_planar_420(const pjmedia_video_format_info *fi,
 
     /* Zero unused planes */
     for (i=3; i<PJMEDIA_MAX_VIDEO_PLANES; ++i) {
+	aparam->strides[i] = 0;
+	aparam->planes[i] = NULL;
+        aparam->plane_bytes[i] = 0;
+    }
+
+    return PJ_SUCCESS;
+}
+
+static pj_status_t apply_planar_420_sp(const pjmedia_video_format_info *fi,
+	                             pjmedia_video_apply_fmt_param *aparam)
+{
+    unsigned i;
+    pj_size_t Y_bytes;
+
+    PJ_UNUSED_ARG(fi);
+    /* Calculate memsize */
+    Y_bytes = (pj_size_t)(aparam->size.w * aparam->size.h);
+    aparam->framebytes = Y_bytes + (Y_bytes>>1);
+
+    /* Planar formats use 3 plane */
+    aparam->strides[0] = aparam->size.w;
+    aparam->strides[1] /*= aparam->strides[2]*/ = (aparam->size.w/*>>1*/);
+
+    aparam->planes[0] = aparam->buffer;
+    aparam->planes[1] = aparam->planes[0] + Y_bytes;
+//    aparam->planes[2] = aparam->planes[1] + (Y_bytes>>2);
+
+    aparam->plane_bytes[0] = Y_bytes;
+    aparam->plane_bytes[1] /*= aparam->plane_bytes[2]*/ = (Y_bytes>>2);
+
+    /* Zero unused planes */
+    for (i=2; i<PJMEDIA_MAX_VIDEO_PLANES; ++i) {
 	aparam->strides[i] = 0;
 	aparam->planes[i] = NULL;
         aparam->plane_bytes[i] = 0;

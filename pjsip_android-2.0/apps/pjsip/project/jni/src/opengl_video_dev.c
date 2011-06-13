@@ -33,7 +33,7 @@
 #define DEFAULT_CLOCK_RATE	90000
 #define DEFAULT_WIDTH		352 //320
 #define DEFAULT_HEIGHT		228 //240
-#define DEFAULT_FPS		25
+#define DEFAULT_FPS		15
 
 
 typedef struct ogl_fmt_info
@@ -114,6 +114,7 @@ struct ogl_stream
     // Gl texture state
     pj_bool_t need_glTex_init;
     pj_mutex_t* frame_mutex;
+    pj_bool_t has_changed;
     //Gl texture datas
     void* imageData;
     pj_size_t imageSize;
@@ -443,6 +444,7 @@ static pj_status_t ogl_factory_create_stream(
 		strm->textureHeight = i;
 
 		strm->need_glTex_init = PJ_TRUE;
+		strm->has_changed = PJ_FALSE;
 		strm->glMappingWidth = (float) strm->frameWidth / (float) strm->textureWidth;
 		strm->glMappingHeight = (float) strm->frameHeight / (float) strm->textureHeight;
 
@@ -553,6 +555,7 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
     	goto on_return;
     }
 #if USE_CONVERTER
+#warning use impl converter -- that's bad'
     if(stream->cap_conv_buf_size > 0){
     	pjmedia_frame frame_src;
     	pjmedia_frame frame_dst;
@@ -575,6 +578,7 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
 		PJ_LOG(5, (THIS_FILE, "Direct frame"));
 		pj_mutex_lock(stream->frame_mutex);
 		pj_memcpy(stream->imageData, frame->buf, frame->size);
+		current_stream->has_changed = PJ_TRUE;
 		pj_mutex_unlock(stream->frame_mutex);
 #if USE_CONVERTER
     }
@@ -663,8 +667,8 @@ PJ_DECL(pj_status_t) pjmedia_ogl_surface_init(int width,
 
 
 PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappingHeight){
-	*mappingHeight = 1.0f;
-	*mappingWidth = 1.0f;
+	*mappingHeight = 0.0f;
+	*mappingWidth = 0.0f;
 
 	if( current_stream != NULL && current_stream->textureWidth > 0 && current_stream->textureHeight > 0 && current_stream->is_running ){
 		pj_mutex_lock(current_stream->frame_mutex);
@@ -675,21 +679,25 @@ PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappin
 					current_stream->glInternalFormat,
 					current_stream->textureWidth, current_stream->textureHeight, 0,
 					current_stream->glFormat, current_stream->glType, (GLvoid *) NULL);
-			//current_stream->need_glTex_init = PJ_FALSE;
-			// Sounds this is always necessary, else android probably consider the texture as invalid... weird... to investigate
+			current_stream->need_glTex_init = PJ_FALSE;
+			// Sounds this is maybe necessary, else android probably consider the texture as invalid... weird... to investigate
 		}
 
+		if(current_stream->has_changed){
+			// Update relevant portion
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+					current_stream->frameWidth, current_stream->frameHeight,
+					current_stream->glFormat, current_stream->glType, current_stream->imageData);
+			current_stream->has_changed = PJ_FALSE;
+		}
+
+		pj_mutex_unlock(current_stream->frame_mutex);
 
 
-		// Update relevant portion
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-				current_stream->frameWidth, current_stream->frameHeight,
-				current_stream->glFormat, current_stream->glType, current_stream->imageData);
 		//imageData
 		*mappingHeight = current_stream->glMappingHeight;
 		*mappingWidth = current_stream->glMappingWidth;
 
-		pj_mutex_unlock(current_stream->frame_mutex);
 
 
 

@@ -2,8 +2,8 @@ APP_PROJECT_PATH := $(call my-dir)/../../../CSipSimple
 #APP_PROJECT_PATH := $(call my-dir)/project
 APP_BUILD_SCRIPT= := $(call my-dir)/project/build/Android.mk
 APP_OPTIM        := release
-#APP_ABI := armeabi armeabi-v7a
-APP_ABI := armeabi-v7a
+APP_ABI := armeabi armeabi-v7a
+#APP_ABI := armeabi-v7a
 #APP_ABI := armv4t 
 APP_STL := stlport_static
 

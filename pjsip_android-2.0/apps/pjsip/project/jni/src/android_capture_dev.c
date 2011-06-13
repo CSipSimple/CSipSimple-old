@@ -494,28 +494,7 @@ static pj_status_t android_cam_stream_destroy(pjmedia_vid_dev_stream *strm)
 /*
  * comes from the java stack
  */
-JNIEXPORT void JNICALL Java_com_csipsimple_ui_camera_CameraPreview_pushToNative
-  (JNIEnv* env, jobject object, jbyteArray pinArray, jint width, jint height, jint textureSize) {
 
-    	PJ_LOG(6, (THIS_FILE, "Cb from java"));
-
-        jbyte *inArray;
-        //Do not copy since copy is done in current stream
-        inArray = (*env)->GetByteArrayElements(env, pinArray, JNI_FALSE);
-
-
-
-    	if( current_capture_stream != NULL ){
-
-    		pj_mutex_lock(current_capture_stream->frame_mutex);
-    		PJ_LOG(4, (THIS_FILE, "We have a stream here push data into it : size %d", current_capture_stream->vafp.framebytes));
-    		pj_memcpy(current_capture_stream->imageData, inArray, current_capture_stream->vafp.framebytes);
-    		pj_mutex_unlock(current_capture_stream->frame_mutex);
-    	}
-
-        //release arrays:
-        (*env)->ReleaseByteArrayElements(env, pinArray, inArray, 0);
-}
 
 JNIEXPORT void JNICALL Java_com_csipsimple_ui_camera_VideoProducer_pushToNative
   (JNIEnv* env, jobject object, jbyteArray pinArray, jint size) {
@@ -527,10 +506,8 @@ JNIEXPORT void JNICALL Java_com_csipsimple_ui_camera_VideoProducer_pushToNative
         inArray = (*env)->GetByteArrayElements(env, pinArray, JNI_FALSE);
 
     	if( current_capture_stream != NULL ){
-
-
     		pj_mutex_lock(current_capture_stream->frame_mutex);
-    		PJ_LOG(5, (THIS_FILE, "We have a stream here push data into it : size %d vs %d", current_capture_stream->vafp.framebytes, size));
+    		//PJ_LOG(5, (THIS_FILE, "We have a stream here push data into it : size %d vs %d", current_capture_stream->vafp.framebytes, size));
     		pj_memcpy(current_capture_stream->imageData, inArray, current_capture_stream->vafp.framebytes);
     		pj_mutex_unlock(current_capture_stream->frame_mutex);
     	}
