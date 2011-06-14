@@ -23,10 +23,7 @@
 #include <GLES/glext.h>
 
 #define USE_CONVERTER 0
-
-#if USE_CONVERTER
-#include <pjmedia/converter.h>
-#endif
+#define USE_CSIPSIMPLE 1
 
 
 #define THIS_FILE		"android_video_dev.c"
@@ -119,11 +116,7 @@ struct ogl_stream
     void* imageData;
     pj_size_t imageSize;
 
-#if USE_CONVERTER
-    pjmedia_converter	*cap_conv;
-    void		*cap_conv_buf;
-    pj_size_t		 cap_conv_buf_size;
-#endif
+    pj_bool_t has_set_render_thread_prio;
 };
 
 //TODO : stream should be get from the application as an argument
@@ -348,10 +341,7 @@ static pj_status_t ogl_factory_create_stream(
     const pjmedia_video_format_info *vfi;
     ogl_fmt_info *ogl_fmt_info;
 
-#if USE_CONVERTER
-    pjmedia_conversion_param conv_param;
-    pjmedia_video_apply_fmt_param vafp;
-#endif
+
     /* Create and Initialize stream descriptor */
     pool = pj_pool_create(sf->pf, "opengl-dev", 1000, 1000, NULL);
     PJ_ASSERT_RETURN(pool != NULL, PJ_ENOMEM);
@@ -377,55 +367,13 @@ static pj_status_t ogl_factory_create_stream(
 		// Is that a supported format ?
 		ogl_fmt_info = get_ogl_format_info(strm->param.fmt.id);
 		PJ_LOG(3, (THIS_FILE, "Requiring format : %d", strm->param.fmt.id));
-
 		if(ogl_fmt_info == NULL){
-#if USE_CONVERTER
-		    //Reset vfi to be valid for first choosen value
-		    ogl_fmt_info = get_ogl_format_info(sf->dev_info[0].info.fmt[0].id);
-
-		    pjmedia_format_copy(&conv_param.src, &strm->param.fmt);
-		    pjmedia_format_copy(&conv_param.dst, &sf->dev_info[0].info.fmt[0]);
-		    conv_param.dst.det.vid.size.w = conv_param.src.det.vid.size.w;
-		    conv_param.dst.det.vid.size.h = conv_param.src.det.vid.size.h;
-
-		    status = pjmedia_converter_create(NULL, pool, &conv_param,
-								  &strm->cap_conv);
-		    if (status != PJ_SUCCESS){
-		    	goto on_error;
-		    }
-
-		    /* Allocate buffer for conversion */
-		    vfi = pjmedia_get_video_format_info(NULL, conv_param.dst.id);
-		    if (!vfi){
-		    	status = PJMEDIA_EVID_BADFORMAT;
-		    	goto on_error;
-		    }
-
-
-
-		    pj_bzero(&vafp, sizeof(vafp));
-		    vafp.size = vfd->size;
-
-		    status = vfi->apply_fmt(vfi, &vafp);
-		    if (status != PJ_SUCCESS){
-		    	goto on_error;
-		    }
-
-		    strm->cap_conv_buf = pj_pool_alloc(pool, vafp.framebytes);
-		    strm->cap_conv_buf_size = vafp.framebytes;
-#endif
+			PJ_LOG(1, (THIS_FILE, "Bad format : %d", strm->param.fmt.id));
 	    	status = PJMEDIA_EVID_BADFORMAT;
 	    	goto on_error;
-#if USE_CONVERTER
-		}else{
-		    strm->cap_conv_buf_size = 0;
-
-#endif
 		}
 
 		vfi = pjmedia_get_video_format_info(pjmedia_video_format_mgr_instance(), ogl_fmt_info->fmt_id);
-
-
 
 		strm->glInternalFormat = ogl_fmt_info->internalFormat;
 		strm->glFormat = ogl_fmt_info->format;
@@ -445,6 +393,7 @@ static pj_status_t ogl_factory_create_stream(
 
 		strm->need_glTex_init = PJ_TRUE;
 		strm->has_changed = PJ_FALSE;
+		strm->has_set_render_thread_prio = PJ_FALSE;
 		strm->glMappingWidth = (float) strm->frameWidth / (float) strm->textureWidth;
 		strm->glMappingHeight = (float) strm->frameHeight / (float) strm->textureHeight;
 
@@ -457,7 +406,6 @@ static pj_status_t ogl_factory_create_stream(
 		strm->imageData = pj_pool_alloc(sf->pool, strm->imageSize);
 		pj_bzero(strm->imageData, strm->imageSize);
 		pj_mutex_create_simple(strm->pool, "opengl-es", &strm->frame_mutex);
-
 
     }
 
@@ -554,35 +502,21 @@ static pj_status_t ogl_stream_put_frame(pjmedia_vid_dev_stream *strm,
     if (frame->size==0 || frame->buf==NULL){
     	goto on_return;
     }
-#if USE_CONVERTER
-#warning use impl converter -- that's bad'
-    if(stream->cap_conv_buf_size > 0){
-    	pjmedia_frame frame_src;
-    	pjmedia_frame frame_dst;
-
-		frame_dst.buf  = stream->imageData;
-		frame_dst.size = stream->imageSize;
-		frame_src.buf  = frame->buf;
-		frame_src.size = frame->size;
-
-
-
-		PJ_LOG(5, (THIS_FILE, "Encoded frame"));
-		pj_mutex_lock(stream->frame_mutex);
-		status = pjmedia_converter_convert(stream->cap_conv,
-						   &frame_src, &frame_dst);
-		pj_mutex_unlock(stream->frame_mutex);
-
-    }else{
-#endif
-		PJ_LOG(5, (THIS_FILE, "Direct frame"));
-		pj_mutex_lock(stream->frame_mutex);
-		pj_memcpy(stream->imageData, frame->buf, frame->size);
-		current_stream->has_changed = PJ_TRUE;
-		pj_mutex_unlock(stream->frame_mutex);
-#if USE_CONVERTER
+#if USE_CSIPSIMPLE
+    if(!stream->has_set_render_thread_prio){
+    	set_android_thread_priority(-19);
+    	stream->has_set_render_thread_prio = PJ_TRUE;
     }
 #endif
+
+    // Sounds that's not really hurting to push incomplete frames so useless to protect imageData
+    // since we are always pointing same memory location and RGBA (worse case some px wrong)
+	//PJ_LOG(4, (THIS_FILE, "Direct frame"));
+	//pj_mutex_lock(stream->frame_mutex);
+	//PJ_LOG(4, (THIS_FILE, "Direct frame push"));
+	pj_memcpy(stream->imageData, frame->buf, frame->size);
+	current_stream->has_changed = PJ_TRUE;
+	//pj_mutex_unlock(stream->frame_mutex);
 
 on_return:
     return status;
@@ -597,9 +531,9 @@ static pj_status_t ogl_stream_start(pjmedia_vid_dev_stream *strm)
 
 	//TODO : remove this way to retrieve the stream
 
-	pj_mutex_lock(stream->frame_mutex);
+	//pj_mutex_lock(stream->frame_mutex);
 	current_stream = stream;
-	pj_mutex_unlock(stream->frame_mutex);
+	//pj_mutex_unlock(stream->frame_mutex);
 
 
     stream->is_running = PJ_TRUE;
@@ -622,14 +556,14 @@ static pj_status_t ogl_stream_stop(pjmedia_vid_dev_stream *strm)
     	pj_thread_sleep(10);
     }
 
-    pj_mutex_lock(stream->frame_mutex);
+    //pj_mutex_lock(stream->frame_mutex);
 
     stream->textureHeight = 0;
     stream->textureWidth = 0;
     stream->frameHeight = 0;
     stream->frameWidth = 0;
 
-    pj_mutex_unlock(stream->frame_mutex);
+    //pj_mutex_unlock(stream->frame_mutex);
 
     PJ_LOG(4, (THIS_FILE, "Stopped opengl video stream"));
     return PJ_SUCCESS;
@@ -646,9 +580,9 @@ static pj_status_t ogl_stream_destroy(pjmedia_vid_dev_stream *strm)
     PJ_LOG(4, (THIS_FILE, "Destroying opengl video stream"));
     ogl_stream_stop(strm);
 
-    pj_mutex_lock(stream->frame_mutex);
+    //pj_mutex_lock(stream->frame_mutex);
     current_stream = NULL;
-    pj_mutex_unlock(stream->frame_mutex);
+    //pj_mutex_unlock(stream->frame_mutex);
 
 
     pj_pool_release(stream->pool);
@@ -671,7 +605,9 @@ PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappin
 	*mappingWidth = 0.0f;
 
 	if( current_stream != NULL && current_stream->textureWidth > 0 && current_stream->textureHeight > 0 && current_stream->is_running ){
-		pj_mutex_lock(current_stream->frame_mutex);
+
+
+		//pj_mutex_lock(current_stream->frame_mutex);
 
 		if(current_stream->need_glTex_init){
 			//Fill the entiere image with empty
@@ -691,7 +627,7 @@ PJ_DECL(pj_status_t) pjmedia_ogl_surface_draw(float *mappingWidth, float *mappin
 			current_stream->has_changed = PJ_FALSE;
 		}
 
-		pj_mutex_unlock(current_stream->frame_mutex);
+		//pj_mutex_unlock(current_stream->frame_mutex);
 
 
 		//imageData

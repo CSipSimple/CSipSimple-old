@@ -34,7 +34,9 @@
  */
 PJ_BEGIN_DECL
 PJ_DECL(pjmedia_aud_dev_factory*) pjmedia_android_factory(pj_pool_factory *pf);
+PJ_DECL(pj_status_t) set_android_thread_priority(int priority);
 PJ_END_DECL
+
 
 
 #endif /* ANDROID_DEV_H_ */
