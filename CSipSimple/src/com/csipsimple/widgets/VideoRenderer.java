@@ -55,7 +55,6 @@ public class VideoRenderer implements Renderer {
 		}
 		
 		// create textures
-		gl.glEnable(GL10.GL_TEXTURE_2D);
 		texturesBuffer = IntBuffer.allocate(1);
 		gl.glGenTextures(1, texturesBuffer);
 
@@ -94,31 +93,36 @@ public class VideoRenderer implements Renderer {
 		gl.glClearColor(0, 0, 0, 0);
 
 		gl.glClearDepthf(1.0f);
-		//gl.glEnable(GL10.GL_DEPTH_TEST);
-		//gl.glDepthFunc(GL10.GL_LEQUAL);
-		
-		//Disable unnessary things
-		gl.glDisable(GL10.GL_LIGHTING);
-
-		//gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
 	}
 	
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		loadTextures(gl);
+		
 		// avoid division by zero
 		if (height == 0) {
 			height = 1;
 		}
+		
+
+		//Disable unnessary things
+		gl.glDisable(GL10.GL_LIGHTING);
+		gl.glDisable(GL10.GL_DEPTH_TEST);
+		gl.glDisable(GL10.GL_CULL_FACE);
+		gl.glEnable(GL10.GL_TEXTURE_2D);
+		
 		// draw on the entire screen
 		gl.glViewport(0, 0, width, height);
 		// setup projection matrix
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glLoadIdentity();
-
 		// Switch to ortho projection
 		gl.glOrthof(0f, 1.0f, 0f, 1.0f, -1.0f, 1.0f);
 
+
+		gl.glMatrixMode(GL10.GL_MODELVIEW);
+		gl.glLoadIdentity();
+
+		loadTextures(gl);
 	}
 
 	protected static FloatBuffer makeFloatBuffer(float[] arr) {
