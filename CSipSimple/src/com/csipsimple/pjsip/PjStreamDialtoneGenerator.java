@@ -74,7 +74,7 @@ public class PjStreamDialtoneGenerator {
 			long options = 0;
 			int[] dialtoneSlotPtr = new int[1];
 			dialtoneGen = new pjmedia_port();
-			status = pjsua.pjmedia_tonegen_create2(dialtonePool, name, clockRate, channelCount, samplesPerFrame, bitsPerSample, options, dialtoneGen);
+			status = pjsua.tonegen_create2(dialtonePool, name, clockRate, channelCount, samplesPerFrame, bitsPerSample, options, dialtoneGen);
 			if (status != pjsua.PJ_SUCCESS) {
 				stopDialtoneGenerator();
 				return status;
@@ -136,7 +136,7 @@ public class PjStreamDialtoneGenerator {
 		d[0].setOff_msec((short) 200);
 		d[0].setFreq1(freq1);
 		d[0].setFreq2(freq2);
-		return pjsua.pjmedia_tonegen_play(dialtoneGen, 1, d, 0);
+		return pjsua.tonegen_play(dialtoneGen, 1, d, 0);
 	}
 
 }

@@ -28,14 +28,16 @@ import java.util.regex.Pattern;
 import org.pjsip.pjsua.Callback;
 import org.pjsip.pjsua.SWIGTYPE_p_p_pjmedia_port;
 import org.pjsip.pjsua.SWIGTYPE_p_pjmedia_session;
-import org.pjsip.pjsua.SWIGTYPE_p_pjsip_rx_data;
+import org.pjsip.pjsua.pjsip_rx_data;
 import org.pjsip.pjsua.pj_str_t;
 import org.pjsip.pjsua.pj_stun_nat_detect_result;
 import org.pjsip.pjsua.pjsip_event;
 import org.pjsip.pjsua.pjsip_redirect_op;
 import org.pjsip.pjsua.pjsip_status_code;
+import org.pjsip.pjsua.pjsip_uri;
 import org.pjsip.pjsua.pjsua;
 import org.pjsip.pjsua.pjsuaConstants;
+import org.pjsip.pjsua.pjsua_mwi_info;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -106,7 +108,7 @@ public class UAStateReceiver extends Callback {
 	}
 	
 	@Override
-	public void on_incoming_call(final int acc_id, final int callId, SWIGTYPE_p_pjsip_rx_data rdata) {
+	public void on_incoming_call(final int acc_id, final int callId, pjsip_rx_data rdata) {
 		lockCpu();
 		
 		//Check if we have not already an ongoing call
@@ -318,7 +320,7 @@ public class UAStateReceiver extends Callback {
 	}
 	
 	@Override
-	public void on_mwi_info(int acc_id, pj_str_t mime_type, pj_str_t body) {
+	public void on_mwi_info(int acc_id, pjsua_mwi_info mwi_info) {
 		lockCpu();
 		//Treat incoming voice mail notification.
 		
@@ -407,7 +409,7 @@ public class UAStateReceiver extends Callback {
 	}
 	
 	@Override
-	public pjsip_redirect_op on_call_redirected(int call_id, pj_str_t target) {
+	public pjsip_redirect_op on_call_redirected(int call_id, pjsip_uri target, pjsip_event e) {
 		Log.w(THIS_FILE, "Ask for redirection, not yet implemented, for now allow all "+target.getPtr());
 		return pjsip_redirect_op.PJSIP_REDIRECT_ACCEPT;
 	}
